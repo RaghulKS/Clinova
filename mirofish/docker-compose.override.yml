@@ -1,0 +1,15 @@
+# Opt-in: docker compose -f mirofish/docker-compose.override.yml --profile mirofish up -d
+# Runs the UNMODIFIED MiroFish-Offline clone (AGPL-3.0) kept in .data/mirofish-service/ (gitignored).
+# Needs a Docker VM with >= 8 GB RAM (Neo4j 2 GB heap + app + Ollama embeddings).
+services:
+  mirofish:
+    profiles: ["mirofish"]
+    build: ../.data/mirofish-service
+    ports: ["3000:3000", "5001:5001"]
+    env_file: [mirofish.env]
+  neo4j:
+    profiles: ["mirofish"]
+    image: neo4j:5.18-community
+  ollama:
+    profiles: ["mirofish"]
+    image: ollama/ollama
