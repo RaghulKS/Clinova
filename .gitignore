@@ -17,3 +17,5 @@ __pycache__/
 # misc
 .DS_Store
 logs/
+# model bundles (T22; seeded via db/seed by T31)
+models/
