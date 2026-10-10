@@ -101,11 +101,11 @@ Write only to your own tables. Read anything. Hypertable primary keys include th
 | File | Model | Notes |
 | --- | --- | --- |
 | `protocol_2L_eligibility.txt`, `protocol_2L_schedule.txt` | text | Synthetic second-line advanced NSCLC protocol |
-| `parsed_protocol.json` | `ParsedProtocol` | `FIXTURE-2L-001`: about 15 rules, 8 visits, unparseable and locked examples |
+| `parsed_protocol.json` | `ParsedProtocol` | `FIXTURE-2L-001`: 22 atomic rules (I1-I16, E1-E6), 8 visits. E6 (oral medication) is the unparseable example. I16 (consent) and E5 (pregnancy) are locked |
 | `personas.json` | `list[Persona]` | 200 personas from `make_personas.py` (seed 42) |
-| `funnel.json` | `Funnel` | The real result of screening the 200 personas with the reference screen in `make_funnel.py` |
-| `agent_decisions.json` | `list[AgentDecision]` | 25 eligible personas |
-| `sim_run_summary.json` | `SimRunSummary` | Consistent with the funnel and decisions |
+| `funnel.json` | `Funnel` | Output of `make_funnel.py`'s reference screen run on the 200 personas: 56 eligible (28%); top exclusion I12, CrCl >= 60 |
+| `agent_decisions.json` | `list[AgentDecision]` | Hand-written decisions for 25 eligible personas: 16 enroll, 5 drop out |
+| `sim_run_summary.json` | `SimRunSummary` | Derived from the funnel and the decisions by `make_funnel.py` |
 | `risk_scores.json`, `criterion_flags.json`, `fixes.json` | `list[RiskScore]`, `list[CriterionFlag]`, `list[Fix]` | Illustrative model and optimizer outputs |
 | `trial_record.json`, `version_events.json` | `TrialRecord`, `list[VersionEvent]` | Fictional NCT99999901, terminated for accrual, eligibility widened |
 | `metrics.json`, `replay.json` | `ValidationMetrics`, `ReplayResult` | Final shapes. Numbers are **illustrative, not results** (marked in notes and summary) |

@@ -1,0 +1,74 @@
+{
+ "nct_id": "NCT99999901",
+ "title": "FICTIONAL: Randomized Phase 2 Study of ZX-4012 Plus Docetaxel Versus Docetaxel Alone in Previously Treated Advanced NSCLC",
+ "phase": "phase2",
+ "conditions": [
+  "Non-Small Cell Lung Cancer"
+ ],
+ "start_date": "2019-03-01",
+ "first_posted": "2019-01-15",
+ "first_version_date": "2019-01-15",
+ "primary_completion_date": "2021-08-31",
+ "completion_date": "2021-08-31",
+ "status": "TERMINATED",
+ "why_stopped": "Slow accrual",
+ "stop_category": "accrual",
+ "planned_enrollment": 180,
+ "actual_enrollment": 61,
+ "sponsor_class": "INDUSTRY",
+ "lead_sponsor": "Fictional Oncology Therapeutics",
+ "n_sites": 12,
+ "n_countries": 2,
+ "n_arms": 2,
+ "allocation": "RANDOMIZED",
+ "masking": "NONE",
+ "intervention_types": [
+  "DRUG"
+ ],
+ "min_age_years": 18.0,
+ "max_age_years": null,
+ "eligibility_text_first": "Inclusion Criteria:\n\n* Age >= 18 years at the time of signing informed consent.\n* Histologically or cytologically confirmed non-small cell lung cancer (NSCLC), stage IIIB, IIIC or IV (AJCC 8th edition), not amenable to curative surgery or radiotherapy.\n* Radiographic disease progression on or after one prior platinum-based chemotherapy regimen and one prior anti-PD-1 or anti-PD-L1 antibody, given in combination or sequentially, for advanced or metastatic disease.\n* No more than 2 prior lines of systemic therapy for advanced or metastatic disease.\n* At least one measurable lesion according to RECIST version 1.1.\n* Eastern Cooperative Oncology Group (ECOG) performance status of 0 or 1.\n* Life expectancy of at least 3 months.\n* Adequate organ function within 14 days before the first dose of study treatment:\n  * Absolute neutrophil count >= 1.5 x 10^9/L (1,500/mm3)\n  * Platelets >= 100 x 10^9/L (100,000/mm3)\n  * Hemoglobin >= 9.0 g/dL (90 g/L); transfusion is allowed if given at least 14 days before the first dose\n  * Creatinine clearance >= 60 mL/min (Cockcroft-Gault)\n  * AST and ALT <= 2.5 x upper limit of normal (ULN), or <= 5 x ULN for patients with liver metastases\n  * Total bilirubin <= 1.5 x ULN\n* Able to understand and willing to sign a written informed consent document.\n\nExclusion Criteria:\n\n* Untreated or symptomatic central nervous system metastases. Patients with previously treated brain metastases are eligible if radiologically stable for at least 4 weeks and off corticosteroids.\n* Active autoimmune disease that has required systemic treatment in the past 2 years.\n* History of interstitial lung disease or non-infectious pneumonitis that required steroids, or current pneumonitis.\n* Active infection requiring systemic therapy, including known uncontrolled HIV infection, active hepatitis B or hepatitis C.\n* Pregnant or breastfeeding, or planning to become pregnant during the study.\n* Unable to swallow oral medication.\n",
+ "eligibility_text_current": "Inclusion Criteria:\n\n* Age >= 18 years at the time of signing informed consent.\n* Histologically or cytologically confirmed non-small cell lung cancer (NSCLC), stage IIIB, IIIC or IV (AJCC 8th edition), not amenable to curative surgery or radiotherapy.\n* Radiographic disease progression on or after one prior platinum-based chemotherapy regimen and one prior anti-PD-1 or anti-PD-L1 antibody, given in combination or sequentially, for advanced or metastatic disease.\n* No more than 2 prior lines of systemic therapy for advanced or metastatic disease.\n* At least one measurable lesion according to RECIST version 1.1.\n* Eastern Cooperative Oncology Group (ECOG) performance status of 0, 1 or 2.\n* Life expectancy of at least 3 months.\n* Adequate organ function within 14 days before the first dose of study treatment:\n  * Absolute neutrophil count >= 1.5 x 10^9/L (1,500/mm3)\n  * Platelets >= 100 x 10^9/L (100,000/mm3)\n  * Hemoglobin >= 9.0 g/dL (90 g/L); transfusion is allowed if given at least 14 days before the first dose\n  * Creatinine clearance >= 45 mL/min (Cockcroft-Gault)\n  * AST and ALT <= 2.5 x upper limit of normal (ULN), or <= 5 x ULN for patients with liver metastases\n  * Total bilirubin <= 1.5 x ULN\n* Able to understand and willing to sign a written informed consent document.\n\nExclusion Criteria:\n\n* Untreated or symptomatic central nervous system metastases. Patients with previously treated brain metastases are eligible if radiologically stable for at least 4 weeks and off corticosteroids.\n* Active autoimmune disease that has required systemic treatment in the past 2 years.\n* History of interstitial lung disease or non-infectious pneumonitis that required steroids, or current pneumonitis.\n* Active infection requiring systemic therapy, including known uncontrolled HIV infection, active hepatitis B or hepatitis C.\n* Pregnant or breastfeeding, or planning to become pregnant during the study.\n* Unable to swallow oral medication.\n",
+ "first_version": {
+  "identificationModule": {
+   "nctId": "NCT99999901",
+   "briefTitle": "FICTIONAL: Randomized Phase 2 Study of ZX-4012 Plus Docetaxel Versus Docetaxel Alone in Previously Treated Advanced NSCLC"
+  },
+  "statusModule": {
+   "overallStatus": "NOT_YET_RECRUITING"
+  },
+  "designModule": {
+   "phases": [
+    "PHASE2"
+   ],
+   "enrollmentInfo": {
+    "count": 180,
+    "type": "ESTIMATED"
+   }
+  }
+ },
+ "current": {
+  "identificationModule": {
+   "nctId": "NCT99999901",
+   "briefTitle": "FICTIONAL: Randomized Phase 2 Study of ZX-4012 Plus Docetaxel Versus Docetaxel Alone in Previously Treated Advanced NSCLC"
+  },
+  "statusModule": {
+   "overallStatus": "TERMINATED",
+   "whyStopped": "Slow accrual"
+  },
+  "designModule": {
+   "phases": [
+    "PHASE2"
+   ],
+   "enrollmentInfo": {
+    "count": 61,
+    "type": "ACTUAL"
+   }
+  }
+ },
+ "label_accrual_fail": true,
+ "label_shortfall": true,
+ "label_amend": true,
+ "split": "test",
+ "history_source": "versions"
+}

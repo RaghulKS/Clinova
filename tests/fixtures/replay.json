@@ -1,0 +1,681 @@
+{
+ "target": "accrual_fail",
+ "freeze_date": "2019-12-31",
+ "horizon_months": 6,
+ "months": [
+  {
+   "month": "2020-01",
+   "n_scored": 8,
+   "n_pos": 1,
+   "n_new_outcomes": 3,
+   "retrained": {
+    "auc": 0.7,
+    "brier": 0.13
+   },
+   "frozen": {
+    "auc": 0.725,
+    "brier": 0.125
+   }
+  },
+  {
+   "month": "2020-02",
+   "n_scored": 15,
+   "n_pos": 2,
+   "n_new_outcomes": 4,
+   "retrained": {
+    "auc": 0.725,
+    "brier": 0.125
+   },
+   "frozen": {
+    "auc": 0.725,
+    "brier": 0.116
+   }
+  },
+  {
+   "month": "2020-03",
+   "n_scored": 9,
+   "n_pos": 0,
+   "n_new_outcomes": 5,
+   "retrained": {
+    "auc": null,
+    "brier": 0.116
+   },
+   "frozen": {
+    "auc": null,
+    "brier": 0.111
+   }
+  },
+  {
+   "month": "2020-04",
+   "n_scored": 16,
+   "n_pos": 4,
+   "n_new_outcomes": 6,
+   "retrained": {
+    "auc": 0.704,
+    "brier": 0.11
+   },
+   "frozen": {
+    "auc": 0.672,
+    "brier": 0.115
+   }
+  },
+  {
+   "month": "2020-05",
+   "n_scored": 10,
+   "n_pos": 1,
+   "n_new_outcomes": 7,
+   "retrained": {
+    "auc": 0.677,
+    "brier": 0.113
+   },
+   "frozen": {
+    "auc": 0.664,
+    "brier": 0.125
+   }
+  },
+  {
+   "month": "2020-06",
+   "n_scored": 17,
+   "n_pos": 2,
+   "n_new_outcomes": 8,
+   "retrained": {
+    "auc": 0.671,
+    "brier": 0.123
+   },
+   "frozen": {
+    "auc": 0.682,
+    "brier": 0.133
+   }
+  },
+  {
+   "month": "2020-07",
+   "n_scored": 11,
+   "n_pos": 3,
+   "n_new_outcomes": 9,
+   "retrained": {
+    "auc": 0.692,
+    "brier": 0.13
+   },
+   "frozen": {
+    "auc": 0.708,
+    "brier": 0.131
+   }
+  },
+  {
+   "month": "2020-08",
+   "n_scored": 18,
+   "n_pos": 4,
+   "n_new_outcomes": 10,
+   "retrained": {
+    "auc": 0.72,
+    "brier": 0.128
+   },
+   "frozen": {
+    "auc": 0.716,
+    "brier": 0.123
+   }
+  },
+  {
+   "month": "2020-09",
+   "n_scored": 12,
+   "n_pos": 1,
+   "n_new_outcomes": 11,
+   "retrained": {
+    "auc": 0.73,
+    "brier": 0.119
+   },
+   "frozen": {
+    "auc": 0.697,
+    "brier": 0.116
+   }
+  },
+  {
+   "month": "2020-10",
+   "n_scored": 19,
+   "n_pos": 2,
+   "n_new_outcomes": 12,
+   "retrained": {
+    "auc": 0.712,
+    "brier": 0.111
+   },
+   "frozen": {
+    "auc": 0.666,
+    "brier": 0.117
+   }
+  },
+  {
+   "month": "2020-11",
+   "n_scored": 13,
+   "n_pos": 3,
+   "n_new_outcomes": 3,
+   "retrained": {
+    "auc": 0.684,
+    "brier": 0.112
+   },
+   "frozen": {
+    "auc": 0.651,
+    "brier": 0.126
+   }
+  },
+  {
+   "month": "2020-12",
+   "n_scored": 20,
+   "n_pos": 4,
+   "n_new_outcomes": 4,
+   "retrained": {
+    "auc": 0.67,
+    "brier": 0.12
+   },
+   "frozen": {
+    "auc": 0.663,
+    "brier": 0.135
+   }
+  },
+  {
+   "month": "2021-01",
+   "n_scored": 14,
+   "n_pos": 1,
+   "n_new_outcomes": 5,
+   "retrained": {
+    "auc": 0.684,
+    "brier": 0.128
+   },
+   "frozen": {
+    "auc": 0.69,
+    "brier": 0.137
+   }
+  },
+  {
+   "month": "2021-02",
+   "n_scored": 8,
+   "n_pos": 2,
+   "n_new_outcomes": 6,
+   "retrained": {
+    "auc": 0.713,
+    "brier": 0.129
+   },
+   "frozen": {
+    "auc": 0.705,
+    "brier": 0.13
+   }
+  },
+  {
+   "month": "2021-03",
+   "n_scored": 15,
+   "n_pos": 3,
+   "n_new_outcomes": 7,
+   "retrained": {
+    "auc": 0.73,
+    "brier": 0.121
+   },
+   "frozen": {
+    "auc": 0.693,
+    "brier": 0.121
+   }
+  },
+  {
+   "month": "2021-04",
+   "n_scored": 9,
+   "n_pos": 4,
+   "n_new_outcomes": 8,
+   "retrained": {
+    "auc": 0.72,
+    "brier": 0.112
+   },
+   "frozen": {
+    "auc": 0.663,
+    "brier": 0.12
+   }
+  },
+  {
+   "month": "2021-05",
+   "n_scored": 16,
+   "n_pos": 1,
+   "n_new_outcomes": 9,
+   "retrained": {
+    "auc": 0.691,
+    "brier": 0.11
+   },
+   "frozen": {
+    "auc": 0.641,
+    "brier": 0.127
+   }
+  },
+  {
+   "month": "2021-06",
+   "n_scored": 10,
+   "n_pos": 2,
+   "n_new_outcomes": 10,
+   "retrained": {
+    "auc": 0.671,
+    "brier": 0.117
+   },
+   "frozen": {
+    "auc": 0.645,
+    "brier": 0.137
+   }
+  },
+  {
+   "month": "2021-07",
+   "n_scored": 17,
+   "n_pos": 3,
+   "n_new_outcomes": 11,
+   "retrained": {
+    "auc": 0.677,
+    "brier": 0.127
+   },
+   "frozen": {
+    "auc": 0.67,
+    "brier": 0.141
+   }
+  },
+  {
+   "month": "2021-08",
+   "n_scored": 11,
+   "n_pos": 4,
+   "n_new_outcomes": 12,
+   "retrained": {
+    "auc": 0.704,
+    "brier": 0.13
+   },
+   "frozen": {
+    "auc": 0.691,
+    "brier": 0.136
+   }
+  },
+  {
+   "month": "2021-09",
+   "n_scored": 18,
+   "n_pos": 1,
+   "n_new_outcomes": 3,
+   "retrained": {
+    "auc": 0.727,
+    "brier": 0.124
+   },
+   "frozen": {
+    "auc": 0.687,
+    "brier": 0.127
+   }
+  },
+  {
+   "month": "2021-10",
+   "n_scored": 12,
+   "n_pos": 2,
+   "n_new_outcomes": 4,
+   "retrained": {
+    "auc": 0.725,
+    "brier": 0.115
+   },
+   "frozen": {
+    "auc": 0.66,
+    "brier": 0.123
+   }
+  },
+  {
+   "month": "2021-11",
+   "n_scored": 19,
+   "n_pos": 3,
+   "n_new_outcomes": 5,
+   "retrained": {
+    "auc": 0.7,
+    "brier": 0.11
+   },
+   "frozen": {
+    "auc": 0.632,
+    "brier": 0.129
+   }
+  },
+  {
+   "month": "2021-12",
+   "n_scored": 13,
+   "n_pos": 4,
+   "n_new_outcomes": 6,
+   "retrained": {
+    "auc": 0.675,
+    "brier": 0.115
+   },
+   "frozen": {
+    "auc": 0.629,
+    "brier": 0.139
+   }
+  },
+  {
+   "month": "2022-01",
+   "n_scored": 20,
+   "n_pos": 1,
+   "n_new_outcomes": 7,
+   "retrained": {
+    "auc": 0.673,
+    "brier": 0.124
+   },
+   "frozen": {
+    "auc": 0.65,
+    "brier": 0.145
+   }
+  },
+  {
+   "month": "2022-02",
+   "n_scored": 14,
+   "n_pos": 2,
+   "n_new_outcomes": 8,
+   "retrained": {
+    "auc": 0.696,
+    "brier": 0.13
+   },
+   "frozen": {
+    "auc": 0.675,
+    "brier": 0.142
+   }
+  },
+  {
+   "month": "2022-03",
+   "n_scored": 8,
+   "n_pos": 3,
+   "n_new_outcomes": 9,
+   "retrained": {
+    "auc": 0.723,
+    "brier": 0.126
+   },
+   "frozen": {
+    "auc": 0.679,
+    "brier": 0.134
+   }
+  },
+  {
+   "month": "2022-04",
+   "n_scored": 15,
+   "n_pos": 0,
+   "n_new_outcomes": 10,
+   "retrained": {
+    "auc": null,
+    "brier": 0.117
+   },
+   "frozen": {
+    "auc": null,
+    "brier": 0.128
+   }
+  },
+  {
+   "month": "2022-05",
+   "n_scored": 9,
+   "n_pos": 1,
+   "n_new_outcomes": 11,
+   "retrained": {
+    "auc": 0.708,
+    "brier": 0.11
+   },
+   "frozen": {
+    "auc": 0.626,
+    "brier": 0.13
+   }
+  },
+  {
+   "month": "2022-06",
+   "n_scored": 16,
+   "n_pos": 2,
+   "n_new_outcomes": 12,
+   "retrained": {
+    "auc": 0.68,
+    "brier": 0.113
+   },
+   "frozen": {
+    "auc": 0.615,
+    "brier": 0.14
+   }
+  },
+  {
+   "month": "2022-07",
+   "n_scored": 10,
+   "n_pos": 3,
+   "n_new_outcomes": 3,
+   "retrained": {
+    "auc": 0.67,
+    "brier": 0.122
+   },
+   "frozen": {
+    "auc": 0.63,
+    "brier": 0.148
+   }
+  },
+  {
+   "month": "2022-08",
+   "n_scored": 17,
+   "n_pos": 4,
+   "n_new_outcomes": 4,
+   "retrained": {
+    "auc": 0.688,
+    "brier": 0.129
+   },
+   "frozen": {
+    "auc": 0.657,
+    "brier": 0.148
+   }
+  },
+  {
+   "month": "2022-09",
+   "n_scored": 11,
+   "n_pos": 1,
+   "n_new_outcomes": 5,
+   "retrained": {
+    "auc": 0.717,
+    "brier": 0.128
+   },
+   "frozen": {
+    "auc": 0.669,
+    "brier": 0.14
+   }
+  },
+  {
+   "month": "2022-10",
+   "n_scored": 18,
+   "n_pos": 2,
+   "n_new_outcomes": 6,
+   "retrained": {
+    "auc": 0.73,
+    "brier": 0.12
+   },
+   "frozen": {
+    "auc": 0.653,
+    "brier": 0.133
+   }
+  },
+  {
+   "month": "2022-11",
+   "n_scored": 12,
+   "n_pos": 3,
+   "n_new_outcomes": 7,
+   "retrained": {
+    "auc": 0.716,
+    "brier": 0.112
+   },
+   "frozen": {
+    "auc": 0.622,
+    "brier": 0.133
+   }
+  },
+  {
+   "month": "2022-12",
+   "n_scored": 19,
+   "n_pos": 4,
+   "n_new_outcomes": 8,
+   "retrained": {
+    "auc": 0.687,
+    "brier": 0.111
+   },
+   "frozen": {
+    "auc": 0.603,
+    "brier": 0.141
+   }
+  },
+  {
+   "month": "2023-01",
+   "n_scored": 13,
+   "n_pos": 1,
+   "n_new_outcomes": 9,
+   "retrained": {
+    "auc": 0.67,
+    "brier": 0.119
+   },
+   "frozen": {
+    "auc": 0.612,
+    "brier": 0.151
+   }
+  },
+  {
+   "month": "2023-02",
+   "n_scored": 20,
+   "n_pos": 2,
+   "n_new_outcomes": 10,
+   "retrained": {
+    "auc": 0.681,
+    "brier": 0.128
+   },
+   "frozen": {
+    "auc": 0.638,
+    "brier": 0.153
+   }
+  },
+  {
+   "month": "2023-03",
+   "n_scored": 14,
+   "n_pos": 3,
+   "n_new_outcomes": 11,
+   "retrained": {
+    "auc": 0.709,
+    "brier": 0.13
+   },
+   "frozen": {
+    "auc": 0.656,
+    "brier": 0.147
+   }
+  },
+  {
+   "month": "2023-04",
+   "n_scored": 8,
+   "n_pos": 4,
+   "n_new_outcomes": 12,
+   "retrained": {
+    "auc": 0.729,
+    "brier": 0.123
+   },
+   "frozen": {
+    "auc": 0.648,
+    "brier": 0.138
+   }
+  },
+  {
+   "month": "2023-05",
+   "n_scored": 15,
+   "n_pos": 1,
+   "n_new_outcomes": 3,
+   "retrained": {
+    "auc": 0.722,
+    "brier": 0.113
+   },
+   "frozen": {
+    "auc": 0.619,
+    "brier": 0.136
+   }
+  },
+  {
+   "month": "2023-06",
+   "n_scored": 9,
+   "n_pos": 2,
+   "n_new_outcomes": 4,
+   "retrained": {
+    "auc": 0.695,
+    "brier": 0.11
+   },
+   "frozen": {
+    "auc": 0.594,
+    "brier": 0.142
+   }
+  },
+  {
+   "month": "2023-07",
+   "n_scored": 16,
+   "n_pos": 3,
+   "n_new_outcomes": 5,
+   "retrained": {
+    "auc": 0.673,
+    "brier": 0.116
+   },
+   "frozen": {
+    "auc": 0.595,
+    "brier": 0.152
+   }
+  },
+  {
+   "month": "2023-08",
+   "n_scored": 10,
+   "n_pos": 4,
+   "n_new_outcomes": 6,
+   "retrained": {
+    "auc": 0.675,
+    "brier": 0.126
+   },
+   "frozen": {
+    "auc": 0.618,
+    "brier": 0.157
+   }
+  },
+  {
+   "month": "2023-09",
+   "n_scored": 17,
+   "n_pos": 1,
+   "n_new_outcomes": 7,
+   "retrained": {
+    "auc": 0.701,
+    "brier": 0.13
+   },
+   "frozen": {
+    "auc": 0.641,
+    "brier": 0.153
+   }
+  },
+  {
+   "month": "2023-10",
+   "n_scored": 11,
+   "n_pos": 2,
+   "n_new_outcomes": 8,
+   "retrained": {
+    "auc": 0.726,
+    "brier": 0.125
+   },
+   "frozen": {
+    "auc": 0.641,
+    "brier": 0.144
+   }
+  },
+  {
+   "month": "2023-11",
+   "n_scored": 18,
+   "n_pos": 3,
+   "n_new_outcomes": 9,
+   "retrained": {
+    "auc": 0.727,
+    "brier": 0.116
+   },
+   "frozen": {
+    "auc": 0.616,
+    "brier": 0.139
+   }
+  },
+  {
+   "month": "2023-12",
+   "n_scored": 12,
+   "n_pos": 4,
+   "n_new_outcomes": 10,
+   "retrained": {
+    "auc": 0.704,
+    "brier": 0.11
+   },
+   "frozen": {
+    "auc": 0.587,
+    "brier": 0.144
+   }
+  }
+ ],
+ "summary": "FIXTURE: illustrative numbers, not results. The retrained model holds AUC near 0.70 while the frozen model drifts toward 0.61 by late 2023.",
+ "generated_at": "2026-10-10T12:00:00Z"
+}

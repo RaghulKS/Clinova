@@ -1,0 +1,47 @@
+[
+ {
+  "rule_id": "I12",
+  "field": "crcl_ml_min",
+  "rank": 1,
+  "where": "Inclusion I12: creatinine clearance >= 60 mL/min (Cockcroft-Gault)",
+  "why": "Excludes 43 of 200 virtual patients (22%), 19 of them for this rule alone; 4 in 10 comparable second-line trials later widened their kidney cutoff.",
+  "what_to_do": "Consider creatinine clearance >= 45 mL/min, as used by NCT99990012; docetaxel is cleared mainly by the liver.",
+  "delta_p": 0.09,
+  "suggested_edit": {
+   "kind": "relax_rule",
+   "target_id": "I12",
+   "new_value": 45,
+   "new_operator": null
+  }
+ },
+ {
+  "rule_id": "I7",
+  "field": "ecog",
+  "rank": 2,
+  "where": "Inclusion I7: ECOG performance status of 0 or 1",
+  "why": "Excludes 41 of 200 virtual patients (21%), 8 of them for this rule alone; about 1 in 5 second-line patients has ECOG 2.",
+  "what_to_do": "Consider allowing ECOG 2, possibly as a separately reported subgroup, as NCT99990027 did.",
+  "delta_p": 0.06,
+  "suggested_edit": {
+   "kind": "relax_rule",
+   "target_id": "I7",
+   "new_value": 2,
+   "new_operator": null
+  }
+ },
+ {
+  "rule_id": "E1",
+  "field": "brain_mets",
+  "rank": 3,
+  "where": "Exclusion E1: untreated or symptomatic central nervous system metastases",
+  "why": "Excludes 25 of 200 virtual patients (12.5%), 7 of them for this rule alone.",
+  "what_to_do": "Consider allowing small (< 1 cm) asymptomatic untreated brain metastases that need no steroids, as NCT99990033 did.",
+  "delta_p": 0.03,
+  "suggested_edit": {
+   "kind": "drop_rule",
+   "target_id": "E1",
+   "new_value": null,
+   "new_operator": null
+  }
+ }
+]

@@ -1,0 +1,56 @@
+[
+ {
+  "nct_id": "NCT99999901",
+  "version_no": 2,
+  "version_date": "2019-10-14",
+  "field": "enrollment_count",
+  "old_value": "180",
+  "new_value": "120",
+  "change_class": null
+ },
+ {
+  "nct_id": "NCT99999901",
+  "version_no": 3,
+  "version_date": "2020-02-10",
+  "field": "eligibility",
+  "old_value": "Creatinine clearance >= 60 mL/min (Cockcroft-Gault); ECOG performance status of 0 or 1.",
+  "new_value": "Creatinine clearance >= 45 mL/min (Cockcroft-Gault); ECOG performance status of 0, 1 or 2.",
+  "change_class": "widened"
+ },
+ {
+  "nct_id": "NCT99999901",
+  "version_no": 4,
+  "version_date": "2020-09-01",
+  "field": "primary_completion_date",
+  "old_value": "2021-03-31",
+  "new_value": "2022-06-30",
+  "change_class": null
+ },
+ {
+  "nct_id": "NCT99999901",
+  "version_no": 5,
+  "version_date": "2021-08-31",
+  "field": "overall_status",
+  "old_value": "RECRUITING",
+  "new_value": "TERMINATED",
+  "change_class": null
+ },
+ {
+  "nct_id": "NCT99999901",
+  "version_no": 5,
+  "version_date": "2021-08-31",
+  "field": "why_stopped",
+  "old_value": null,
+  "new_value": "Slow accrual",
+  "change_class": null
+ },
+ {
+  "nct_id": "NCT99999901",
+  "version_no": 5,
+  "version_date": "2021-08-31",
+  "field": "primary_completion_date",
+  "old_value": "2022-06-30",
+  "new_value": "2021-08-31",
+  "change_class": null
+ }
+]

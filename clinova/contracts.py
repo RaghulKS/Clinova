@@ -613,7 +613,7 @@ class AgentDecision(Contract):
 
     persona_id: str = Field(description="Persona that decided.")
     enroll: bool = Field(description="Would enroll.")
-    dropout_visit: int | None = Field(None, ge=1, description="visit_no at which they would stop attending; None = completes (always None when enroll is False).")
+    dropout_visit: int | None = Field(None, ge=1, description="First visit_no they would NOT attend (they attended every earlier visit); None = completes (always None when enroll is False).")
     reason: str = Field(description="One or two sentences in the persona's voice.")
     burden_tags: list[BurdenTag] = Field(default_factory=list, description="Burdens behind declining or dropping out (may be empty for completers).")
 
@@ -645,7 +645,7 @@ class SimRunSummary(Contract):
     n_agents: int = Field(ge=0, description="Eligible personas actually run as agents (<= max_agents).")
     enroll_rate: float = Field(ge=0, le=1, description="Enrolled / n_agents.")
     completion_rate: float = Field(ge=0, le=1, description="Enrolled who complete every visit / enrolled.")
-    dropout_curve: list[float] = Field(default_factory=list, description="Cumulative fraction of enrolled who have dropped out by each visit; index i = after visit_no i+1; non-decreasing; length = number of visits.")
+    dropout_curve: list[float] = Field(default_factory=list, description="Cumulative fraction of enrolled who have dropped out by each visit: curve[i] = #(dropout_visit <= i+1) / enrolled; non-decreasing; length = number of visits.")
     median_dropout_visit: int | None = Field(None, description="Median visit_no of dropout among dropouts; None if nobody dropped out.")
     top_reasons: list[ReasonShare] = Field(default_factory=list, description="Burden tags by share, descending (top 5).")
     funnel: Funnel | None = Field(None, description="Screening funnel for this seed.")

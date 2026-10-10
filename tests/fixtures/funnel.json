@@ -1,0 +1,313 @@
+{
+ "trial_id": "FIXTURE-2L-001",
+ "n_screened": 200,
+ "n_eligible": 56,
+ "eligible_frac": 0.28,
+ "stages": [
+  {
+   "rule_id": null,
+   "label": "Screened",
+   "remaining": 200,
+   "excluded": 0
+  },
+  {
+   "rule_id": "I1",
+   "label": "Age >= 18 years (I1)",
+   "remaining": 200,
+   "excluded": 0
+  },
+  {
+   "rule_id": "I2",
+   "label": "Stage IIIB, IIIC, IVA, IVB (I2)",
+   "remaining": 197,
+   "excluded": 3
+  },
+  {
+   "rule_id": "I3",
+   "label": "Prior platinum chemotherapy (I3)",
+   "remaining": 172,
+   "excluded": 25
+  },
+  {
+   "rule_id": "I4",
+   "label": "Prior PD-(L)1 inhibitor (I4)",
+   "remaining": 157,
+   "excluded": 15
+  },
+  {
+   "rule_id": "I5",
+   "label": "Prior lines <= 2 (I5)",
+   "remaining": 147,
+   "excluded": 10
+  },
+  {
+   "rule_id": "I6",
+   "label": "Measurable disease (RECIST 1.1) (I6)",
+   "remaining": 137,
+   "excluded": 10
+  },
+  {
+   "rule_id": "I7",
+   "label": "ECOG <= 1 (I7)",
+   "remaining": 113,
+   "excluded": 24
+  },
+  {
+   "rule_id": "I8",
+   "label": "Life expectancy >= 3 months (I8)",
+   "remaining": 113,
+   "excluded": 0
+  },
+  {
+   "rule_id": "I9",
+   "label": "ANC >= 1.5 x10^9/L (I9)",
+   "remaining": 110,
+   "excluded": 3
+  },
+  {
+   "rule_id": "I10",
+   "label": "Platelets >= 100 x10^9/L (I10)",
+   "remaining": 108,
+   "excluded": 2
+  },
+  {
+   "rule_id": "I11",
+   "label": "Hemoglobin >= 9.0 g/dL (I11)",
+   "remaining": 105,
+   "excluded": 3
+  },
+  {
+   "rule_id": "I12",
+   "label": "Creatinine clearance >= 60 mL/min (I12)",
+   "remaining": 80,
+   "excluded": 25
+  },
+  {
+   "rule_id": "I13",
+   "label": "AST <= 2.5 xULN (I13)",
+   "remaining": 78,
+   "excluded": 2
+  },
+  {
+   "rule_id": "I14",
+   "label": "ALT <= 2.5 xULN (I14)",
+   "remaining": 78,
+   "excluded": 0
+  },
+  {
+   "rule_id": "I15",
+   "label": "Bilirubin <= 1.5 xULN (I15)",
+   "remaining": 76,
+   "excluded": 2
+  },
+  {
+   "rule_id": "I16",
+   "label": "Can consent (I16)",
+   "remaining": 74,
+   "excluded": 2
+  },
+  {
+   "rule_id": "E1",
+   "label": "Excl. brain metastases = untreated (E1)",
+   "remaining": 65,
+   "excluded": 9
+  },
+  {
+   "rule_id": "E2",
+   "label": "Excl. autoimmune disease (E2)",
+   "remaining": 60,
+   "excluded": 5
+  },
+  {
+   "rule_id": "E3",
+   "label": "Excl. interstitial lung disease (E3)",
+   "remaining": 57,
+   "excluded": 3
+  },
+  {
+   "rule_id": "E4",
+   "label": "Excl. active infection (E4)",
+   "remaining": 56,
+   "excluded": 1
+  },
+  {
+   "rule_id": "E5",
+   "label": "Excl. pregnancy or breastfeeding (E5)",
+   "remaining": 56,
+   "excluded": 0
+  }
+ ],
+ "marginal": [
+  {
+   "rule_id": "I12",
+   "field": "crcl_ml_min",
+   "label": "Creatinine clearance >= 60 mL/min (I12)",
+   "excluded_n": 43,
+   "excluded_frac": 0.215,
+   "excluded_only_n": 19
+  },
+  {
+   "rule_id": "I7",
+   "field": "ecog",
+   "label": "ECOG <= 1 (I7)",
+   "excluded_n": 41,
+   "excluded_frac": 0.205,
+   "excluded_only_n": 8
+  },
+  {
+   "rule_id": "I3",
+   "field": "prior_platinum",
+   "label": "Prior platinum chemotherapy (I3)",
+   "excluded_n": 25,
+   "excluded_frac": 0.125,
+   "excluded_only_n": 6
+  },
+  {
+   "rule_id": "I4",
+   "field": "prior_immunotherapy",
+   "label": "Prior PD-(L)1 inhibitor (I4)",
+   "excluded_n": 25,
+   "excluded_frac": 0.125,
+   "excluded_only_n": 4
+  },
+  {
+   "rule_id": "E1",
+   "field": "brain_mets",
+   "label": "Excl. brain metastases = untreated (E1)",
+   "excluded_n": 25,
+   "excluded_frac": 0.125,
+   "excluded_only_n": 7
+  },
+  {
+   "rule_id": "I6",
+   "field": "measurable_disease",
+   "label": "Measurable disease (RECIST 1.1) (I6)",
+   "excluded_n": 13,
+   "excluded_frac": 0.065,
+   "excluded_only_n": 5
+  },
+  {
+   "rule_id": "I8",
+   "field": "life_expectancy_months",
+   "label": "Life expectancy >= 3 months (I8)",
+   "excluded_n": 13,
+   "excluded_frac": 0.065,
+   "excluded_only_n": 0
+  },
+  {
+   "rule_id": "I5",
+   "field": "prior_lines",
+   "label": "Prior lines <= 2 (I5)",
+   "excluded_n": 11,
+   "excluded_frac": 0.055,
+   "excluded_only_n": 5
+  },
+  {
+   "rule_id": "E2",
+   "field": "autoimmune_disease",
+   "label": "Excl. autoimmune disease (E2)",
+   "excluded_n": 10,
+   "excluded_frac": 0.05,
+   "excluded_only_n": 5
+  },
+  {
+   "rule_id": "I9",
+   "field": "anc",
+   "label": "ANC >= 1.5 x10^9/L (I9)",
+   "excluded_n": 8,
+   "excluded_frac": 0.04,
+   "excluded_only_n": 3
+  },
+  {
+   "rule_id": "I11",
+   "field": "hemoglobin",
+   "label": "Hemoglobin >= 9.0 g/dL (I11)",
+   "excluded_n": 8,
+   "excluded_frac": 0.04,
+   "excluded_only_n": 3
+  },
+  {
+   "rule_id": "I15",
+   "field": "bilirubin_x_uln",
+   "label": "Bilirubin <= 1.5 xULN (I15)",
+   "excluded_n": 7,
+   "excluded_frac": 0.035,
+   "excluded_only_n": 2
+  },
+  {
+   "rule_id": "E3",
+   "field": "interstitial_lung_disease",
+   "label": "Excl. interstitial lung disease (E3)",
+   "excluded_n": 6,
+   "excluded_frac": 0.03,
+   "excluded_only_n": 3
+  },
+  {
+   "rule_id": "E4",
+   "field": "active_infection",
+   "label": "Excl. active infection (E4)",
+   "excluded_n": 5,
+   "excluded_frac": 0.025,
+   "excluded_only_n": 1
+  },
+  {
+   "rule_id": "I10",
+   "field": "platelets",
+   "label": "Platelets >= 100 x10^9/L (I10)",
+   "excluded_n": 4,
+   "excluded_frac": 0.02,
+   "excluded_only_n": 2
+  },
+  {
+   "rule_id": "I2",
+   "field": "stage",
+   "label": "Stage IIIB, IIIC, IVA, IVB (I2)",
+   "excluded_n": 3,
+   "excluded_frac": 0.015,
+   "excluded_only_n": 1
+  },
+  {
+   "rule_id": "I13",
+   "field": "ast_x_uln",
+   "label": "AST <= 2.5 xULN (I13)",
+   "excluded_n": 3,
+   "excluded_frac": 0.015,
+   "excluded_only_n": 1
+  },
+  {
+   "rule_id": "I16",
+   "field": "consent_capacity",
+   "label": "Can consent (I16)",
+   "excluded_n": 3,
+   "excluded_frac": 0.015,
+   "excluded_only_n": 1
+  },
+  {
+   "rule_id": "I14",
+   "field": "alt_x_uln",
+   "label": "ALT <= 2.5 xULN (I14)",
+   "excluded_n": 2,
+   "excluded_frac": 0.01,
+   "excluded_only_n": 0
+  },
+  {
+   "rule_id": "I1",
+   "field": "age",
+   "label": "Age >= 18 years (I1)",
+   "excluded_n": 0,
+   "excluded_frac": 0.0,
+   "excluded_only_n": 0
+  },
+  {
+   "rule_id": "E5",
+   "field": "pregnancy",
+   "label": "Excl. pregnancy or breastfeeding (E5)",
+   "excluded_n": 0,
+   "excluded_frac": 0.0,
+   "excluded_only_n": 0
+  }
+ ],
+ "skipped_rules": [
+  "E6"
+ ]
+}

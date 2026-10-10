@@ -49,7 +49,8 @@ packages = ["clinova"]
 [tool.ruff]
 line-length = 110
 target-version = "py311"
-extend-exclude = [".data", ".worktrees", ".claude", "mirofish", "docs"]
+# scripts/spikes holds wave-0 research probes, kept verbatim as evidence.
+extend-exclude = [".data", ".worktrees", ".claude", "mirofish", "docs", "scripts/spikes"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]

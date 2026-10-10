@@ -1,0 +1,297 @@
+{
+ "model_version": "fixture",
+ "generated_at": "2026-10-10T12:00:00Z",
+ "split_date": "2018-01-01",
+ "n_train": 980,
+ "n_test": 412,
+ "targets": [
+  {
+   "target": "accrual_fail",
+   "n_test": 371,
+   "n_pos": 58,
+   "auc": {
+    "value": 0.71,
+    "ci_low": 0.64,
+    "ci_high": 0.78
+   },
+   "baseline_auc": {
+    "value": 0.64,
+    "ci_low": 0.56,
+    "ci_high": 0.71
+   },
+   "brier": 0.121,
+   "baseline_brier": 0.132,
+   "reliability": [
+    {
+     "bin_low": 0.0,
+     "bin_high": 0.1,
+     "mean_pred": 0.05,
+     "frac_pos": 0.05,
+     "n": 220
+    },
+    {
+     "bin_low": 0.1,
+     "bin_high": 0.2,
+     "mean_pred": 0.158,
+     "frac_pos": 0.194,
+     "n": 90
+    },
+    {
+     "bin_low": 0.2,
+     "bin_high": 0.3,
+     "mean_pred": 0.259,
+     "frac_pos": 0.229,
+     "n": 36
+    },
+    {
+     "bin_low": 0.3,
+     "bin_high": 0.4,
+     "mean_pred": 0.351,
+     "frac_pos": 0.34,
+     "n": 15
+    },
+    {
+     "bin_low": 0.4,
+     "bin_high": 0.5,
+     "mean_pred": 0.442,
+     "frac_pos": 0.482,
+     "n": 6
+    },
+    {
+     "bin_low": 0.5,
+     "bin_high": 0.6,
+     "mean_pred": 0.54,
+     "frac_pos": 0.518,
+     "n": 3
+    },
+    {
+     "bin_low": 0.6,
+     "bin_high": 0.7,
+     "mean_pred": 0.647,
+     "frac_pos": 0.626,
+     "n": 1
+    },
+    {
+     "bin_low": 0.7,
+     "bin_high": 0.8,
+     "mean_pred": null,
+     "frac_pos": null,
+     "n": 0
+    },
+    {
+     "bin_low": 0.8,
+     "bin_high": 0.9,
+     "mean_pred": null,
+     "frac_pos": null,
+     "n": 0
+    },
+    {
+     "bin_low": 0.9,
+     "bin_high": 1.0,
+     "mean_pred": null,
+     "frac_pos": null,
+     "n": 0
+    }
+   ]
+  },
+  {
+   "target": "shortfall",
+   "n_test": 338,
+   "n_pos": 112,
+   "auc": {
+    "value": 0.68,
+    "ci_low": 0.62,
+    "ci_high": 0.74
+   },
+   "baseline_auc": {
+    "value": 0.62,
+    "ci_low": 0.56,
+    "ci_high": 0.68
+   },
+   "brier": 0.197,
+   "baseline_brier": 0.209,
+   "reliability": [
+    {
+     "bin_low": 0.0,
+     "bin_high": 0.1,
+     "mean_pred": 0.058,
+     "frac_pos": 0.092,
+     "n": 124
+    },
+    {
+     "bin_low": 0.1,
+     "bin_high": 0.2,
+     "mean_pred": 0.159,
+     "frac_pos": 0.165,
+     "n": 79
+    },
+    {
+     "bin_low": 0.2,
+     "bin_high": 0.3,
+     "mean_pred": 0.251,
+     "frac_pos": 0.213,
+     "n": 50
+    },
+    {
+     "bin_low": 0.3,
+     "bin_high": 0.4,
+     "mean_pred": 0.342,
+     "frac_pos": 0.368,
+     "n": 32
+    },
+    {
+     "bin_low": 0.4,
+     "bin_high": 0.5,
+     "mean_pred": 0.44,
+     "frac_pos": 0.456,
+     "n": 21
+    },
+    {
+     "bin_low": 0.5,
+     "bin_high": 0.6,
+     "mean_pred": 0.547,
+     "frac_pos": 0.507,
+     "n": 13
+    },
+    {
+     "bin_low": 0.6,
+     "bin_high": 0.7,
+     "mean_pred": 0.657,
+     "frac_pos": 0.674,
+     "n": 8
+    },
+    {
+     "bin_low": 0.7,
+     "bin_high": 0.8,
+     "mean_pred": 0.76,
+     "frac_pos": 0.786,
+     "n": 5
+    },
+    {
+     "bin_low": 0.8,
+     "bin_high": 0.9,
+     "mean_pred": 0.854,
+     "frac_pos": 0.816,
+     "n": 4
+    },
+    {
+     "bin_low": 0.9,
+     "bin_high": 1.0,
+     "mean_pred": 0.945,
+     "frac_pos": 0.951,
+     "n": 2
+    }
+   ]
+  },
+  {
+   "target": "amend",
+   "n_test": 371,
+   "n_pos": 81,
+   "auc": {
+    "value": 0.66,
+    "ci_low": 0.59,
+    "ci_high": 0.72
+   },
+   "baseline_auc": {
+    "value": 0.61,
+    "ci_low": 0.54,
+    "ci_high": 0.67
+   },
+   "brier": 0.158,
+   "baseline_brier": 0.165,
+   "reliability": [
+    {
+     "bin_low": 0.0,
+     "bin_high": 0.1,
+     "mean_pred": 0.059,
+     "frac_pos": 0.095,
+     "n": 187
+    },
+    {
+     "bin_low": 0.1,
+     "bin_high": 0.2,
+     "mean_pred": 0.151,
+     "frac_pos": 0.121,
+     "n": 93
+    },
+    {
+     "bin_low": 0.2,
+     "bin_high": 0.3,
+     "mean_pred": 0.242,
+     "frac_pos": 0.231,
+     "n": 46
+    },
+    {
+     "bin_low": 0.3,
+     "bin_high": 0.4,
+     "mean_pred": 0.34,
+     "frac_pos": 0.38,
+     "n": 23
+    },
+    {
+     "bin_low": 0.4,
+     "bin_high": 0.5,
+     "mean_pred": 0.447,
+     "frac_pos": 0.425,
+     "n": 11
+    },
+    {
+     "bin_low": 0.5,
+     "bin_high": 0.6,
+     "mean_pred": 0.557,
+     "frac_pos": 0.536,
+     "n": 6
+    },
+    {
+     "bin_low": 0.6,
+     "bin_high": 0.7,
+     "mean_pred": 0.66,
+     "frac_pos": 0.7,
+     "n": 3
+    },
+    {
+     "bin_low": 0.7,
+     "bin_high": 0.8,
+     "mean_pred": 0.754,
+     "frac_pos": 0.742,
+     "n": 1
+    },
+    {
+     "bin_low": 0.8,
+     "bin_high": 0.9,
+     "mean_pred": 0.845,
+     "frac_pos": 0.815,
+     "n": 1
+    },
+    {
+     "bin_low": 0.9,
+     "bin_high": 1.0,
+     "mean_pred": null,
+     "frac_pos": null,
+     "n": 0
+    }
+   ]
+  }
+ ],
+ "hit_rate": {
+  "n_trials": 64,
+  "hit_rate": 0.42,
+  "random_baseline": 0.19,
+  "marginal_baseline": 0.31
+ },
+ "ablation": {
+  "target": "accrual_fail",
+  "n_trials": 96,
+  "auc_with": 0.72,
+  "auc_without": 0.7,
+  "diff": {
+   "value": 0.02,
+   "ci_low": -0.03,
+   "ci_high": 0.07
+  }
+ },
+ "notes": [
+  "FIXTURE: illustrative numbers, not results.",
+  "Shape matches docs/metrics.json; real values are written by the validation script (T22)."
+ ]
+}

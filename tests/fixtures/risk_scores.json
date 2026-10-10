@@ -1,0 +1,104 @@
+[
+ {
+  "target": "accrual_fail",
+  "p": 0.46,
+  "ci_low": 0.35,
+  "ci_high": 0.58,
+  "confidence": "medium",
+  "top_drivers": [
+   {
+    "feature": "strict_crcl_ml_min",
+    "label": "Creatinine clearance cutoff (I12: >= 60 mL/min) stricter than 80% of comparable trials",
+    "value": 60.0,
+    "contribution": 0.42
+   },
+   {
+    "feature": "sim_eligible_frac",
+    "label": "Only 28% of virtual patients pass every criterion",
+    "value": 0.28,
+    "contribution": 0.31
+   },
+   {
+    "feature": "visit_burden_hours",
+    "label": "35 on-site hours over 8 visits in the first 12 weeks",
+    "value": 35.0,
+    "contribution": 0.18
+   },
+   {
+    "feature": "strict_ecog",
+    "label": "ECOG limited to 0-1 (I7), stricter than half of second-line trials",
+    "value": 1.0,
+    "contribution": 0.12
+   }
+  ],
+  "model_version": "fixture"
+ },
+ {
+  "target": "shortfall",
+  "p": 0.52,
+  "ci_low": 0.4,
+  "ci_high": 0.63,
+  "confidence": "medium",
+  "top_drivers": [
+   {
+    "feature": "sim_eligible_frac",
+    "label": "Only 28% of virtual patients pass every criterion",
+    "value": 0.28,
+    "contribution": 0.35
+   },
+   {
+    "feature": "strict_ecog",
+    "label": "ECOG limited to 0-1 (I7), stricter than half of second-line trials",
+    "value": 1.0,
+    "contribution": 0.21
+   },
+   {
+    "feature": "sim_dropout_frac",
+    "label": "31% of virtual enrollees drop out before the end-of-treatment visit",
+    "value": 0.3125,
+    "contribution": 0.19
+   },
+   {
+    "feature": "n_rules",
+    "label": "22 eligibility rules, more than 70% of comparable trials",
+    "value": 22.0,
+    "contribution": 0.08
+   }
+  ],
+  "model_version": "fixture"
+ },
+ {
+  "target": "amend",
+  "p": 0.38,
+  "ci_low": 0.27,
+  "ci_high": 0.5,
+  "confidence": "low",
+  "top_drivers": [
+   {
+    "feature": "strict_crcl_ml_min",
+    "label": "Kidney cutoff (I12: >= 60 mL/min) is one that 4 in 10 comparable trials later widened",
+    "value": 60.0,
+    "contribution": 0.33
+   },
+   {
+    "feature": "strict_ecog",
+    "label": "ECOG limited to 0-1 (I7)",
+    "value": 1.0,
+    "contribution": 0.2
+   },
+   {
+    "feature": "brain_mets_excluded",
+    "label": "Untreated brain metastases excluded (E1)",
+    "value": "untreated",
+    "contribution": 0.09
+   },
+   {
+    "feature": "n_unparseable",
+    "label": "1 criterion could not be parsed (E6: unable to swallow oral medication)",
+    "value": 1.0,
+    "contribution": -0.04
+   }
+  ],
+  "model_version": "fixture"
+ }
+]

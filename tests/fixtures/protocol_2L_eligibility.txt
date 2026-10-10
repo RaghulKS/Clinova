@@ -1,0 +1,26 @@
+Inclusion Criteria:
+
+* Age >= 18 years at the time of signing informed consent.
+* Histologically or cytologically confirmed non-small cell lung cancer (NSCLC), stage IIIB, IIIC or IV (AJCC 8th edition), not amenable to curative surgery or radiotherapy.
+* Radiographic disease progression on or after one prior platinum-based chemotherapy regimen and one prior anti-PD-1 or anti-PD-L1 antibody, given in combination or sequentially, for advanced or metastatic disease.
+* No more than 2 prior lines of systemic therapy for advanced or metastatic disease.
+* At least one measurable lesion according to RECIST version 1.1.
+* Eastern Cooperative Oncology Group (ECOG) performance status of 0 or 1.
+* Life expectancy of at least 3 months.
+* Adequate organ function within 14 days before the first dose of study treatment:
+  * Absolute neutrophil count >= 1.5 x 10^9/L (1,500/mm3)
+  * Platelets >= 100 x 10^9/L (100,000/mm3)
+  * Hemoglobin >= 9.0 g/dL (90 g/L); transfusion is allowed if given at least 14 days before the first dose
+  * Creatinine clearance >= 60 mL/min (Cockcroft-Gault)
+  * AST and ALT <= 2.5 x upper limit of normal (ULN), or <= 5 x ULN for patients with liver metastases
+  * Total bilirubin <= 1.5 x ULN
+* Able to understand and willing to sign a written informed consent document.
+
+Exclusion Criteria:
+
+* Untreated or symptomatic central nervous system metastases. Patients with previously treated brain metastases are eligible if radiologically stable for at least 4 weeks and off corticosteroids.
+* Active autoimmune disease that has required systemic treatment in the past 2 years.
+* History of interstitial lung disease or non-infectious pneumonitis that required steroids, or current pneumonitis.
+* Active infection requiring systemic therapy, including known uncontrolled HIV infection, active hepatitis B or hepatitis C.
+* Pregnant or breastfeeding, or planning to become pregnant during the study.
+* Unable to swallow oral medication.

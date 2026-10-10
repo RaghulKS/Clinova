@@ -1,0 +1,173 @@
+[
+ {
+  "fix_id": "FIXTURE-2L-001-fix-fastest",
+  "trial_id": "FIXTURE-2L-001",
+  "label": "fastest",
+  "summary": "Consider widening creatinine clearance to >= 45 mL/min and allowing ECOG 2; this is predicted to enroll fastest.",
+  "edits": [
+   {
+    "kind": "relax_rule",
+    "target_id": "I12",
+    "new_value": 45,
+    "new_operator": null
+   },
+   {
+    "kind": "relax_rule",
+    "target_id": "I7",
+    "new_value": 2,
+    "new_operator": null
+   }
+  ],
+  "delta_enroll": 0.38,
+  "delta_dropout": 0.03,
+  "delta_diversity": 0.05,
+  "delta_p_amend": -0.14,
+  "ranges": {
+   "delta_enroll": {
+    "low": 0.29,
+    "high": 0.47
+   },
+   "delta_dropout": {
+    "low": 0.01,
+    "high": 0.05
+   },
+   "delta_diversity": {
+    "low": 0.02,
+    "high": 0.07
+   },
+   "delta_p_amend": {
+    "low": -0.2,
+    "high": -0.08
+   }
+  },
+  "dollar_value": 19740.0,
+  "precedents": [
+   {
+    "nct_id": "NCT99990012",
+    "title": "FICTIONAL: Phase 2 docetaxel combination in previously treated NSCLC",
+    "distance": 0.11,
+    "detail": "allowed CrCl >= 45 mL/min; COMPLETED with 97% of target"
+   },
+   {
+    "nct_id": "NCT99990027",
+    "title": "FICTIONAL: Randomized phase 2 of an oral add-on to docetaxel after immunotherapy",
+    "distance": 0.14,
+    "detail": "allowed ECOG 0-2; COMPLETED with 91% of target"
+   }
+  ]
+ },
+ {
+  "fix_id": "FIXTURE-2L-001-fix-lowest-dropout",
+  "trial_id": "FIXTURE-2L-001",
+  "label": "lowest_dropout",
+  "summary": "Consider letting the Cycle 1 Day 8 bloods be drawn at a local lab and moving the week-9 scan to the Cycle 4 Day 1 visit; this is predicted to lose the fewest patients.",
+  "edits": [
+   {
+    "kind": "make_remote",
+    "target_id": "3",
+    "new_value": null,
+    "new_operator": null
+   },
+   {
+    "kind": "merge_visits",
+    "target_id": "6",
+    "new_value": null,
+    "new_operator": null
+   }
+  ],
+  "delta_enroll": 0.07,
+  "delta_dropout": -0.09,
+  "delta_diversity": 0.02,
+  "delta_p_amend": -0.02,
+  "ranges": {
+   "delta_enroll": {
+    "low": 0.02,
+    "high": 0.12
+   },
+   "delta_dropout": {
+    "low": -0.13,
+    "high": -0.05
+   },
+   "delta_diversity": {
+    "low": 0.0,
+    "high": 0.04
+   },
+   "delta_p_amend": {
+    "low": -0.05,
+    "high": 0.01
+   }
+  },
+  "dollar_value": 2820.0,
+  "precedents": [
+   {
+    "nct_id": "NCT99990041",
+    "title": "FICTIONAL: Phase 2 second-line NSCLC study with local-lab safety bloods",
+    "distance": 0.18,
+    "detail": "allowed Day 8 bloods at a local lab; COMPLETED with 104% of target"
+   },
+   {
+    "nct_id": "NCT99990058",
+    "title": "FICTIONAL: Phase 3 docetaxel combination with imaging on treatment days",
+    "distance": 0.22,
+    "detail": "scheduled tumor scans on treatment days; COMPLETED with 99% of target"
+   }
+  ]
+ },
+ {
+  "fix_id": "FIXTURE-2L-001-fix-balanced",
+  "trial_id": "FIXTURE-2L-001",
+  "label": "balanced",
+  "summary": "Consider widening creatinine clearance to >= 45 mL/min and allowing local-lab bloods on Cycle 1 Day 8; this balances faster enrollment with fewer dropouts.",
+  "edits": [
+   {
+    "kind": "relax_rule",
+    "target_id": "I12",
+    "new_value": 45,
+    "new_operator": null
+   },
+   {
+    "kind": "make_remote",
+    "target_id": "3",
+    "new_value": null,
+    "new_operator": null
+   }
+  ],
+  "delta_enroll": 0.24,
+  "delta_dropout": -0.04,
+  "delta_diversity": 0.04,
+  "delta_p_amend": -0.09,
+  "ranges": {
+   "delta_enroll": {
+    "low": 0.17,
+    "high": 0.31
+   },
+   "delta_dropout": {
+    "low": -0.07,
+    "high": -0.01
+   },
+   "delta_diversity": {
+    "low": 0.01,
+    "high": 0.06
+   },
+   "delta_p_amend": {
+    "low": -0.14,
+    "high": -0.05
+   }
+  },
+  "dollar_value": 12690.0,
+  "precedents": [
+   {
+    "nct_id": "NCT99990012",
+    "title": "FICTIONAL: Phase 2 docetaxel combination in previously treated NSCLC",
+    "distance": 0.11,
+    "detail": "allowed CrCl >= 45 mL/min; COMPLETED with 97% of target"
+   },
+   {
+    "nct_id": "NCT99990041",
+    "title": "FICTIONAL: Phase 2 second-line NSCLC study with local-lab safety bloods",
+    "distance": 0.18,
+    "detail": "allowed Day 8 bloods at a local lab; COMPLETED with 104% of target"
+   }
+  ]
+ }
+]
