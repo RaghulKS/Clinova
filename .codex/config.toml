@@ -1,0 +1,9 @@
+# Project-scoped Codex settings (applied when you trust this folder).
+approval_policy = "never"
+sandbox_mode = "workspace-write"
+
+[sandbox_workspace_write]
+network_access = true
+
+[agents]
+max_concurrent_threads_per_session = 6

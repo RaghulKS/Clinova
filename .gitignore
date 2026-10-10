@@ -1,0 +1,19 @@
+# secrets
+tiger-cloud-db-*-credentials.txt
+.env
+.env.*
+!.env.example
+# orchestration working dirs
+.worktrees/
+.data/
+.orch/
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+# misc
+.DS_Store
+logs/
