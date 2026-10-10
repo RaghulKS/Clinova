@@ -113,20 +113,22 @@ def df_to_rules(df: pd.DataFrame, original: list[CriteriaRule]) -> tuple[list[Cr
             unit = str(row["Unit"]).strip() or None
             if unit is None and field != ClinicalField.other and field in FIELD_SPECS:
                 unit = FIELD_SPECS[field].unit
-            status_ok = field != ClinicalField.other and (base.parse_status == "ok" or field != base.field or value != base.value)
-            out.append(
-                base.model_copy(
-                    update={
-                        "locked": bool(row["Lock"]),
-                        "field": field,
-                        "operator": operator,
-                        "value": value,
-                        "unit": unit,
-                        "parse_status": "ok" if status_ok else "unparseable",
-                        "note": base.note if not status_ok else None,
-                    }
-                )
-            )
+            unchanged = (field, operator, value, unit) == (base.field, base.operator, base.value, base.unit)
+            if unchanged:
+                update = {"locked": bool(row["Lock"])}
+            else:
+                # An edited row is re-judged: a known field makes it parseable and clears the old note.
+                ok = field != ClinicalField.other
+                update = {
+                    "locked": bool(row["Lock"]),
+                    "field": field,
+                    "operator": operator,
+                    "value": value,
+                    "unit": unit,
+                    "parse_status": "ok" if ok else "unparseable",
+                    "note": None if ok else base.note,
+                }
+            out.append(base.model_copy(update=update))
             CriteriaRule.model_validate(out[-1].model_dump())
         except (ValueError, KeyError) as exc:
             if out and out[-1].rule_id == rid:

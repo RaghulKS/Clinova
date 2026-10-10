@@ -65,6 +65,8 @@ def run(url: str, out: Path) -> None:
 
         # NCT flow with the backtest reveal
         page.set_viewport_size(WIDE)
+        page.get_by_text("1. Your protocol").click()  # the input box collapses once a protocol is loaded
+        page.wait_for_timeout(600)
         page.get_by_text("Load a registered trial").click()
         page.wait_for_timeout(800)
         page.get_by_label("NCT ID").fill("NCT99999901")
@@ -73,10 +75,14 @@ def run(url: str, out: Path) -> None:
         page.get_by_text("Review the parsed criteria").wait_for(timeout=30000)
         page.get_by_role("button", name="Run Clinova").click()
         page.get_by_text("What happened next").wait_for(timeout=60000)
-        _shot(page, out, "05-backtest-reveal", tall=True)
+        _idle(page)
+        page.set_viewport_size(WIDE)
+        page.get_by_text("What happened next").scroll_into_view_if_needed()
+        page.evaluate("window.scrollBy(0, 0)")
+        _shot(page, out, "05-backtest-reveal")
 
         page.set_viewport_size(WIDE)
-        for i, (tab, name) in enumerate(
+        for tab, name in (
             [("Validation", "06-validation"), ("Replay", "07-replay"), ("Community Pulse", "08-pulse"), ("Audit log", "09-audit")]
         ):
             _open_tab(page, tab)
