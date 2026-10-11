@@ -13,7 +13,7 @@ from clinova.app import charts, fmt, theme
 from clinova.app import reveal as rv
 from clinova.app.client import ApiClient, ApiError
 from clinova.app.fmt import money, pct, signed_pct, signed_pts
-from clinova.app.rules_table import rule_in_words
+from clinova.app.rules_table import OPERATOR_SYMBOL, rule_in_words, value_to_text
 from clinova.app.theme import esc
 from clinova.contracts import (
     BacktestResult,
@@ -55,7 +55,9 @@ def edit_in_words(edit: Edit, protocol: ParsedProtocol) -> str:
         what = f"{edit.target_id} ({rule_in_words(rule)})" if rule else edit.target_id
         if edit.kind == "drop_rule":
             return f"Drop {what}"
-        to = f"{edit.new_operator.value} {edit.new_value}" if edit.new_operator else f"{edit.new_value}"
+        val = value_to_text(edit.new_value)
+        unit = f" {rule.unit}" if rule is not None and rule.unit and not isinstance(edit.new_value, list) else ""
+        to = f"{OPERATOR_SYMBOL[edit.new_operator.value]} {val}{unit}" if edit.new_operator else f"{val}{unit}"
         return f"Relax {what} to {to}"
     visit = visits.get(edit.target_id)
     name = f"visit {edit.target_id} ({visit.name})" if visit else f"visit {edit.target_id}"
@@ -364,7 +366,7 @@ def _change(bv: float | None, av: float | None, key: str, kind: str) -> tuple[st
         return "", ""
     d = av - bv
     text = f"{d:+.2f}" if kind == "index" else signed_pts(d)
-    if abs(d) < 1e-9:
+    if abs(d) < (0.005 if kind == "index" else 0.0005):  # below the shown precision
         return "no change", ""
     better = (d > 0) == (key in _HIGHER_BETTER)
     return text, "better" if better else "worse"
