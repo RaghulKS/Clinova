@@ -24,7 +24,9 @@ def _main_root() -> Path:
     """Main clone root (parent of the shared .git dir); REPO_ROOT when git is unavailable (e.g. Docker)."""
     try:
         out = subprocess.run(
-            ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
+            # Scoped trust: a worktree created by another OS user must still find the main clone (T24).
+            ["git", "-c", f"safe.directory={REPO_ROOT.as_posix()}",
+             "rev-parse", "--path-format=absolute", "--git-common-dir"],
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
@@ -65,6 +67,9 @@ class Settings(BaseSettings):
     # Default is the local docker-compose TimescaleDB. Never log this value.
     DATABASE_URL: SecretStr | None = SecretStr("postgresql://postgres:postgres@localhost:5432/clinova")
     DATA_DIR: Path = MAIN_ROOT / ".data"
+    MODELS_DIR: Path = MAIN_ROOT / "models"  # T22 model bundles (models/<version>/bundle.joblib), gitignored
+    # Served bundle. Falls back to the newest bundle when this version is not on disk.
+    MODEL_VERSION: str | None = "v1.0"
     SEED: int = 42
     DEMO_NCT_ID: str | None = "NCT03232892"  # G1 pick, see docs/demo_trial.md; backups NCT03417882, NCT06333678
     SKIP_MIROFISH: bool = False

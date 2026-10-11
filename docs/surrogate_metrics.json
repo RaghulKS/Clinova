@@ -1,0 +1,24 @@
+{
+ "observed_decisions": 2695,
+ "trials": 5,
+ "registered_trials": 1,
+ "fixture_trials": 4,
+ "simulator_versions": [
+  "gemini-3.5-flash-lite/agents-v1",
+  "gemini-3.5-flash-lite/agents-v2"
+ ],
+ "training_trials": 4,
+ "held_out_trials": 1,
+ "held_out_decisions": 200,
+ "held_out_trial_ids": [
+  "FIXTURE-T14-heavy"
+ ],
+ "enrollment_accuracy": 0.685,
+ "enrollment_majority_baseline": 0.515,
+ "dropout_accuracy_conditional": 0.5145631067961165,
+ "dropout_majority_baseline_conditional": 0.5631067961165048,
+ "score_1000_median_ms": 7.454899838194251,
+ "score_1000_p95_ms": 12.568154954351483,
+ "score_1000_max_ms": 14.118800405412912,
+ "note": "Grouped trial holdout includes synthetic fixture protocols; this is agreement with synthetic Gemini decisions, not clinical outcome accuracy or validation on a broad registered-trial cohort. Final fit uses all observed eligible first-version decisions with frozen protocol snapshots, including historical prompt versions."
+}

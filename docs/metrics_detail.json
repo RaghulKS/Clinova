@@ -1,0 +1,111 @@
+{
+ "model_version": "v1.0",
+ "generated_at": "2026-10-11T04:44:32.596506+00:00",
+ "n_boot": 1000,
+ "bootstrap_seed": 0,
+ "targets": {
+  "accrual_fail": {
+   "n_test": 359,
+   "n_pos": 34,
+   "auc": 0.7010859728506788,
+   "baseline_auc": 0.6605429864253394,
+   "auc_diff_vs_baseline": {
+    "value": 0.04054298642533938,
+    "ci_low": -0.03602244642939791,
+    "ci_high": 0.1158119801145296
+   },
+   "brier": 0.0827264574773474,
+   "baseline_brier": 0.08406123693283175,
+   "train_prevalence": 0.09883720930232558,
+   "brier_constant_train_prevalence": 0.08575506070434821,
+   "sponsor_only": {
+    "auc": 0.6685067873303168,
+    "brier": 0.08255079539319189,
+    "auc_diff_model_minus_sponsor": {
+     "value": 0.032579185520361986,
+     "ci_low": -0.031227692966073035,
+     "ci_high": 0.08866390389883304
+    },
+    "brier_diff_model_minus_sponsor": 0.000175662084155509
+   },
+   "served_p_max": 0.21826113918459633,
+   "by_start_period": {
+    "2018-2019": {
+     "n": 143,
+     "pos": 12,
+     "auc": 0.6043256997455471,
+     "baseline_auc": 0.6507633587786259
+    },
+    "2020+": {
+     "n": 216,
+     "pos": 22,
+     "auc": 0.7497656982193065,
+     "baseline_auc": 0.6619025304592315
+    }
+   }
+  },
+  "shortfall": {
+   "n_test": 353,
+   "n_pos": 192,
+   "auc": 0.5976805124223602,
+   "baseline_auc": 0.6049430641821947,
+   "auc_diff_vs_baseline": {
+    "value": -0.007262551759834479,
+    "ci_low": -0.049543067856692755,
+    "ci_high": 0.03172282696081258
+   },
+   "brier": 0.2517696043985752,
+   "baseline_brier": 0.24825484656988628,
+   "train_prevalence": 0.44814340588988477,
+   "brier_constant_train_prevalence": 0.2572430848722865,
+   "sponsor_only": {
+    "auc": 0.5735798395445134,
+    "brier": 0.2578522797120598,
+    "auc_diff_model_minus_sponsor": {
+     "value": 0.024100672877846785,
+     "ci_low": -0.01702999159919791,
+     "ci_high": 0.06678245688968092
+    },
+    "brier_diff_model_minus_sponsor": -0.006082675313484609
+   },
+   "served_p_max": 0.7074806335992605,
+   "by_start_period": {
+    "2018-2019": {
+     "n": 141,
+     "pos": 58,
+     "auc": 0.6333610303282095,
+     "baseline_auc": 0.6618196925633568
+    },
+    "2020+": {
+     "n": 212,
+     "pos": 134,
+     "auc": 0.5638633754305395,
+     "baseline_auc": 0.5643895905089934
+    }
+   }
+  },
+  "amend": {
+   "note": "amend: no model (0 positive / 22 negative labeled training trials (< 5))."
+  }
+ },
+ "hit_rate": {
+  "n_amended_test": 0,
+  "n_evaluated": 0,
+  "hits": 0,
+  "excluded": {
+   "first_version_not_parsed": 0,
+   "amended_version_not_parsed": 0,
+   "no_widened_field": 0,
+   "no_flaggable_rules": 0
+  },
+  "conditional_on": "both versions parsed, a widened field, and flaggable first-version rules"
+ },
+ "coverage": {
+  "parsed_rules": 0.21388888888888888,
+  "embedding": 0.3861111111111111,
+  "first-registration_sites": 0.5555555555555556,
+  "simulation": 0.019444444444444445,
+  "n_test_trials": 360,
+  "n_test_labeled": 360
+ }
+}

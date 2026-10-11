@@ -251,6 +251,19 @@ CREATE TABLE IF NOT EXISTS feedback (
 );
 SELECT create_hypertable('feedback', by_range('created_at', INTERVAL '1 month'), if_not_exists => TRUE);
 
+-- audit_log (T21): every prediction joined to explicit feedback on it; unrelated feedback stays a row of its own
+CREATE OR REPLACE VIEW audit_log AS
+SELECT COALESCE(f.created_at, p.predicted_at) AS event_at,
+       COALESCE(f.trial_id, p.trial_id) AS trial_id,
+       p.prediction_id, p.model_version, p.target, p.p, p.ci_low, p.ci_high,
+       p.context, p.predicted_at,
+       f.feedback_id, f.user_name, f.target_type, f.target_id, f.decision,
+       f.rating, f.comment, f.created_at
+FROM predictions p
+FULL OUTER JOIN feedback f
+  ON f.target_type = 'prediction' AND f.target_id = p.prediction_id
+ AND (f.trial_id IS NULL OR f.trial_id = p.trial_id);
+
 -- fixes (T23): proposed protocol edits and their simulated effect
 CREATE TABLE IF NOT EXISTS fixes (
     fix_id     text PRIMARY KEY,
