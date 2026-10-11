@@ -8,6 +8,8 @@ Test-fly a lung cancer trial protocol on virtual patients, then check its operat
 
 **Research prototype. Clinova advises; the protocol author decides.** No real patient data. The demo combines a real registered trial, synthetic patients, cached Gemini responses and frozen model outputs. Its risk model missed the demo's accrual failure; the criterion review is useful to inspect, but has no validated hit rate.
 
+https://drive.google.com/file/d/1twg-7hpCcHy3oSuuvKfL2yZwuOLrsLxL/view?usp=sharing
+
 ## Try the demo
 
 Install [Docker with Compose](https://docs.docker.com/compose/install/) and Git, then run:
