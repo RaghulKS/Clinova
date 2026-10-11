@@ -330,7 +330,8 @@ def knn_distance(vec: np.ndarray, ref: Mapping[str, Any], exclude: str | None = 
 
 def fit_ref(raw_train: pd.DataFrame, embeddings: Mapping[str, np.ndarray] | None = None,
             protocols: Mapping[str, ParsedProtocol] | None = None) -> dict[str, Any]:
-    """Learn everything that must come from the training split only."""
+    """Medians, embedding PCA and kNN distances from the training rows only; relax ladders from
+    every first-version protocol given (thresholds are protocol text, not outcomes)."""
     from sklearn.decomposition import PCA
 
     medians = {c: float(raw_train[c].median()) for c in THRESHOLDS if c in raw_train and raw_train[c].notna().any()}
@@ -343,12 +344,11 @@ def fit_ref(raw_train: pd.DataFrame, embeddings: Mapping[str, np.ndarray] | None
         ref["train_emb"], ref["train_emb_ids"] = mat, ids
         dists = [knn_distance(mat[j], ref, exclude=i) for j, i in enumerate(ids)]
         ref["knn_p50"], ref["knn_p90"] = float(np.percentile(dists, 50)), float(np.percentile(dists, 90))
-    # Relax ladders: numeric thresholds other training trials actually used, plus integer steps
-    # for small-range fields (ECOG, prior lines).
+    # Relax ladders: numeric thresholds other NSCLC trials actually used in their first version (any
+    # trial in ``protocols``: protocol text, no outcomes), plus integer steps for ECOG and prior lines.
     vals: dict[str, set] = {}
-    for nid in raw_train.index:
-        p = (protocols or {}).get(nid)
-        for r in p.rules if p else []:
+    for p in (protocols or {}).values():
+        for r in p.rules:
             if r.parse_status == "ok" and FIELD_SPECS[r.field].kind == "numeric":
                 for v in r.value if isinstance(r.value, list) else [r.value]:
                     if isinstance(v, (int, float)) and not isinstance(v, bool):

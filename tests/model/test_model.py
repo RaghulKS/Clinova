@@ -163,3 +163,24 @@ def test_metric_helpers():
     assert len(bins) == 10 and sum(b.n for b in bins) == 200
     assert all(b.mean_pred is None or b.bin_low <= b.mean_pred <= b.bin_high for b in bins)
 
+
+def test_hit_rate_counts_widened_field_in_top_flags(parsed_protocol, cohort, monkeypatch):
+    from clinova.contracts import CriterionFlag
+
+    amended = parsed_protocol.model_copy(update={"version_no": 1, "rules": [
+        r.model_copy(update={"value": 2}) if r.rule_id == "I7" else r for r in parsed_protocol.rules]})  # ECOG 0-1 -> 0-2
+    monkeypatch.setattr(F, "load_protocols", lambda ids, v=0: {ids[0]: parsed_protocol if v == 0 else amended})
+    monkeypatch.setattr(F, "screen_cohort", lambda: cohort)
+
+    def flags(rid, field):
+        return lambda p, k, bundle: [CriterionFlag(rule_id=rid, field=field, rank=1, where="w", why="y", what_to_do="t",
+                                                   delta_p=0.1)]
+
+    df = pd.DataFrame({"split": ["test"], "label_amend": [True]}, index=["NCT99999901"])
+    monkeypatch.setattr(P, "flag_criteria", flags("I7", "ecog"))
+    hr, _ = E.hit_rate({}, df)
+    assert (hr.n_trials, hr.hit_rate) == (1, 1.0)
+    assert 0 < hr.random_baseline < 1 and hr.marginal_baseline in (0.0, 1.0)
+    monkeypatch.setattr(P, "flag_criteria", flags("I12", "crcl_ml_min"))
+    assert E.hit_rate({}, df)[0].hit_rate == 0.0
+

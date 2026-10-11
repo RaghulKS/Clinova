@@ -177,7 +177,7 @@ def plot_reliability(metrics: list[TargetMetrics], path: Path) -> None:
         ax.set_xlabel("Mean predicted probability", color=INK, fontsize=10)
         ax.set_ylabel("Observed share", color=INK, fontsize=10)
         ax.set_title(f"{m.target.value}: Brier {m.brier:.3f}, n={m.n_test} test trials", color=INK, fontsize=11, loc="left")
-        ax.legend(frameon=False, fontsize=9, labelcolor=INK, loc="upper left")
+        ax.legend(frameon=False, fontsize=9, labelcolor=INK, loc="lower right")
     fig.tight_layout()
     fig.savefig(path, dpi=130, facecolor=SURFACE)
     plt.close(fig)
@@ -205,9 +205,9 @@ def plot_shap_importance(bundle: Mapping[str, Any], X: pd.DataFrame, target: str
     ax.barh(labels, vals, color=BLUE, height=0.6)
     for i, v in enumerate(vals):
         ax.text(v, i, f" {v:.2f}", va="center", fontsize=8, color=INK2)
-    ax.set_xlabel("Mean |SHAP| (log-odds), test split", color=INK, fontsize=10)
-    ax.set_title(f"What drives predicted {target.replace('_', ' ')} risk ({bundle['version']})", color=INK, fontsize=11, loc="left")
-    fig.tight_layout()
+    ax.set_xlabel(f"Mean |SHAP| (log-odds) on the test split, model {bundle['version']}", color=INK, fontsize=10)
+    fig.tight_layout(rect=(0, 0, 1, 0.94))
+    fig.text(0.01, 0.98, f"What drives predicted {target.replace('_', ' ')} risk", color=INK, fontsize=12, va="top")
     fig.savefig(path, dpi=130, facecolor=SURFACE)
     plt.close(fig)
     return rows

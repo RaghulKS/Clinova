@@ -64,7 +64,13 @@ def main(argv: list[str] | None = None) -> int:
     elif a.cmd == "evaluate":
         _evaluate(a.version)
     else:
-        last_lab, sim_done = 0, False
+        from clinova.model.train import load_bundle
+
+        try:  # resume from the latest bundle instead of retraining at once
+            b = load_bundle()
+            last_lab, sim_done = b["n_train"]["accrual_fail"]["n"], b["use_sim"]
+        except FileNotFoundError:
+            last_lab, sim_done = 0, False
         while True:
             n_sim, n_lab = _counts()
             print(f"{time.strftime('%Y-%m-%dT%H:%M:%S')} simulated={n_sim} labeled_train={n_lab}", flush=True)
