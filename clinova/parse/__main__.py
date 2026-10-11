@@ -13,7 +13,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from clinova.common.db import get_conn
 from clinova.contracts import ParsedProtocol, Phase
 
-WORKERS = 8
+WORKERS = 4  # shared Gemini key: stay polite
 
 
 def _todo(versions: str, limit: int | None) -> list[tuple]:
