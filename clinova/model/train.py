@@ -44,7 +44,7 @@ FIRST_VERSION_FEATURES = [
     "iv_other", "log_planned_enrollment", "n_sites", "n_countries", "us_share", "sponsor_industry", "sponsor_gov",
     "age_min", "age_max", "visit_count", "visit_hours", "visit_invasive", "visit_travel",
 ]
-BASELINE_FEATURES = [  # ten interpretable features for the logistic baseline
+BASELINE_FEATURES = [  # up to ten interpretable features for the logistic baseline (those in the feature set)
     "phase_num", "log_planned_enrollment", "n_arms", "randomized", "sponsor_industry",
     "n_rules", "n_unparseable", "text_len", "visit_hours", "screen_eligible_frac",
 ]
@@ -190,7 +190,16 @@ def models_of(bundle: Mapping[str, Any], target: str) -> list:
 
 def draws(bundle: Mapping[str, Any], target: str, X: pd.DataFrame) -> np.ndarray:
     """Calibrated probabilities from the main and every bootstrap model, shape (models, rows)."""
-    return np.stack([calibrated(bundle, target, X, m) for m in models_of(bundle, target)])
+    X = X.reindex(columns=bundle["feature_names"]).astype(float)
+    key = (bundle["version"], bundle["created_at"], target, X.shape, X.to_numpy().tobytes())
+    if key not in _DRAWS:
+        if len(_DRAWS) > 4096:  # ponytail: crude bound; the optimizer re-scores identical feature rows
+            _DRAWS.clear()
+        _DRAWS[key] = np.stack([calibrated(bundle, target, X, m) for m in models_of(bundle, target)])
+    return _DRAWS[key].copy()
+
+
+_DRAWS: dict[tuple, np.ndarray] = {}
 
 
 def predict_p(bundle: Mapping[str, Any], target: str, X: pd.DataFrame) -> np.ndarray:

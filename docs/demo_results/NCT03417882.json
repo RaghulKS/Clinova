@@ -1,0 +1,152 @@
+{
+ "trial_id": "NCT03417882",
+ "model_version": "v1.0",
+ "scores": [
+  {
+   "target": "accrual_fail",
+   "p": 0.05310725239488715,
+   "ci_low": 0.0,
+   "ci_high": 0.07534246575342465,
+   "confidence": "low",
+   "top_drivers": [
+    {
+     "feature": "sponsor_industry",
+     "label": "Industry sponsor: 1",
+     "value": 1.0,
+     "contribution": -0.8222539210196194
+    },
+    {
+     "feature": "visit_hours",
+     "label": "On-site hours in the first 12 months: 138",
+     "value": 138.5,
+     "contribution": 0.19067510957801798
+    },
+    {
+     "feature": "n_countries",
+     "label": "Countries at first registration: not stated",
+     "value": null,
+     "contribution": -0.1611270189883737
+    },
+    {
+     "feature": "iv_drug",
+     "label": "Drug intervention: 0",
+     "value": 0.0,
+     "contribution": 0.13877507654871998
+    }
+   ],
+   "model_version": "v1.0"
+  },
+  {
+   "target": "shortfall",
+   "p": 0.5719707210492707,
+   "ci_low": 0.3644859813084112,
+   "ci_high": 0.6057347670250897,
+   "confidence": "low",
+   "top_drivers": [
+    {
+     "feature": "text_len",
+     "label": "Length of the eligibility text (characters): 9,729",
+     "value": 9729.0,
+     "contribution": 0.3215806753025472
+    },
+    {
+     "feature": "sponsor_industry",
+     "label": "Industry sponsor: 1",
+     "value": 1.0,
+     "contribution": -0.2642282750613315
+    },
+    {
+     "feature": "randomized",
+     "label": "Randomized: 0",
+     "value": 0.0,
+     "contribution": 0.16148072070821215
+    },
+    {
+     "feature": "iv_drug",
+     "label": "Drug intervention: 0",
+     "value": 0.0,
+     "contribution": 0.13600203180661513
+    }
+   ],
+   "model_version": "v1.0"
+  },
+  {
+   "target": "amend",
+   "p": 0.5,
+   "ci_low": 0.0,
+   "ci_high": 1.0,
+   "confidence": "low",
+   "top_drivers": [
+    {
+     "feature": "no_model",
+     "label": "No amend model yet (0 positive / 22 negative labeled training trials (< 5)): this 50% is a placeholder, not a prediction.",
+     "value": null,
+     "contribution": 0.0
+    }
+   ],
+   "model_version": "v1.0"
+  }
+ ],
+ "flags": [
+  {
+   "rule_id": "I5",
+   "field": "ecog",
+   "rank": 1,
+   "where": "Inclusion I5: Have an Eastern Cooperative Oncology Group (ECOG) performance status of 0 or 1;",
+   "why": "On its own it excludes 35% of virtual NSCLC patients; dropping it would make 353 of 2000 newly eligible. The model predicts no drop in accrual-failure risk from relaxing it; ranked by its exclusion share.",
+   "what_to_do": "Consider ECOG <= 2 instead, a cutoff other NSCLC trials used, if safety allows.",
+   "delta_p": 0.0,
+   "suggested_edit": {
+    "kind": "relax_rule",
+    "target_id": "I5",
+    "new_value": 2,
+    "new_operator": null
+   }
+  },
+  {
+   "rule_id": "I9",
+   "field": "hemoglobin",
+   "rank": 2,
+   "where": "Inclusion I9: Hemoglobin \u2265 9 g/dL",
+   "why": "On its own it excludes 7% of virtual NSCLC patients; dropping it would make 44 of 2000 newly eligible. The model predicts no drop in accrual-failure risk from relaxing it; ranked by its exclusion share.",
+   "what_to_do": "Consider Hemoglobin >= 8.5 g/dL instead, a cutoff other NSCLC trials used, if safety allows.",
+   "delta_p": 0.0,
+   "suggested_edit": {
+    "kind": "relax_rule",
+    "target_id": "I9",
+    "new_value": 8.5,
+    "new_operator": null
+   }
+  },
+  {
+   "rule_id": "E11",
+   "field": "cardiac_condition",
+   "rank": 3,
+   "where": "Exclusion E11: History of myocardial infarction, unstable angina, cardiac or other vascular stenting, angioplasty, or surgery within 6 months prior to day 1 of study treatment",
+   "why": "On its own it excludes 6% of virtual NSCLC patients; dropping it would make 56 of 2000 newly eligible. The model predicts no drop in accrual-failure risk from removing it; ranked by its exclusion share.",
+   "what_to_do": "Consider removing this criterion, or state in the protocol why it is needed.",
+   "delta_p": 0.0,
+   "suggested_edit": {
+    "kind": "drop_rule",
+    "target_id": "E11",
+    "new_value": null,
+    "new_operator": null
+   }
+  }
+ ],
+ "test_percentiles": {
+  "accrual_fail": {
+   "all_test": 0.265,
+   "among_positives": 0.029,
+   "observed_label": 1
+  },
+  "shortfall": {
+   "all_test": 0.742,
+   "among_positives": 0.651,
+   "observed_label": 1
+  }
+ },
+ "sponsor_removed_fields": [],
+ "sponsor_removed_in_top3_flags": null,
+ "elapsed_s": 0.89
+}

@@ -14,6 +14,8 @@ import json
 import time
 from pathlib import Path
 
+import pandas as pd
+
 from clinova.model.features import load_protocols
 from clinova.model.predict import flag_criteria, score
 from clinova.optimize.__main__ import main as optimize_main
@@ -30,7 +32,10 @@ OUT = Path(__file__).resolve().parents[1] / "docs" / "demo_results"
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--model-version", default=None)
+    ap.add_argument("--skip-optimize", action="store_true", help="Refresh scores and flags only.")
     a = ap.parse_args()
+    # Where each served p sits among the frozen test predictions (G2 review: show ranks, not "high risk").
+    pred = pd.read_csv(OUT.parent / "predictions.csv", dtype={"nct_id": str})
     OUT.mkdir(parents=True, exist_ok=True)
     protocols = load_protocols(TRIALS)
     for nct in TRIALS:
@@ -43,6 +48,12 @@ def main() -> None:
             "trial_id": nct, "model_version": scores[0].model_version if scores else None,
             "scores": [s.model_dump(mode="json") for s in scores],
             "flags": [f.model_dump(mode="json") for f in flags],
+            "test_percentiles": {
+                s.target.value: {"all_test": round(float((g.p_model < s.p).mean()), 3),
+                                 "among_positives": round(float((g[g.label == 1].p_model < s.p).mean()), 3),
+                                 "observed_label": (int(g[g.nct_id == nct].label.iloc[0])
+                                                    if (g.nct_id == nct).any() else None)}
+                for s in scores if len(g := pred[pred.target == s.target.value])},
             "sponsor_removed_fields": changed,
             "sponsor_removed_in_top3_flags": sorted(set(changed) & set(fields)) if changed else None,
             "elapsed_s": round(time.perf_counter() - t0, 2),
@@ -50,7 +61,8 @@ def main() -> None:
         (OUT / f"{nct}.json").write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8")
         print(nct, json.dumps({"p": [round(s.p, 3) for s in scores], "flags": fields,
                                "hit": report["sponsor_removed_in_top3_flags"]}), flush=True)
-        optimize_main(["--trial", nct, "--output", str(OUT / f"{nct}_optimize.json")])
+        if not a.skip_optimize:
+            optimize_main(["--trial", nct, "--output", str(OUT / f"{nct}_optimize.json")])
 
 
 if __name__ == "__main__":

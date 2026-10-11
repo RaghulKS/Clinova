@@ -1,0 +1,157 @@
+{
+ "trial_id": "NCT03232892",
+ "model_version": "v1.0",
+ "scores": [
+  {
+   "target": "accrual_fail",
+   "p": 0.07206008639905503,
+   "ci_low": 0.05882798304058147,
+   "ci_high": 0.11728395061728394,
+   "confidence": "low",
+   "top_drivers": [
+    {
+     "feature": "text_len",
+     "label": "Length of the eligibility text (characters): 7,690",
+     "value": 7690.0,
+     "contribution": -0.5909183485306646
+    },
+    {
+     "feature": "sponsor_industry",
+     "label": "Industry sponsor: 0",
+     "value": 0.0,
+     "contribution": 0.5268945095500496
+    },
+    {
+     "feature": "log_planned_enrollment",
+     "label": "Planned enrollment 27 patients",
+     "value": 3.332204510175204,
+     "contribution": -0.3064220813043329
+    },
+    {
+     "feature": "visit_hours",
+     "label": "On-site hours in the first 12 months: 55",
+     "value": 55.0,
+     "contribution": -0.1499958530626264
+    }
+   ],
+   "model_version": "v1.0"
+  },
+  {
+   "target": "shortfall",
+   "p": 0.6659151346976531,
+   "ci_low": 0.5793010752688172,
+   "ci_high": 1.0,
+   "confidence": "low",
+   "top_drivers": [
+    {
+     "feature": "sponsor_industry",
+     "label": "Industry sponsor: 0",
+     "value": 0.0,
+     "contribution": 0.26760157047624916
+    },
+    {
+     "feature": "text_len",
+     "label": "Length of the eligibility text (characters): 7,690",
+     "value": 7690.0,
+     "contribution": 0.2546219491584533
+    },
+    {
+     "feature": "n_sites",
+     "label": "Sites at first registration: not stated",
+     "value": null,
+     "contribution": 0.149505967939381
+    },
+    {
+     "feature": "log_planned_enrollment",
+     "label": "Planned enrollment 27 patients",
+     "value": 3.332204510175204,
+     "contribution": 0.13559832466336028
+    }
+   ],
+   "model_version": "v1.0"
+  },
+  {
+   "target": "amend",
+   "p": 0.5,
+   "ci_low": 0.0,
+   "ci_high": 1.0,
+   "confidence": "low",
+   "top_drivers": [
+    {
+     "feature": "no_model",
+     "label": "No amend model yet (0 positive / 22 negative labeled training trials (< 5)): this 50% is a placeholder, not a prediction.",
+     "value": null,
+     "contribution": 0.0
+    }
+   ],
+   "model_version": "v1.0"
+  }
+ ],
+ "flags": [
+  {
+   "rule_id": "I3",
+   "field": "prior_platinum",
+   "rank": 1,
+   "where": "Inclusion I3: one of which must have been platinum (carboplatin or cisplatin) doublet chemotherapy",
+   "why": "On its own it excludes 63% of virtual NSCLC patients; dropping it would make 357 of 2000 newly eligible. The model predicts no drop in accrual-failure risk from removing it; ranked by its exclusion share.",
+   "what_to_do": "Consider removing this criterion, or state in the protocol why it is needed.",
+   "delta_p": 0.0,
+   "suggested_edit": {
+    "kind": "drop_rule",
+    "target_id": "I3",
+    "new_value": null,
+    "new_operator": null
+   }
+  },
+  {
+   "rule_id": "I6",
+   "field": "ecog",
+   "rank": 2,
+   "where": "Inclusion I6: Eastern Cooperative Oncology Group (ECOG) performance status of 0 to 1.",
+   "why": "On its own it excludes 35% of virtual NSCLC patients; dropping it would make 76 of 2000 newly eligible. The model predicts no drop in accrual-failure risk from relaxing it; ranked by its exclusion share.",
+   "what_to_do": "Consider ECOG <= 2 instead, a cutoff other NSCLC trials used, if safety allows.",
+   "delta_p": 0.0,
+   "suggested_edit": {
+    "kind": "relax_rule",
+    "target_id": "I6",
+    "new_value": 2,
+    "new_operator": null
+   }
+  },
+  {
+   "rule_id": "I1",
+   "field": "histology",
+   "rank": 3,
+   "where": "Inclusion I1: non-squamous, NSCLC",
+   "why": "On its own it excludes 30% of virtual NSCLC patients; dropping it would make 95 of 2000 newly eligible. The model predicts no drop in accrual-failure risk from removing it; ranked by its exclusion share.",
+   "what_to_do": "Consider removing this criterion, or state in the protocol why it is needed.",
+   "delta_p": 0.0,
+   "suggested_edit": {
+    "kind": "drop_rule",
+    "target_id": "I1",
+    "new_value": null,
+    "new_operator": null
+   }
+  }
+ ],
+ "test_percentiles": {
+  "accrual_fail": {
+   "all_test": 0.499,
+   "among_positives": 0.235,
+   "observed_label": 1
+  },
+  "shortfall": {
+   "all_test": 0.977,
+   "among_positives": 0.964,
+   "observed_label": 1
+  }
+ },
+ "sponsor_removed_fields": [
+  "prior_platinum",
+  "cardiac_condition"
+ ],
+ "sponsor_removed_in_top3_flags": [
+  "prior_platinum"
+ ],
+ "elapsed_s": 2.4
+}

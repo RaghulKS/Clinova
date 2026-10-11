@@ -240,6 +240,28 @@ def plot_shap_importance(bundle: Mapping[str, Any], X: pd.DataFrame, target: str
 # ---------------------------------------------------------------------------------------------
 
 
+def _auc_or_none(y: np.ndarray, p: np.ndarray) -> float | None:
+    return float(roc_auc_score(y, p)) if 0 < y.sum() < len(y) else None
+
+
+def _reference_checks(train_rows: pd.DataFrame, test: pd.DataFrame, pred: pd.DataFrame, label: str, q: float) -> dict:
+    """G2 second review: a one-feature reference (train label rate of industry vs other sponsors) and
+    test AUC by start period (2018-2019 starts are the least affected by 'ended trials only' censoring)."""
+    y, p, pb = (pred[c].to_numpy() for c in ("label", "p_model", "p_baseline"))
+    tr = train_rows[train_rows[label].notna()]
+    rate = tr[label].astype(float).groupby(tr["sponsor_industry"].fillna(-1)).mean()
+    ps = test.loc[pred["nct_id"], "sponsor_industry"].fillna(-1).map(rate).fillna(q).to_numpy(dtype=float)
+    year = pd.to_datetime(pred["start_date"]).dt.year.to_numpy()
+    periods = {}
+    for name, mk in (("2018-2019", year <= 2019), ("2020+", year >= 2020)):
+        periods[name] = {"n": int(mk.sum()), "pos": int(y[mk].sum()), "auc": _auc_or_none(y[mk], p[mk]),
+                         "baseline_auc": _auc_or_none(y[mk], pb[mk])}
+    return {"sponsor_only": {"auc": _auc_or_none(y, ps), "brier": float(np.mean((y - ps) ** 2)),
+                             "auc_diff_model_minus_sponsor": paired_diff_ci(y, p, ps).model_dump(),
+                             "brier_diff_model_minus_sponsor": float(np.mean((y - p) ** 2) - np.mean((y - ps) ** 2))},
+            "served_p_max": float(p.max()), "by_start_period": periods}
+
+
 def evaluate(bundle: Mapping[str, Any], df: pd.DataFrame, *, out_dir: Path | None = None, with_hit_rate: bool = True,
              with_ablation: bool = True) -> ValidationMetrics:
     """Metrics for ``bundle`` on the test rows of ``df`` (features built with the bundle's ref).
@@ -269,6 +291,7 @@ def evaluate(bundle: Mapping[str, Any], df: pd.DataFrame, *, out_dir: Path | Non
                              "auc_diff_vs_baseline": paired_diff_ci(y, p, pb).model_dump(), "brier": m.brier,
                              "baseline_brier": m.baseline_brier, "train_prevalence": q,
                              "brier_constant_train_prevalence": float(np.mean((y - q) ** 2))}
+            per_target[t] |= _reference_checks(train_rows, test, pred, LABELS[t], q)
         if note:
             notes.append(note)
             per_target.setdefault(t, {"note": note})

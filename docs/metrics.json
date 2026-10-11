@@ -1,40 +1,40 @@
 {
  "model_version": "v1.0",
- "generated_at": "2026-10-11T04:36:15.204757Z",
+ "generated_at": "2026-10-11T04:44:32.596506Z",
  "split_date": "2018-01-01",
- "n_train": 1417,
- "n_test": 355,
+ "n_train": 1424,
+ "n_test": 360,
  "targets": [
   {
    "target": "accrual_fail",
-   "n_test": 354,
+   "n_test": 359,
    "n_pos": 34,
    "auc": {
-    "value": 0.7049632352941176,
-    "ci_low": 0.6299195139152035,
-    "ci_high": 0.7783580901856764
+    "value": 0.7010859728506788,
+    "ci_low": 0.6234740409308932,
+    "ci_high": 0.7739021388817245
    },
    "baseline_auc": {
-    "value": 0.66875,
-    "ci_low": 0.6005098875052618,
-    "ci_high": 0.7330272937979538
+    "value": 0.6605429864253394,
+    "ci_low": 0.5934327268372507,
+    "ci_high": 0.7233020787336866
    },
-   "brier": 0.083712155403728,
-   "baseline_brier": 0.08478632547880866,
+   "brier": 0.0827264574773474,
+   "baseline_brier": 0.08406123693283175,
    "reliability": [
     {
      "bin_low": 0.0,
      "bin_high": 0.1,
-     "mean_pred": 0.059104878034683485,
-     "frac_pos": 0.06938775510204082,
-     "n": 245
+     "mean_pred": 0.059380128868213165,
+     "frac_pos": 0.06882591093117409,
+     "n": 247
     },
     {
      "bin_low": 0.1,
      "bin_high": 0.2,
-     "mean_pred": 0.14253120247097006,
-     "frac_pos": 0.13541666666666666,
-     "n": 96
+     "mean_pred": 0.1419831546041535,
+     "frac_pos": 0.13131313131313133,
+     "n": 99
     },
     {
      "bin_low": 0.2,
@@ -96,20 +96,20 @@
   },
   {
    "target": "shortfall",
-   "n_test": 348,
-   "n_pos": 190,
+   "n_test": 353,
+   "n_pos": 192,
    "auc": {
-    "value": 0.6004830113257829,
-    "ci_low": 0.5433254295085566,
-    "ci_high": 0.6541492865340339
+    "value": 0.5976805124223602,
+    "ci_low": 0.5377748162637274,
+    "ci_high": 0.6546937434557876
    },
    "baseline_auc": {
-    "value": 0.6083944037308461,
-    "ci_low": 0.5442561518141619,
-    "ci_high": 0.6648945404846336
+    "value": 0.6049430641821947,
+    "ci_low": 0.553905883459633,
+    "ci_high": 0.6608609339230066
    },
-   "brier": 0.2515127643798909,
-   "baseline_brier": 0.2478784589161848,
+   "brier": 0.2517696043985752,
+   "baseline_brier": 0.24825484656988628,
    "reliability": [
     {
      "bin_low": 0.0,
@@ -149,16 +149,16 @@
     {
      "bin_low": 0.5,
      "bin_high": 0.6000000000000001,
-     "mean_pred": 0.5581578121524973,
-     "frac_pos": 0.5375,
-     "n": 80
+     "mean_pred": 0.5585109392718193,
+     "frac_pos": 0.524390243902439,
+     "n": 82
     },
     {
      "bin_low": 0.6000000000000001,
      "bin_high": 0.7000000000000001,
-     "mean_pred": 0.629888440449244,
-     "frac_pos": 0.8113207547169812,
-     "n": 53
+     "mean_pred": 0.6300591551389346,
+     "frac_pos": 0.8035714285714286,
+     "n": 56
     },
     {
      "bin_low": 0.7000000000000001,
@@ -192,7 +192,7 @@
   "amend: no model (0 positive / 22 negative labeled training trials (< 5)).",
   "Hit rate not computed: no test trials with label_amend yet (version histories not loaded).",
   "Simulation ablation not computed: 16 simulated trials, 8 labeled in train and 7 labeled in test (7 positive); needs >= 10 of each with both classes.",
-  "Feature coverage on test: parsed rules 22%, embedding 39%, first-registration sites 55%; missing features are NaN, not imputed.",
+  "Feature coverage on test: parsed rules 21%, embedding 39%, first-registration sites 56%; missing features are NaN, not imputed.",
   "Simulation features were not used (fewer than 300 simulated trials).",
   "Features (19): first-registration JSON only (design, operations, visit estimate, text length). Rule, screen and embedding features were left out because only trials already parsed or embedded have them and that processing order tracks the outcome; see docs/gate2_report.md.",
   "Data were still loading when this ran: numbers will move as more trials are labeled. Re-run `python -m clinova.model train && python -m clinova.model evaluate`."

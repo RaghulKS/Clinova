@@ -9,6 +9,7 @@ from __future__ import annotations
 import math
 import re
 from collections.abc import Mapping, Sequence
+from functools import lru_cache
 from typing import Any
 
 import numpy as np
@@ -43,16 +44,23 @@ def _context(protocol_or_trial: ParsedProtocol | str) -> tuple[ParsedProtocol | 
     protocol = None if isinstance(protocol_or_trial, str) else protocol_or_trial
     trials, emb, sim = pd.DataFrame({"nct_id": [pid], "first_version": [{}]}), {}, pd.DataFrame(columns=F.SIM_COLS)
     if _NCT.match(pid):
-        found = F.load_trials([pid], splits=None)
+        found, emb, sim, stored = _stored(pid)
         if len(found):
             trials = found
         elif protocol is None:
             raise LookupError(f"{pid} is not in the trials table")
-        emb = F.load_embeddings([pid])
-        sim = F.load_sim_features([pid])
         if protocol is None:
-            protocol = F.load_protocols([pid]).get(pid)  # None: never parsed, rules features stay NaN
+            protocol = stored  # None: never parsed, rules features stay NaN
     return protocol, trials, emb, sim
+
+
+# ponytail: per-process cache of a registered trial's first-version rows (immutable) and stored sim
+# features (can grow); the optimizer scores hundreds of edited variants of one trial. Call
+# _stored.cache_clear() after new simulations if a long-running process must see them.
+@lru_cache(maxsize=256)
+def _stored(pid: str):
+    return (F.load_trials([pid], splits=None), F.load_embeddings([pid]), F.load_sim_features([pid]),
+            F.load_protocols([pid]).get(pid))
 
 
 def _frame(bundle: Mapping[str, Any], trials: pd.DataFrame, variants: Mapping[str, ParsedProtocol | None],
