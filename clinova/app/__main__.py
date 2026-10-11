@@ -9,7 +9,14 @@ from pathlib import Path
 
 def main(argv: list[str] | None = None) -> int:
     entry = Path(__file__).with_name("main.py")  # T15 creates clinova/app/main.py
-    return subprocess.call([sys.executable, "-m", "streamlit", "run", str(entry), *(argv or sys.argv[1:])])
+    theme = [
+        "--theme.base=light",
+        "--theme.primaryColor=#0B6E78",
+        "--theme.backgroundColor=#F5F7F9",
+        "--theme.secondaryBackgroundColor=#ECF0F3",
+        "--theme.textColor=#1D2733",
+    ]
+    return subprocess.call([sys.executable, "-m", "streamlit", "run", str(entry), *theme, *(argv or sys.argv[1:])])
 
 
 if __name__ == "__main__":
