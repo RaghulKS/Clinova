@@ -1,0 +1,199 @@
+{
+ "model_version": "v0.202610110350",
+ "generated_at": "2026-10-11T03:51:48.319875Z",
+ "split_date": "2018-01-01",
+ "n_train": 164,
+ "n_test": 187,
+ "targets": [
+  {
+   "target": "accrual_fail",
+   "n_test": 186,
+   "n_pos": 34,
+   "auc": {
+    "value": 0.7128482972136222,
+    "ci_low": 0.6047029467764594,
+    "ci_high": 0.8059154170120469
+   },
+   "baseline_auc": {
+    "value": 0.6836300309597524,
+    "ci_low": 0.5720167523448775,
+    "ci_high": 0.788680304400241
+   },
+   "brier": 0.1974281571165118,
+   "baseline_brier": 0.13358814792527535,
+   "reliability": [
+    {
+     "bin_low": 0.0,
+     "bin_high": 0.1,
+     "mean_pred": 0.06107630222861936,
+     "frac_pos": 0.08571428571428572,
+     "n": 35
+    },
+    {
+     "bin_low": 0.1,
+     "bin_high": 0.2,
+     "mean_pred": 0.14621412703204828,
+     "frac_pos": 0.09090909090909091,
+     "n": 11
+    },
+    {
+     "bin_low": 0.2,
+     "bin_high": 0.30000000000000004,
+     "mean_pred": 0.25989191851838833,
+     "frac_pos": 0.1111111111111111,
+     "n": 18
+    },
+    {
+     "bin_low": 0.30000000000000004,
+     "bin_high": 0.4,
+     "mean_pred": 0.34772411593522246,
+     "frac_pos": 0.06451612903225806,
+     "n": 31
+    },
+    {
+     "bin_low": 0.4,
+     "bin_high": 0.5,
+     "mean_pred": 0.4427091145400417,
+     "frac_pos": 0.24,
+     "n": 25
+    },
+    {
+     "bin_low": 0.5,
+     "bin_high": 0.6000000000000001,
+     "mean_pred": 0.5571004145873516,
+     "frac_pos": 0.08695652173913043,
+     "n": 23
+    },
+    {
+     "bin_low": 0.6000000000000001,
+     "bin_high": 0.7000000000000001,
+     "mean_pred": 0.6423669421193765,
+     "frac_pos": 0.391304347826087,
+     "n": 23
+    },
+    {
+     "bin_low": 0.7000000000000001,
+     "bin_high": 0.8,
+     "mean_pred": 0.7418141390957509,
+     "frac_pos": 0.46153846153846156,
+     "n": 13
+    },
+    {
+     "bin_low": 0.8,
+     "bin_high": 0.9,
+     "mean_pred": 0.8359375977988724,
+     "frac_pos": 0.42857142857142855,
+     "n": 7
+    },
+    {
+     "bin_low": 0.9,
+     "bin_high": 1.0,
+     "mean_pred": null,
+     "frac_pos": null,
+     "n": 0
+    }
+   ]
+  },
+  {
+   "target": "shortfall",
+   "n_test": 185,
+   "n_pos": 121,
+   "auc": {
+    "value": 0.6313274793388429,
+    "ci_low": 0.5498951690821257,
+    "ci_high": 0.7083776075948415
+   },
+   "baseline_auc": {
+    "value": 0.5609504132231405,
+    "ci_low": 0.47557967828332104,
+    "ci_high": 0.641510077572413
+   },
+   "brier": 0.22844516565201617,
+   "baseline_brier": 0.27012550612303204,
+   "reliability": [
+    {
+     "bin_low": 0.0,
+     "bin_high": 0.1,
+     "mean_pred": 0.09672191893858761,
+     "frac_pos": 1.0,
+     "n": 1
+    },
+    {
+     "bin_low": 0.1,
+     "bin_high": 0.2,
+     "mean_pred": 0.1556336210488174,
+     "frac_pos": 0.0,
+     "n": 2
+    },
+    {
+     "bin_low": 0.2,
+     "bin_high": 0.30000000000000004,
+     "mean_pred": 0.25604897114522773,
+     "frac_pos": 0.7142857142857143,
+     "n": 7
+    },
+    {
+     "bin_low": 0.30000000000000004,
+     "bin_high": 0.4,
+     "mean_pred": 0.3626629930642964,
+     "frac_pos": 0.5833333333333334,
+     "n": 24
+    },
+    {
+     "bin_low": 0.4,
+     "bin_high": 0.5,
+     "mean_pred": 0.4475199460503176,
+     "frac_pos": 0.5365853658536586,
+     "n": 41
+    },
+    {
+     "bin_low": 0.5,
+     "bin_high": 0.6000000000000001,
+     "mean_pred": 0.5546204078205962,
+     "frac_pos": 0.5666666666666667,
+     "n": 30
+    },
+    {
+     "bin_low": 0.6000000000000001,
+     "bin_high": 0.7000000000000001,
+     "mean_pred": 0.6559899368257177,
+     "frac_pos": 0.631578947368421,
+     "n": 38
+    },
+    {
+     "bin_low": 0.7000000000000001,
+     "bin_high": 0.8,
+     "mean_pred": 0.7367737290531895,
+     "frac_pos": 0.9375,
+     "n": 16
+    },
+    {
+     "bin_low": 0.8,
+     "bin_high": 0.9,
+     "mean_pred": 0.8465072789548154,
+     "frac_pos": 0.85,
+     "n": 20
+    },
+    {
+     "bin_low": 0.9,
+     "bin_high": 1.0,
+     "mean_pred": 0.9281508986097627,
+     "frac_pos": 1.0,
+     "n": 6
+    }
+   ]
+  }
+ ],
+ "hit_rate": null,
+ "ablation": null,
+ "notes": [
+  "accrual_fail: trained on 146 labeled train trials (21 positive); time-ordered tuning fit 70 / validated 76 (val AUC 0.662), out-of-fold AUC 0.763.",
+  "shortfall: trained on 129 labeled train trials (61 positive); time-ordered tuning fit 55 / validated 74 (val AUC 0.74), out-of-fold AUC 0.674.",
+  "amend: no model (0 positive / 1 negative labeled training trials (< 5)).",
+  "Hit rate not computed: no test trials with label_amend yet (version histories not loaded).",
+  "Simulation ablation not computed: 11 simulated trials, 4 labeled in train and 7 labeled in test (7 positive); needs >= 10 of each with both classes.",
+  "Feature coverage on test: parsed rules 41%, embedding 74%, first-registration sites 48%; missing features are NaN, not imputed.",
+  "Simulation features were not used (fewer than 300 simulated trials); screen features on a fixed virtual cohort were.",
+  "Data were still loading when this ran: numbers will move as more trials are labeled. Re-run `python -m clinova.model train && python -m clinova.model evaluate`."
+ ]
+}
