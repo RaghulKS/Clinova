@@ -161,8 +161,10 @@ class RunManager:
         self._set(run_id, stage=name, progress=len(done) / len(PIPELINE), message=f"Running {name}")
         try:
             value = live_fn()
-        except _FALLBACK_ERRORS as exc:
-            log.info("stage %s: fixture fallback (%s)", name, exc)
+        except (*_FALLBACK_ERRORS, ImportError, OSError) as exc:
+            # ImportError / OSError: the engine cannot load on this machine (a missing native library such as
+            # libomp for LightGBM, or a model bundle that was never trained here). Same labelled fixture path.
+            log.info("stage %s: fixture fallback (%s: %s)", name, type(exc).__name__, exc)
             state["fixture"].append(name)
             time.sleep(stage_delay())
             value = fixture_fn()

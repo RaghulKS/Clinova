@@ -268,7 +268,7 @@ def accept_fix(req: AcceptRequest) -> AcceptResponse:
         )
     except ValueError as exc:  # a locked or unknown target: the edit cannot be applied
         raise HTTPException(422, str(exc)) from exc
-    except _FALLBACK_ERRORS as exc:
+    except (*_FALLBACK_ERRORS, ImportError, OSError) as exc:  # OSError: engine cannot load here (see runs._stage)
         log.info("quick re-run unavailable (%s); using the optimizer estimate", exc)
     try:
         after_protocol = apply_edits_local(result.protocol, fix.edits)
