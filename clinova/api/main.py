@@ -7,6 +7,7 @@ Clinova advises protocol authors; nothing here approves a protocol.
 
 from __future__ import annotations
 
+import csv
 import importlib
 import logging
 import re
@@ -15,7 +16,8 @@ import uuid
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 
 from clinova.api import fallbacks, live, quick
 from clinova.api.audit import MEMORY
@@ -79,6 +81,16 @@ app = FastAPI(
     description="Predicts where a draft NSCLC trial protocol may stall enrollment or lose patients. Advisory only.",
     lifespan=lifespan,
 )
+
+@app.exception_handler(Exception)
+async def _plain_500(request: Request, exc: Exception) -> JSONResponse:
+    """Never send a stack trace to the app: log it here, answer with one plain sentence."""
+    log.exception("unhandled error on %s %s", request.method, request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Clinova hit an internal error ({type(exc).__name__}) on {request.url.path}. Details are in the API log."},
+    )
+
 
 _FALLBACK_ERRORS = live.FALLBACK_ERRORS
 _NCT_RE = re.compile(r"^[A-Za-z0-9_-]{3,32}$")
@@ -257,7 +269,7 @@ def accept_fix(req: AcceptRequest) -> AcceptResponse:
         )
     except ValueError as exc:  # a locked or unknown target: the edit cannot be applied
         raise HTTPException(422, str(exc)) from exc
-    except _FALLBACK_ERRORS as exc:
+    except (*_FALLBACK_ERRORS, ImportError, OSError) as exc:  # OSError: engine cannot load here (see runs._stage)
         log.info("quick re-run unavailable (%s); using the optimizer estimate", exc)
     try:
         after_protocol = apply_edits_local(result.protocol, fix.edits)
@@ -270,7 +282,7 @@ def accept_fix(req: AcceptRequest) -> AcceptResponse:
         before=before_m,
         after=quick.estimate_after(before_m, fix),
         protocol=after_protocol,
-        source=Source.fixture,
+        source=status.source,  # the optimizer's own numbers: as real as the run they came from (basis says how)
         note="The re-run engine is not available, so the after column applies the optimizer's own estimates.",
     )
 
@@ -306,12 +318,30 @@ def audit() -> AuditResponse:
 # --- validation, replay, pulse ----------------------------------------------------------------------------
 
 
+def _test_predictions(model_version: str) -> dict[str, list[float]]:
+    """Sorted test-split probabilities per target from docs/predictions.csv (written by the evaluation)."""
+    path = _doc_file("docs/predictions.csv")
+    if path is None:
+        return {}
+    out: dict[str, list[float]] = {}
+    try:
+        with path.open(newline="", encoding="utf-8") as fh:
+            for row in csv.DictReader(fh):
+                if row.get("split") == "test" and row.get("model_version") == model_version and row.get("p_model"):
+                    out.setdefault(row["target"], []).append(float(row["p_model"]))
+    except (OSError, ValueError, KeyError) as exc:
+        log.warning("docs/predictions.csv unreadable: %s", type(exc).__name__)
+        return {}
+    return {k: sorted(v) for k, v in out.items()}
+
+
 @app.get("/validation", response_model=ValidationResponse)
 def validation() -> ValidationResponse:
     path = _doc_file("docs/metrics.json")
     if path is not None:
         try:
-            return ValidationResponse(metrics=ValidationMetrics.model_validate_json(path.read_bytes()), source=Source.live)
+            m = ValidationMetrics.model_validate_json(path.read_bytes())
+            return ValidationResponse(metrics=m, source=Source.live, test_p=_test_predictions(m.model_version))
         except ValueError as exc:
             log.warning("docs/metrics.json does not match the contract: %s", exc)
     return ValidationResponse(metrics=fallbacks.validation(), source=Source.fixture)

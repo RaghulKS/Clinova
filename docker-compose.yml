@@ -1,6 +1,23 @@
-# Placeholder local stack (owner: T00 until T31, which adds api, app, seed loading and profiles).
-# timescale/timescaledb-ha bundles pgvector; this tag matches the Tiger Cloud service
-# (PostgreSQL 18.6, TimescaleDB 2.30.2). Then: DATABASE_URL=postgresql://postgres:postgres@localhost:5432/clinova make db-apply
+# Clinova local stack (owner: T31). From a clean clone, with no .env and no API keys:
+#     docker compose up            # app at http://localhost:8501, API at http://localhost:8000
+# Demo mode: cached results only, no Gemini calls. db loads db/schema.sql and db/seed/ on first start (the
+# one-shot `seed` service); `docker compose down -v` forgets the data and the next `up` reseeds.
+# Against Tiger Cloud instead of the local db:  DATABASE_URL=postgres://... docker compose up api app
+# (run `make tiger-load` once first). Optional services stay off unless their profile is named:
+#     docker compose --profile loop run --rm loop         # outcome checker (needs live data, writes the ledger)
+#     docker compose --profile mirofish up mirofish       # T16 social simulation, cut from this build
+# timescale/timescaledb-ha bundles pgvector; the tag matches the Tiger Cloud service
+# (PostgreSQL 18.6, TimescaleDB 2.30.2).
+x-clinova: &clinova
+  build: .
+  image: clinova:local
+  environment: &clinova-env
+    CLINOVA_MODE: ${CLINOVA_MODE:-demo}
+    MODEL_VERSION: v1.0
+    DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@db:5432/clinova}
+    GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    CLINOVA_API_URL: http://api:8000
+
 services:
   db:
     image: timescale/timescaledb-ha:pg18.6-ts2.30.2
@@ -9,14 +26,68 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: clinova
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - dbdata:/home/postgres/pgdata
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d clinova"]
       interval: 5s
       timeout: 5s
-      retries: 20
+      retries: 30
+
+  seed:
+    <<: *clinova
+    command: ["python", "scripts/seed.py", "load"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    <<: *clinova
+    command: ["python", "-m", "clinova.api", "--host", "0.0.0.0"]
+    ports:
+      - "8000:8000"
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8000/health', timeout=4)"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+  app:
+    <<: *clinova
+    command: ["python", "-m", "clinova.app", "--server.port=8501", "--server.address=0.0.0.0", "--server.headless=true"]
+    ports:
+      - "8501:8501"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8501/_stcore/health', timeout=4)"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+  loop:
+    <<: *clinova
+    profiles: ["loop"]
+    command: ["python", "-m", "clinova.loop", "check"]
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+
+  mirofish:
+    # T16 was cut: ./mirofish does not exist in this build. The profile is the hook for a separate,
+    # unmodified MiroFish service (AGPL-3.0, never copied into this repo).
+    profiles: ["mirofish"]
+    build: ./mirofish
+    ports:
+      - "5001:5001"
 
 volumes:
   dbdata:

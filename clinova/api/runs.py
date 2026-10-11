@@ -16,7 +16,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
 
-from clinova.api import fallbacks, live
+from clinova.api import demo_cache, fallbacks, live
 from clinova.api.schemas import RunRequest
 from clinova.contracts import (
     CriteriaRule,
@@ -161,8 +161,10 @@ class RunManager:
         self._set(run_id, stage=name, progress=len(done) / len(PIPELINE), message=f"Running {name}")
         try:
             value = live_fn()
-        except _FALLBACK_ERRORS as exc:
-            log.info("stage %s: fixture fallback (%s)", name, exc)
+        except (*_FALLBACK_ERRORS, ImportError, OSError) as exc:
+            # ImportError / OSError: the engine cannot load on this machine (a missing native library such as
+            # libomp for LightGBM, or a model bundle that was never trained here). Same labelled fixture path.
+            log.info("stage %s: fixture fallback (%s: %s)", name, type(exc).__name__, exc)
             state["fixture"].append(name)
             time.sleep(stage_delay())
             value = fixture_fn()
@@ -178,9 +180,11 @@ class RunManager:
             log.exception("run %s failed", run_id)
             self._set(run_id, stage="failed", message=f"{type(exc).__name__}: {exc}")
             return
-        fixture = state["fixture"]
-        source = Source.fixture if fixture else Source.live
-        msg = "Done" if not fixture else f"Done. Fixture data used for: {', '.join(fixture)}."
+        fixture, cache = state["fixture"], state.get("cache", [])
+        source = Source.fixture if fixture else (Source.cache if cache else Source.live)
+        msg = "Done." if not fixture else f"Done. Fixture data used for: {', '.join(fixture)}."
+        if cache:
+            msg += " Risk, flags and fixes are the frozen v1.0 results computed for this exact protocol (docs/demo_results)."
         self._set(run_id, stage="done", stages_done=[*PIPELINE], progress=1.0, message=msg, source=source, result=result)
 
     def _pipeline(self, run_id: str, req: RunRequest, state: dict, context: str = "live") -> RunResult:
@@ -221,6 +225,14 @@ class RunManager:
         sims = self._stage(
             run_id, "agents", state, lambda: live.simulate(protocol, req.n_personas, seeds), lambda: fallbacks.sims(seeds)
         )
+        cached = None if req.edits else demo_cache.lookup(protocol)
+        if cached is not None:
+            # frozen v1.0 results for this exact protocol (docs/demo_results): no two-minute optimizer run
+            state["cache"] = ["score", "flags", "optimize"]
+            state["done"] += ["score", "flags", "optimize"]
+            for r in cached.risks:
+                self._log_prediction(protocol.trial_id, r, fixture=False, context=context)
+            return RunResult(protocol=protocol, funnel=funnel, sim=sims, risks=cached.risks, flags=cached.flags, fixes=cached.fixes)
         risks = self._stage(run_id, "score", state, lambda: live.score(protocol, sims), fallbacks.risks)
         for r in risks:
             self._log_prediction(protocol.trial_id, r, fixture="score" in state["fixture"], context=context)
@@ -240,6 +252,8 @@ class RunManager:
         While the ledger or database is unavailable the score goes to the in-memory audit instead."""
         from clinova.api.audit import MEMORY
 
+        if any(d.feature == "no_model" for d in risk.top_drivers):
+            return  # a placeholder (e.g. amendment with no model) is not a prediction; never log it as one
         ctx = "fixture" if fixture else context
         try:
             live._need_db()

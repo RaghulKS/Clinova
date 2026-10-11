@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
@@ -90,7 +91,8 @@ def test_charts_build_from_fixtures():
 
 
 def test_wording_helpers(parsed_protocol):
-    assert signed_pct(0.384) == "+38%" and signed_pts(-0.094) == "-9 pts" and money(19740) == "$19,740"
+    assert signed_pct(0.384) == "+38.4%" and signed_pts(-0.094) == "-9.4 pts" and money(19740) == "$20K"
+    assert signed_pct(0.38) == "+38%" and money(1_250_000) == "$1,250K" and money(400) == "<$1K" and money(0) == "$0"
     txt = edit_in_words(Edit(kind="relax_rule", target_id="I12", new_value=45), parsed_protocol)
     assert txt.startswith("Relax I12") and "45" in txt
     assert edit_in_words(Edit(kind="drop_rule", target_id="E1"), parsed_protocol).startswith("Drop E1")
@@ -133,7 +135,10 @@ def test_client_end_to_end_on_fixtures(api_client, parsed_protocol):
 def test_client_errors_are_plain(api_client):
     with pytest.raises(ApiError):
         api_client.backtest("NCT12345678")
-    dead = ApiClient("http://127.0.0.1:1")
+    def unavailable(request):
+        raise httpx.ConnectError("offline fixture", request=request)
+
+    dead = ApiClient("http://127.0.0.1:1", transport=httpx.MockTransport(unavailable))
     with pytest.raises(ApiError, match="Cannot reach"):
         dead.health()
 

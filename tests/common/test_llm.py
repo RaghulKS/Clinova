@@ -45,6 +45,7 @@ def fake(monkeypatch):
     models = FakeModels()
     monkeypatch.setattr(llm, "_cache_get", lambda keys: {k: cache[k] for k in keys if k in cache})
     monkeypatch.setattr(llm, "_cache_put", lambda rows: [cache.setdefault(r[0], r[4]) for r in rows])
+    monkeypatch.setattr(llm, "_cache_scan", lambda *a: [])
     monkeypatch.setattr(llm, "_usage_count", lambda fp: count["n"] + len(usage))
     monkeypatch.setattr(llm, "_usage_add", lambda *row: usage.append(row))
     monkeypatch.setattr(llm, "_client", lambda: SimpleNamespace(models=models))
@@ -63,6 +64,15 @@ def test_demo_miss_raises_and_never_builds_client(fake, monkeypatch):
     with pytest.raises(llm.CacheMiss, match="ns2"):
         llm.embed(["a"], namespace="ns2")
     assert fake.usage == []
+
+
+def test_demo_accepts_prompt_differing_only_in_float_noise(fake, monkeypatch):
+    _set_env(monkeypatch, CLINOVA_MODE="demo")
+    request = {"prompt": "crcl 97.91688470963422, age 59", "schema": "Answer", "seed": 7, "temperature": 0.2}
+    monkeypatch.setattr(llm, "_cache_scan", lambda *a: [(request, {"label": "yes", "score": 0.9})])
+    assert llm.generate_json("crcl 97.9168847096342, age 59", Answer, namespace="ns", seed=7).label == "yes"
+    with pytest.raises(llm.CacheMiss):  # a real difference is still a miss
+        llm.generate_json("crcl 97.9168847096342, age 60", Answer, namespace="ns", seed=7)
 
 
 def test_live_miss_calls_once_caches_and_records_usage(fake):

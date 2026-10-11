@@ -13,6 +13,7 @@ import os
 import time
 from typing import Any
 
+from clinova.common.config import get_settings
 from clinova.common.llm import BudgetExceeded, CacheMiss
 from clinova.contracts import Feedback, ParsedProtocol, Prediction, TrialRecord, VersionEvent
 
@@ -142,6 +143,12 @@ def flag_criteria(protocol):
 
 def optimize(protocol, max_edits=3):
     _need_db()  # edit space and precedents query the database (T23 contract change)
+    # demo mode: the real optimizer takes ~2 minutes per trial, so serve the frozen result (T31 contract change)
+    if get_settings().CLINOVA_MODE == "demo":
+        from clinova.api import demo_cache
+
+        if (cached := demo_cache.lookup(protocol)) is not None:
+            return cached.fixes
     from clinova.optimize.search import optimize as _optimize
 
     return _optimize(protocol, max_edits=max_edits)

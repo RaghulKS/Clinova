@@ -33,6 +33,25 @@ class ApiError(RuntimeError):
     """The API was unreachable or answered with an error; ``str(exc)`` is safe to show the author."""
 
 
+def _detail(r: httpx.Response) -> str:
+    """One readable sentence from an error response: FastAPI's ``detail`` string, or its list of
+    validation errors, never a raw body or a stack trace."""
+    try:
+        detail = r.json().get("detail")
+    except (ValueError, AttributeError):
+        detail = None
+    if isinstance(detail, list):  # request validation errors
+        parts = []
+        for d in detail[:3]:
+            if isinstance(d, dict):
+                where = ".".join(str(x) for x in d.get("loc", [])[1:])
+                parts.append(f"{where}: {d.get('msg', '')}" if where else str(d.get("msg", "")))
+        detail = "The request was not accepted (" + "; ".join(parts) + ")." if parts else None
+    if not detail:
+        detail = f"The Clinova API answered with an error (HTTP {r.status_code})."
+    return str(detail)
+
+
 class ApiClient:
     def __init__(self, base_url: str | None = None, *, timeout: float = 120.0, transport: httpx.BaseTransport | None = None):
         self.base_url = (base_url or os.environ.get("CLINOVA_API_URL") or DEFAULT_URL).rstrip("/")
@@ -45,11 +64,7 @@ class ApiClient:
         except httpx.HTTPError as exc:
             raise ApiError(f"Cannot reach the Clinova API at {self.base_url} ({type(exc).__name__}).") from exc
         if r.status_code >= 400:
-            try:
-                detail = r.json().get("detail", r.text)
-            except ValueError:
-                detail = r.text
-            raise ApiError(str(detail))
+            raise ApiError(_detail(r))
         return r.json()
 
     # -- routes

@@ -1,0 +1,80 @@
+{
+ "version": "v1.0",
+ "created_at": "2026-10-11T04:32:35.580133+00:00",
+ "feature_names": [
+  "text_len",
+  "phase_num",
+  "n_arms",
+  "randomized",
+  "masking_level",
+  "iv_drug",
+  "iv_biological",
+  "iv_radiation",
+  "iv_other",
+  "log_planned_enrollment",
+  "n_sites",
+  "n_countries",
+  "us_share",
+  "sponsor_industry",
+  "sponsor_gov",
+  "visit_count",
+  "visit_hours",
+  "visit_invasive",
+  "visit_travel"
+ ],
+ "baseline_features": [
+  "phase_num",
+  "log_planned_enrollment",
+  "n_arms",
+  "randomized",
+  "sponsor_industry",
+  "text_len",
+  "visit_hours"
+ ],
+ "use_sim": false,
+ "params": {
+  "accrual_fail": {
+   "num_leaves": 8,
+   "min_child_samples": 10,
+   "n_estimators": 300
+  },
+  "shortfall": {
+   "num_leaves": 8,
+   "min_child_samples": 10,
+   "n_estimators": 100
+  }
+ },
+ "tuning": {
+  "accrual_fail": {
+   "n_fit": 1144,
+   "n_val": 232,
+   "val_auc": 0.6917874396135266,
+   "tuned": true,
+   "oof_auc": 0.6586634250474382
+  },
+  "shortfall": {
+   "n_fit": 551,
+   "n_val": 230,
+   "val_auc": 0.6752971458853811,
+   "tuned": true,
+   "oof_auc": 0.6377991382167717
+  }
+ },
+ "n_train": {
+  "accrual_fail": {
+   "n": 1376,
+   "pos": 136
+  },
+  "shortfall": {
+   "n": 781,
+   "pos": 350
+  },
+  "amend": {
+   "n": 22,
+   "pos": 0
+  }
+ },
+ "skipped": {
+  "amend": "0 positive / 22 negative labeled training trials (< 5)"
+ }
+}

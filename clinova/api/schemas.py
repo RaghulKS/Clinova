@@ -94,6 +94,11 @@ class FeedbackResponse(Body):
 class ValidationResponse(Body):
     metrics: ValidationMetrics
     source: Source
+    test_p: dict[str, list[float]] = Field(
+        default_factory=dict,
+        description="Presentation only: served model probabilities of the held-out test trials per target, sorted "
+        "(docs/predictions.csv, same model version), so the app can place a score as a percentile.",
+    )
 
 
 class ReplayResponse(Body):
@@ -127,6 +132,9 @@ class Measures(Body):
 
     eligible_frac: float | None = Field(None, description="Share of virtual patients who pass the criteria.")
     enroll_rate: float | None = Field(None, description="Share of eligible virtual patients who enroll.")
+    enroll_speed: float | None = Field(
+        None, description="Share of screened virtual patients who would enroll (eligible_frac x enroll_rate); the optimizer's delta_enroll is relative to this."
+    )
     dropout_rate: float | None = Field(None, description="Share of enrolled who drop out before the last visit.")
     diversity_index: float | None = Field(None, description="1.0 matches the NSCLC reference population.")
     accrual_fail_p: float | None = None
