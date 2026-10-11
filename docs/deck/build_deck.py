@@ -87,11 +87,15 @@ class Facts:
         self.used_sources: set[str] = set()
         self.metrics = self._json("docs/metrics.json", reject_fixture=True)
         self.replay = self._json("docs/replay.json")
-        self.demo = self._json("docs/deck/data/demo.json")
+        self.detail = self._json("docs/metrics_detail.json")
         self.e2e = self._json("docs/gate1_e2e.json")
         self.arch = (ROOT / "docs/ARCHITECTURE.md").read_text()
         p = ROOT / "docs/demo_trial.md"
         self.demo_md = p.read_text() if p.exists() else ""
+        m = re.search(r"\*\*Selected: (NCT\d{8})\*\*", self.demo_md)
+        self.demo_nct = m.group(1) if m else None
+        self.demo = self._json(f"docs/demo_results/{self.demo_nct}.json") if self.demo_nct else None
+        self.demo_opt = self._json(f"docs/demo_results/{self.demo_nct}_optimize.json") if self.demo_nct else None
         self.tasks = sorted(glob.glob(str(ROOT / "orchestration/tasks/*.md")))
         self.repo_url = self._repo_url()
 
@@ -287,43 +291,67 @@ class Facts:
 
     # -- demo backtest ----------------------------------------------------------
     def demo_trial(self) -> dict:
+        """Demo trial facts: docs/demo_trial.md (selection), docs/demo_results/<nct>*.json (Gate 2 cached
+        score, flags and fixes)."""
         out: dict = {}
-        d = self.demo or {}
-        m = re.search(r"\*\*Selected: (NCT\d{8})\*\*", self.demo_md)
-        out["nct"] = d.get("nct_id") or (m.group(1) if m else self.ph("demo NCT"))
+        out["nct"] = self.demo_nct or self.ph("demo NCT")
         m = re.search(r'stop reason "([^"]+)".*?terminated (\d{4}-\d{2}-\d{2})', self.demo_md)
-        out["stop_reason"] = d.get("why_stopped") or (m.group(1) if m else self.ph("stop reason"))
-        out["terminated"] = d.get("terminated") or (m.group(2) if m else self.ph("termination date"))
+        out["stop_reason"] = m.group(1) if m else self.ph("stop reason")
+        out["terminated"] = m.group(2) if m else self.ph("termination date")
         if self.demo_md:
             self.src("docs/demo_trial.md")
-        # Funnel: prefer the deck's own demo.json, else the Gate 1 end-to-end run.
-        funnel = d.get("funnel")
-        if funnel:
-            self.src("docs/deck/data/demo.json")
-            out["eligible"] = self.pct(funnel["eligible_frac"], 1)
-            out["n_screened"] = f"{funnel['n_screened']:,}"
-            out["top_ex"] = funnel["top_exclusions"]
-            out["funnel_src"] = "docs/deck/data/demo.json"
-        elif self.e2e:
-            self.src("docs/gate1_e2e.json")
-            run = self.e2e["runs"][0]
-            out["eligible"] = self.pct(run["eligible_frac"], 1)
-            out["n_screened"] = f"{run['stages'][0]['remaining']:,}"
-            out["top_ex"] = run["top_exclusions"]
-            out["funnel_src"] = f"docs/gate1_e2e.json (seed {run['seed']})"
+        out["res_src"] = f"docs/demo_results/{self.demo_nct}.json"
+        out["opt_src"] = f"docs/demo_results/{self.demo_nct}_optimize.json"
+        d = self.demo
+        if d:
+            self.src(out["res_src"])
+            out["flags"] = sorted(d.get("flags") or [], key=lambda f: f["rank"]) or None
+            out["widened"] = d.get("sponsor_removed_fields") or []
+            out["widened_in_top3"] = d.get("sponsor_removed_in_top3_flags") or []
+            out["risk"] = {r["target"]: r for r in d.get("scores") or []}
+            out["pctl"] = d.get("test_percentiles") or {}
         else:
-            out["eligible"] = self.ph("eligible %")
-            out["n_screened"] = self.ph("screened")
-            out["top_ex"] = []
-            out["funnel_src"] = "missing"
-        out["widened"] = d.get("widened_fields") or None
-        if out["widened"] is None:
-            m = re.search(r"\(`(\w+)`\) was removed, and the [\w-]+ exclusion \(`(\w+)`\) was removed", self.demo_md)
-            out["widened"] = [m.group(1), m.group(2)] if m else []
-        out["flags"] = d.get("flags")  # list of CriterionFlag dicts, rank order
-        out["fixes"] = d.get("fixes")  # list of Fix dicts
-        out["risk"] = d.get("risk")  # RiskScores dict
+            out.update(flags=None, widened=[], widened_in_top3=[], risk={}, pctl={})
+        o = self.demo_opt
+        if o:
+            self.src(out["opt_src"])
+            out["fixes"] = o.get("fixes") or None
+            out["rules"] = {r["rule_id"]: r for r in (o.get("protocol") or {}).get("rules", [])}
+            out["n_seeds"] = str(len(o.get("cohort_seeds") or []))
+        else:
+            out.update(fixes=None, rules={}, n_seeds=self.ph("cohort seeds"))
         return out
+
+    def paired(self, target: str, which: str = "baseline") -> dict | None:
+        """Paired bootstrap AUC difference from docs/metrics_detail.json (model minus reference)."""
+        t = ((self.detail or {}).get("targets") or {}).get(target) or {}
+        if which == "sponsor":
+            v = (t.get("sponsor_only") or {}).get("auc_diff_model_minus_sponsor")
+        else:
+            v = t.get("auc_diff_vs_baseline")
+        if v:
+            self.src("docs/metrics_detail.json")
+        return v
+
+    def detail_target(self, target: str) -> dict:
+        return ((self.detail or {}).get("targets") or {}).get(target) or {}
+
+
+FIELD_WORDS = {
+    "prior_platinum": "Prior platinum therapy", "ecog": "ECOG performance status", "histology": "Non-squamous histology",
+    "crcl_ml_min": "Creatinine clearance", "bilirubin_x_uln": "Bilirubin", "cardiac_condition": "Cardiac exclusion",
+    "hemoglobin": "Hemoglobin", "stage": "Stage", "interstitial_lung_disease": "Interstitial lung disease",
+}
+
+
+SHORT_WORDS = {
+    "prior_platinum": "prior-platinum rule", "ecog": "ECOG", "histology": "histology rule", "crcl_ml_min": "CrCl",
+    "bilirubin_x_uln": "bilirubin rule", "cardiac_condition": "cardiac exclusion", "hemoglobin": "hemoglobin",
+}
+
+
+def field_words(f: str) -> str:
+    return FIELD_WORDS.get(f, f.replace("_", " ").capitalize())
 
 
 # ---------------------------------------------------------------------------
@@ -375,8 +403,11 @@ def chart_auc(F: Facts, path: Path, fixture: bool = False) -> bool:
     ax.axvline(0.5, color="#" + RULE, lw=2, ls="--", zorder=0)
     ax.text(0.505, -0.55, "chance", fontsize=15, color="#" + GREY, va="bottom")
     ax.set_yticks(range(len(rows)))
-    ax.set_yticklabels([f"{TARGET_NAMES.get(t['target'], t['target'])}\n(n={t['n_test']})" for t in reversed(rows)],
-                       fontsize=18)
+    def ylab(t):
+        g = None if fixture else F.paired(t["target"])
+        tag = "not validated" if g is not None and g["value"] <= 0 else f"n={t['n_test']}"
+        return f"{TARGET_NAMES.get(t['target'], t['target'])}\n({tag})"
+    ax.set_yticklabels([ylab(t) for t in reversed(rows)], fontsize=18)
     lo = min(min(t["auc"]["ci_low"], t["baseline_auc"]["ci_low"]) for t in rows)
     ax.set_xlim(max(0.0, min(0.45, lo - 0.03)), 1.0)
     ax.set_ylim(-0.6, len(rows) - 0.25)
@@ -506,28 +537,75 @@ def chart_replay(F: Facts, path: Path, fixture: bool = False) -> bool:
     return True
 
 
-def chart_exclusions(F: Facts, demo: dict, path: Path) -> bool:
-    """Marginal exclusion share per criterion on the demo trial; sponsor-widened fields in coral."""
-    rows = demo.get("top_ex") or []
+def flag_share(f: dict) -> float | None:
+    """Exclusion share stated in a flag's own 'why' text (written by model.predict.flag_criteria)."""
+    m = re.search(r"excludes (\d+(?:\.\d+)?)% of virtual", f.get("why", ""))
+    return float(m.group(1)) / 100 if m else None
+
+
+def chart_flags(F: Facts, demo: dict, path: Path) -> bool:
+    """Clinova's top 3 flags on the demo trial with each rule's exclusion share; the rule the sponsor
+    later removed is coral."""
+    flags = demo.get("flags") or []
+    rows = []
+    for f in flags[:3]:
+        share = flag_share(f)
+        if share is None:
+            return False
+        rows.append((f"#{f['rank']}  {field_words(f['field'])} ({f['rule_id']})", share,
+                     f["field"] in set(demo.get("widened") or [])))
     if not rows:
         return False
-    rows = rows[:6]
-    widened = set(demo.get("widened") or [])
-    fig, ax = plt.subplots(figsize=(7.6, 4.8))
-    labels = [re.sub(r"\s*\((?:I|E)\d+\)$", "", r["label"]) + f"  ({r['rule_id']})" for r in rows]
-    vals = [r["excluded_frac"] for r in rows]
-    cols = ["#" + (CORAL if r.get("field") in widened else TEAL) for r in rows]
+    fig, ax = plt.subplots(figsize=(7.6, 3.6))
     y = list(range(len(rows)))[::-1]
-    ax.barh(y, vals, color=cols, height=0.62)
-    for yi, v in zip(y, vals, strict=True):
-        ax.text(v + 0.006, yi, f"{100 * v:.0f}%", va="center", fontsize=18, color="#" + INK)
+    ax.barh(y, [r[1] for r in rows], color=["#" + (CORAL if r[2] else TEAL) for r in rows], height=0.6)
+    for yi, r in zip(y, rows, strict=True):
+        ax.text(r[1] + 0.012, yi, f"{100 * r[1]:.0f}%", va="center", fontsize=20, color="#" + INK, fontweight="bold")
     ax.set_yticks(y)
-    ax.set_yticklabels(labels, fontsize=16)
+    ax.set_yticklabels([r[0] for r in rows], fontsize=17)
     ax.tick_params(axis="y", length=0)
-    ax.set_xlim(0, max(vals) * 1.22)
+    ax.set_xlim(0, max(r[1] for r in rows) * 1.25)
     ax.xaxis.set_visible(False)
     ax.spines["left"].set_visible(False)
     ax.spines["bottom"].set_visible(False)
+    fig.tight_layout()
+    fig.savefig(path)
+    plt.close(fig)
+    return True
+
+
+def chart_auc_diff(F: Facts, path: Path) -> bool:
+    """Paired bootstrap AUC differences (model minus reference) with 95% CI, accrual failure."""
+    rows = []
+    a = F.paired("accrual_fail")
+    b = F.paired("accrual_fail", "sponsor")
+    if a:
+        rows.append(("vs logistic\nbaseline", a))
+    if b:
+        rows.append(("vs sponsor\ntype alone", b))
+    if not rows:
+        return False
+    fig, ax = plt.subplots(figsize=(7.0, 3.9))
+    for i, (_lab, d) in enumerate(rows):
+        y = len(rows) - 1 - i
+        ax.plot([d["ci_low"], d["ci_high"]], [y, y], color="#" + TEAL, lw=6, alpha=0.55, solid_capstyle="round")
+        ax.plot(d["value"], y, "o", ms=16, color="#" + TEAL)
+        ax.text(d["value"], y + 0.22, f"{d['value']:+.2f}", ha="center", fontsize=19, color="#" + TEAL,
+                fontweight="bold")
+        ax.text(d["ci_high"] + 0.008, y, f"[{d['ci_low']:+.2f}, {d['ci_high']:+.2f}]", va="center", fontsize=15,
+                color="#" + GREY)
+    ax.axvline(0, color="#" + CORAL, lw=2, ls="--")
+    ax.text(0.004, -0.55, "no gain", fontsize=14, color="#" + CORAL)
+    ax.set_yticks(range(len(rows)))
+    ax.set_yticklabels([r[0] for r in reversed(rows)], fontsize=17)
+    ax.tick_params(axis="y", length=0)
+    ax.tick_params(axis="x", labelsize=15)
+    lo = min(r[1]["ci_low"] for r in rows)
+    hi = max(r[1]["ci_high"] for r in rows)
+    ax.set_xlim(min(-0.05, lo - 0.02), hi + 0.13)
+    ax.set_ylim(-0.6, len(rows) - 0.3)
+    ax.spines["left"].set_visible(False)
+    ax.set_xlabel("Accrual-failure AUC gain, paired 95% CI", fontsize=16, color="#" + GREY)
     fig.tight_layout()
     fig.savefig(path)
     plt.close(fig)
@@ -714,7 +792,6 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
     C = F.counts()
     A = F.auc_line("accrual_fail")
     S = F.auc_line("shortfall")
-    AM = F.auc_line("amend")
     H = F.hit()
     AB = F.ablation()
     R = F.replay_summary()
@@ -729,11 +806,11 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
     has_hit = chart_hit(F, IMG / "hit_rate.png", fixture=fixture_charts)
     has_rel = chart_reliability(F, IMG / "reliability.png")
     has_replay = chart_replay(F, IMG / "replay_brier.png", fixture=fixture_charts)
-    has_excl = chart_exclusions(F, D, IMG / "demo_exclusions.png")
+    has_flags = chart_flags(F, D, IMG / "demo_flags.png")
+    has_diff = chart_auc_diff(F, IMG / "auc_gain.png")
     screens = ROOT / "docs" / "screens"
     crop_screen(screens / "03-results.png", IMG / "screen_results.png", aspect=16 / 9, y_frac=0.555)
     crop_screen(screens / "03-results.png", IMG / "screen_title.png", aspect=4 / 3, y_frac=0.585, width_frac=0.66)
-    crop_screen(screens / "04-fix-accepted.png", IMG / "screen_fix.png", aspect=4 / 3, y_frac=0.0)
 
     # 1 Title ------------------------------------------------------------------
     def d1(s):
@@ -866,71 +943,64 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
     # 5 Backtest ---------------------------------------------------------------------
     flags = D.get("flags")
     widened = D.get("widened") or []
-    hit_rank = None
-    if flags:
-        top3 = [f.get("field") for f in sorted(flags, key=lambda f: f["rank"])[:3]]
-        for i, fld in enumerate(top3):
-            if fld in widened and hit_rank is None:
-                hit_rank = i + 1
-        F.src("docs/deck/data/demo.json")
-    top = D["top_ex"][0] if D.get("top_ex") else None
-    top_label = (re.sub(r"\s*\((?:I|E)\d+\)$", "", top["label"]) if top else F.ph("top exclusion"))
-    top_pct = F.pct(top["excluded_frac"]) if top else F.ph("top exclusion %")
-    wid_names = ", ".join(w.replace("_", " ") for w in widened) if widened else F.ph("widened fields")
+    hit_flag = None
+    for f in (flags or [])[:3]:
+        if f["field"] in widened and hit_flag is None:
+            hit_flag = f
+    wid_names = ", ".join(field_words(w).lower() for w in widened) if widened else F.ph("sponsor-removed rule")
+    by_share = bool(flags) and all(abs(f.get("delta_p", 0.0)) < 1e-12 for f in flags[:3])
+    acc = (D.get("risk") or {}).get("accrual_fail")
+    acc_pctl = ((D.get("pctl") or {}).get("accrual_fail") or {}).get("all_test")
     if flags is None:
-        flag_line = f"Did our top 3 flags include the widened rule? {F.ph('demo flags (docs/deck/data/demo.json)')}"
-        bt_title = f"Backtest: from {D['nct']}'s first protocol, Clinova finds where enrollment stalls"
-    elif hit_rank:
-        flag_line = f"Our flag #{hit_rank} was a rule the sponsor later widened ({wid_names})"
-        bt_title = "Given only the original protocol, Clinova flagged the rule the sponsor later widened"
+        flag_line = f"Top 3 flags: {F.ph('demo flags')}"
+        bt_title = f"Backtest: Clinova reads {D['nct']}'s first registered protocol"
+    elif hit_flag:
+        share = flag_share(hit_flag)
+        flag_line = (f"Flag #{hit_flag['rank']}: {field_words(hit_flag['field']).lower()} ({hit_flag['rule_id']}), "
+                     f"the rule the sponsor later removed" + (f"; alone it excludes {F.pct(share)}" if share else ""))
+        bt_title = (f"Given only its first protocol, Clinova's flag #{hit_flag['rank']} was the rule the sponsor "
+                    "later removed")
     else:
-        flag_line = f"The widened rules ({wid_names}) were not in our top 3 flags"
-        bt_title = f"Backtest on {D['nct']}: the funnel stalls, but our top 3 flags missed the widened rule"
-
-    acc_risk = None
-    for r in D.get("risk") or []:
-        if r.get("target") == "accrual_fail":
-            acc_risk = r
-    if acc_risk:
-        bt_lines = [
-            f"{D['eligible']} of {D['n_screened']} virtual patients pass; {top_label} excludes the most ({top_pct})",
-            f"Predicted accrual-failure risk {F.pct(acc_risk['p'])} (range {F.pct(acc_risk['ci_low'])} to "
-            f"{F.pct(acc_risk['ci_high'])})",
-            flag_line,
-        ]
+        flag_line = f"The rule the sponsor later removed ({wid_names}) was not in our top 3 flags"
+        bt_title = f"Backtest on {D['nct']}: our top 3 flags missed the rule the sponsor later removed"
+    method_line = ("Flags rank rules by how many virtual patients each excludes; the risk model does not read criteria"
+                   if by_share else "Flags rank rules by how much relaxing each one lowers predicted risk")
+    if acc:
+        risk_line = (f"Honest miss: predicted accrual-failure risk {F.pct(acc['p'])} (range {F.pct(acc['ci_low'])} to "
+                     f"{F.pct(acc['ci_high'])})" + (f", the {F.pct(acc_pctl)[:-1]}th percentile of test trials"
+                                                     if acc_pctl is not None else ""))
+        if acc_pctl is not None and acc_pctl >= 0.8:
+            risk_line = risk_line.replace("Honest miss: p", "P")
     else:
-        bt_lines = [
-            f"{D['eligible']} of {D['n_screened']} virtual patients pass the first registered criteria",
-            f"{top_label} excludes the most ({top_pct})",
-            flag_line,
-        ]
+        risk_line = f"Predicted accrual-failure risk: {F.ph('demo risk')}"
+    bt_lines = [flag_line, method_line, risk_line]
 
     def d5(s):
-        img = IMG / "demo_exclusions.png"
-        if has_excl:
-            picture_fit(s, img, MX, BODY_Y, 6.4, 4.1)
+        if has_flags:
+            picture_fit(s, IMG / "demo_flags.png", MX, BODY_Y + 0.35, 6.3, 3.0)
+            text(s, MX, BODY_Y, 6.3, 0.4, "Top 3 flags: share of virtual patients each rule excludes on its own",
+                 size=14, color=GREY)
+            text(s, MX, BODY_Y + 3.5, 6.3, 0.4, "Coral: the rule the sponsor later removed", size=14, color=CORAL)
         else:
-            missing_panel(s, MX, BODY_Y, 6.4, 4.1, "[TBD: demo funnel]")
-        x = 7.55
-        text(s, x, BODY_Y + 0.05, SW - x - MX, 0.5, f"{D['nct']}", size=24, bold=True, color=TEAL)
-        text(s, x, BODY_Y + 0.6, SW - x - MX, 0.5, f"Terminated {D['terminated']}: “{D['stop_reason']}”", size=16, color=GREY)
-        body_lines(s, x, BODY_Y + 1.35, SW - x - MX, bt_lines, size=18, h=2.4)
-        text(s, x, 6.25, SW - x - MX, 0.4, "Coral bars: rules the sponsor later widened", size=13, color=CORAL)
+            missing_panel(s, MX, BODY_Y, 6.3, 3.6, "[TBD: demo flags]")
+        x = 7.45
+        text(s, x, BODY_Y - 0.05, SW - x - MX, 0.5, f"{D['nct']}", size=24, bold=True, color=TEAL)
+        text(s, x, BODY_Y + 0.5, SW - x - MX, 0.4, f"Terminated {D['terminated']}: “{D['stop_reason']}”", size=16,
+             color=GREY)
+        body_lines(s, x, BODY_Y + 1.15, SW - x - MX, bt_lines, size=16, h=3.2)
     specs.append(SlideSpec(
-        kicker="Backtest on a real terminated trial", title=bt_title,
-        lines=bt_lines,
-        visual="Bar chart of virtual patients excluded per rule (docs/deck/img/demo_exclusions.png), widened rules in coral; trial facts at right.",
+        kicker="Backtest on a real terminated trial", title=bt_title, lines=bt_lines,
+        visual="Bar chart of Clinova's top 3 flags with each rule's exclusion share (docs/deck/img/demo_flags.png), the "
+               "sponsor-removed rule in coral; trial facts at right.",
         notes=(
-            f"This is a real trial, {D['nct']}, from the test split, terminated on {D['terminated']} with the stop reason "
-            f"\"{D['stop_reason']}\" (docs/demo_trial.md). We load only its first registered protocol. {D['eligible']} of "
-            f"{D['n_screened']} virtual patients pass every criterion, and {top_label} removes {top_pct} on its own "
-            f"(funnel: {D['funnel_src']}). "
-            + (f"Predicted accrual-failure risk is {F.pct(acc_risk['p'])}. " if acc_risk else "")
-            + f"Later the sponsor removed {wid_names}. {flag_line}. "
-            "Flags: docs/deck/data/demo.json. Version histories confirm the change only from first versus current text."
+            f"{D['nct']} is a test-split trial terminated on {D['terminated']}, stop reason \"{D['stop_reason']}\" "
+            f"(docs/demo_trial.md). Clinova saw only its first registered protocol. {flag_line}. "
+            + ("The model predicts no risk change for any flag, so this is an exclusion-share ranking. " if by_share else "")
+            + (f"{risk_line}: the model misses this trial. " if acc and (acc_pctl or 0) < 0.8 else "")
+            + "The removal is inferred from first versus current text, not a dated version history. "
+            f"Source: {D['res_src']}."
         ),
-        criterion="Utility and Relevance", sources=["docs/demo_trial.md", D["funnel_src"], "docs/deck/data/demo.json"],
-        draw=d5))
+        criterion="Utility and Relevance", sources=["docs/demo_trial.md", D["res_src"]], draw=d5))
 
     # 6 Live demo screenshot ------------------------------------------------------------
     def d6(s):
@@ -944,79 +1014,94 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
         x = MX + 7.7 + 0.5
         body_lines(s, x, BODY_Y + 0.1, SW - x - MX, h=4.0, lines=[
             "Funnel: who is excluded by which rule, who enrolls, who completes",
-            "Risk: calibrated probability with a range and top drivers in plain words",
+            "Risk: probability with a range, a confidence badge and top drivers in plain words",
             "Fixes: three trade-offs; accept one and it re-runs in seconds",
         ], size=18)
     specs.append(SlideSpec(
-        kicker="Live demo", title="One screen shows the funnel, the calibrated risk and three fixes",
+        kicker="Live demo", title="One screen shows the funnel, the risk and three fixes",
         lines=["Funnel: who is excluded by which rule, who enrolls, who completes",
-               "Risk: calibrated probability with a range and top drivers in plain words",
+               "Risk: probability with a range, a confidence badge and top drivers in plain words",
                "Fixes: three trade-offs; accept one and it re-runs in seconds"],
         visual="Results-screen screenshot (docs/screens/03-results.png, cropped to the three panels).",
         notes=(
             "This is the results screen of the running app. Left, the funnel: virtual patients screened, excluded by each "
-            "criterion, enrolled and completing, with the biggest exclusion highlighted. Middle, risk: calibrated "
-            "probabilities of accrual failure, enrollment shortfall and amendment, each with a range, a confidence badge "
-            "and the top drivers in plain words. Right, three fixes. Everything else sits behind tabs: validation, replay, "
-            "community pulse and the audit log. Screenshot: docs/screens/03-results.png."
+            "criterion, enrolled and completing, with the biggest exclusion highlighted. Middle, risk: probabilities of "
+            "accrual failure and enrollment shortfall, each with a range, a confidence badge and the top drivers in plain "
+            "words. Right, three fixes the author can accept or reject. Everything else sits behind tabs: validation, "
+            "replay, community pulse and the audit log. Screenshot: docs/screens/03-results.png."
         ),
         criterion="Design and Packaging", sources=["docs/screens/03-results.png"], draw=d6))
 
     # 7 Optimizer -------------------------------------------------------------------
     fixes = D.get("fixes")
     nice = {"fastest": "Fastest enrollment", "lowest_dropout": "Fewest dropouts", "balanced": "Balanced", "other": "Alternative"}
+    no_dollars = bool(fixes) and all(fx.get("dollar_value", 0) == 0 for fx in fixes[:3])
 
     def fix_rows(fx):
         r = fx.get("ranges", {})
 
         def rng(key, fmt):
             v = r.get(key)
-            return f" ({fmt(v['low'])} to {fmt(v['high'])})" if v else ""
-        return [
+            return f"{fmt(v['low'])} to {fmt(v['high'])}" if v else ""
+        rows = [
             ("Enrollment speed", F.signed_pct(fx["delta_enroll"]), rng("delta_enroll", F.signed_pct)),
-            ("Dropout", F.signed_pts(fx["delta_dropout"]), rng("delta_dropout", F.signed_pts)),
-            ("Diversity index", f"{fx['delta_diversity']:+.2f}", ""),
-            ("Expected value", F.dollars(fx["dollar_value"]), ""),
+            ("Dropout", F.signed_pts(fx["delta_dropout"], 1), rng("delta_dropout", lambda v: F.signed_pts(v, 1))),
+            ("Diversity index", f"{fx['delta_diversity']:+.3f}", ""),
         ]
+        if not no_dollars:
+            rows.append(("Expected value", F.dollars(fx["dollar_value"]), ""))
+        return rows
+
+    def edit_words(e):
+        rule = D.get("rules", {}).get(e["target_id"], {})
+        return _edit_words(e, rule)
 
     def d7(s):
         w, gap = 3.75, 0.3
         if not fixes:
-            missing_panel(s, MX, BODY_Y + 0.1, SW - 2 * MX, 3.6, "[TBD: demo fixes from docs/deck/data/demo.json]")
+            missing_panel(s, MX, BODY_Y + 0.1, SW - 2 * MX, 3.6, "[TBD: demo fixes]")
             return
         for i, fx in enumerate(fixes[:3]):
             x = MX + i * (w + gap)
-            box(s, x, BODY_Y + 0.1, w, 3.75, fill=TINT)
-            text(s, x + 0.3, BODY_Y + 0.35, w - 0.6, 0.45, nice.get(fx["label"], fx["label"]), size=21, bold=True, color=TEAL)
-            edits = "; ".join(_edit_words(e) for e in fx["edits"])
-            text(s, x + 0.3, BODY_Y + 0.9, w - 0.6, 0.9, edits, size=14, color=GREY, line_spacing=1.1)
-            yy = BODY_Y + 1.85
+            box(s, x, BODY_Y, w, 3.7, fill=TINT)
+            text(s, x + 0.3, BODY_Y + 0.25, w - 0.6, 0.45, nice.get(fx["label"], fx["label"]), size=21, bold=True,
+                 color=TEAL)
+            edits = [e for e in (edit_words(e) for e in fx["edits"])]
+            text(s, x + 0.3, BODY_Y + 0.8, w - 0.6, 1.3, edits, size=14, color=GREY, line_spacing=1.05)
+            yy = BODY_Y + 1.9
             for lab, val, rg in fix_rows(fx):
-                text(s, x + 0.3, yy, 1.9, 0.4, lab, size=15, color=INK)
-                text(s, x + 2.0, yy, w - 2.3, 0.4, [[(val, {"bold": True}), (rg, {"size": 11, "color": GREY})]],
-                     size=16, color=INK, align=PP_ALIGN.RIGHT)
-                yy += 0.45
-        text(s, MX, 6.2, SW - 2 * MX, 0.4,
-             "Ranges span five cohort seeds; dollars are expected value of avoided amendments, not a guarantee",
-             size=14, color=GREY)
+                text(s, x + 0.3, yy, 1.8, 0.35, lab, size=15, color=INK)
+                text(s, x + 1.9, yy, w - 2.2, 0.35, val, size=17, bold=True, color=INK, align=PP_ALIGN.RIGHT)
+                if rg:
+                    text(s, x + 1.4, yy + 0.32, w - 1.7, 0.3, rg, size=12, color=GREY, align=PP_ALIGN.RIGHT)
+                yy += 0.62
+        foot = (f"Ranges: {D['n_seeds']} cohort seeds. "
+                + ("No dollar value yet (no amendment labels). " if no_dollars else "")
+                + "Authors lock rules that define the trial's population")
+        text(s, MX, 6.4, SW - 2 * MX, 0.4, foot, size=14, color=GREY)
     if fixes:
-        fx_lines = [f"{nice.get(fx['label'], fx['label'])}: enrollment {F.signed_pct(fx['delta_enroll'])}, "
-                    f"dropout {F.signed_pts(fx['delta_dropout'])}, {F.dollars(fx['dollar_value'])} expected value"
+        fx_lines = [f"{nice.get(fx['label'], fx['label'])}: enrollment speed {F.signed_pct(fx['delta_enroll'])}, "
+                    f"dropout {F.signed_pts(fx['delta_dropout'], 1)}"
+                    + ("" if no_dollars else f", {F.dollars(fx['dollar_value'])} expected value")
                     for fx in fixes[:3]]
     else:
         fx_lines = [F.ph("fix 1"), F.ph("fix 2"), F.ph("fix 3")]
+    sponsor_hit = [fx for fx in (fixes or [])[:3]
+                   if any(D.get("rules", {}).get(e["target_id"], {}).get("field") in widened for e in fx["edits"])]
     specs.append(SlideSpec(
-        kicker="Optimizer", title="The optimizer proposes three trade-offs, each with a range and a dollar value",
+        kicker="Optimizer",
+        title="The optimizer proposes three trade-offs with ranges; the author decides which, if any",
         lines=fx_lines,
-        visual="Three fix cards (fastest, fewest dropouts, balanced) with deltas, ranges and expected dollar value.",
+        visual="Three fix cards (fastest, fewest dropouts, balanced) with edits, deltas and ranges.",
         notes=(
             f"For {D['nct']} the optimizer, Optuna NSGA-II over at most three edits, returns three representative fixes. "
-            + (" ".join(fx_lines) + ". " if fixes else f"{F.ph('fix numbers')}. ")
-            + "Ranges span five cohort seeds. The dollar figure is the expected value of avoided amendments: the drop in "
-            "amendment probability times the phase's median amendment cost. Accepting a fix logs the decision and re-runs "
-            "the screen in seconds. Numbers: docs/deck/data/demo.json."
+            + (". ".join(fx_lines) + ". " if fixes else f"{F.ph('fix numbers')}. ")
+            + f"Ranges span {D['n_seeds']} cohort seeds. "
+            + ("We show no dollars: the amendment model has no positive labels yet. " if no_dollars else "")
+            + (f"{len(sponsor_hit)} of the three include a rule the sponsor later removed. " if fixes else "")
+            + f"Source: {D['opt_src']}."
         ),
-        criterion="Utility and Relevance", sources=["docs/deck/data/demo.json"], draw=d7))
+        criterion="Utility and Relevance", sources=[D["opt_src"]], draw=d7))
 
     # 8 Architecture ------------------------------------------------------------------
     def d8(s):
@@ -1100,7 +1185,17 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
         criterion="Readiness", sources=["docs/ARCHITECTURE.md", "orchestration/tasks/"], draw=d8))
 
     # 9 Validation ----------------------------------------------------------------------
-    if A["ok"]:
+    gain = F.paired("accrual_fail")
+    gain_sp = F.paired("accrual_fail", "sponsor")
+    dt = F.detail_target("accrual_fail")
+    beats = bool(gain) and gain["ci_low"] > 0
+
+    def sgn(v):
+        return f"{'+' if v >= 0 else '−'}{abs(v):.2f}"
+    if A["ok"] and gain and not beats:
+        val_title = (f"On {A['n_test']} unseen trials, accrual-failure AUC is {A['auc']}: above chance, not yet shown "
+                     "to beat a simple baseline")
+    elif A["ok"]:
         val_title = f"On {A['n_test']} unseen trials, accrual-failure AUC is {A['auc']} vs {A['base']} for a simple baseline"
     else:
         val_title = f"On unseen trials, Clinova's accrual-failure AUC is {A['auc']} vs {A['base']} for a baseline"
@@ -1108,52 +1203,62 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
         hit_line = (f"Hit rate: widened rule in our top 3 for {H['hit']} of {H['n']} trials "
                     f"(random {H['rand']}, largest exclusion {H['marg']})")
     elif H.get("na"):
-        hit_line = "Hit rate not computed: too few test trials carry an amendment label"
+        hit_line = "Hit rate not computable: no test trial has an amendment label yet"
     else:
         hit_line = f"Hit rate: {H['hit']} (random {H['rand']}, largest exclusion {H['marg']})"
     if AB["ok"]:
         abl_line = f"Simulation features: AUC {AB['diff']} (95% CI {AB['ci']}) on {AB['n']} simulated trials"
     elif AB.get("na"):
-        abl_line = "Simulation ablation not computed on this split"
+        abl_line = "Simulation ablation not computable: too few simulated trials"
     else:
         abl_line = f"Simulation ablation: {AB['diff']}"
-    auc_line = f"Accrual failure: AUC {A['auc']} (95% CI {A['ci']}) vs baseline {A['base']} ({A['base_ci']})"
-    brier_line = f"Calibration, Brier score (lower is better): Clinova {A['brier']} vs baseline {A['base_brier']}"
+    auc_line = f"Accrual failure: AUC {A['auc']} (95% CI {A['ci']}) vs logistic baseline {A['base']} ({A['base_ci']})"
+    gain_line = (f"Paired AUC gain {sgn(gain['value'])} (95% CI {sgn(gain['ci_low'])} to {sgn(gain['ci_high'])})"
+                 + (": the interval includes zero" if not beats else "")) if gain else F.ph("paired AUC gain")
+    const = dt.get("brier_constant_train_prevalence")
+    brier_line = (f"Brier {A['brier']} vs {const:.3f} for predicting the base rate" if const is not None
+                  else f"Brier {A['brier']} vs baseline {A['base_brier']}")
     if H.get("na") and AB.get("na"):
-        val_lines = [auc_line, brier_line,
-                     "Hit rate and simulation ablation not computed: too few amendment labels and simulated trials"]
+        val_lines = [auc_line, gain_line, brier_line + "; hit rate and simulation benefit not computable yet"]
     elif H.get("na"):
-        val_lines = [auc_line, brier_line, abl_line]
+        val_lines = [auc_line, gain_line, abl_line]
     else:
         val_lines = [auc_line, hit_line, abl_line]
+    right_chart = ("hit_rate.png" if has_hit else "auc_gain.png" if has_diff else "reliability.png" if has_rel else None)
 
     def d9(s):
         if has_auc:
             picture_fit(s, IMG / "auc_vs_baseline.png", MX, BODY_Y - 0.15, 6.5, 3.1)
         else:
             missing_panel(s, MX, BODY_Y, 6.5, 3.4, "[TBD: AUC chart from docs/metrics.json]")
-        if has_hit:
-            picture_fit(s, IMG / "hit_rate.png", 7.45, BODY_Y - 0.15, SW - 7.45 - MX, 3.1)
-        elif has_rel:
-            picture_fit(s, IMG / "reliability.png", 7.45, BODY_Y - 0.15, SW - 7.45 - MX, 3.1)
+        if right_chart:
+            picture_fit(s, IMG / right_chart, 7.45, BODY_Y - 0.15, SW - 7.45 - MX, 3.1)
         else:
-            missing_panel(s, 7.45, BODY_Y, SW - 7.45 - MX, 3.4,
-                          hit_line if "not computed" in hit_line else "[TBD: hit-rate chart from docs/metrics.json]")
+            missing_panel(s, 7.45, BODY_Y, SW - 7.45 - MX, 3.4, "[TBD: hit-rate chart from docs/metrics.json]")
         body_lines(s, MX, BODY_Y + 3.05, SW - 2 * MX, val_lines, size=16, h=1.55)
+    sl = F.detail_target("shortfall")
+    sl_gain = (sl.get("auc_diff_vs_baseline") or {}).get("value")
+    sl_words = (f"Shortfall AUC is {S['auc']} vs {S['base']}" + (", so it is not validated. " if sl_gain is not None
+                                                                  and sl_gain <= 0 else ". "))
     specs.append(SlideSpec(
         kicker="Validation on trials the model never saw", title=val_title,
         lines=val_lines,
-        visual="Left: AUC vs logistic baseline per target with bootstrap 95% CI whiskers (docs/deck/img/auc_vs_baseline.png). "
-               + ("Right: hit rate vs random and largest-marginal-exclusion baselines (docs/deck/img/hit_rate.png)."
-                  if has_hit else "Right: reliability plot of the calibrated accrual-failure model (docs/deck/img/reliability.png), "
-                  "shown because the hit rate was not computed."),
+        visual="Left: test AUC vs logistic baseline per target with bootstrap 95% CI whiskers "
+               "(docs/deck/img/auc_vs_baseline.png). Right: "
+               + {"hit_rate.png": "hit rate vs random and largest-marginal-exclusion baselines (docs/deck/img/hit_rate.png).",
+                  "auc_gain.png": "paired AUC gain over the logistic baseline and over sponsor type alone, with 95% CIs "
+                                  "(docs/deck/img/auc_gain.png); shown because the hit rate is not computable.",
+                  "reliability.png": "reliability plot (docs/deck/img/reliability.png).",
+                  None: "missing."}[right_chart],
         notes=(
-            f"Time split: train on trials that started before 2018 ({C['n_train']} labelled), test on 2018 or later "
-            f"({C['n_test']}). Accrual-failure AUC is {A['auc']}, 95% CI {A['ci']}, against {A['base']} for a ten-feature "
-            f"logistic baseline; Brier {A['brier']} vs {A['base_brier']}. Shortfall AUC is {S['auc']} vs {S['base']}. "
-            f"{hit_line}. {abl_line}. Model {C['version']}; every number is from docs/metrics.json."
+            f"Train: trials starting before 2018 ({C['n_train']}); test: 2018 or later ({C['n_test']}). Accrual-failure "
+            f"AUC is {A['auc']} against {A['base']} for a logistic baseline. "
+            + (f"The paired gain is {sgn(gain['value'])}, interval {sgn(gain['ci_low'])} to {sgn(gain['ci_high'])}"
+               + (f"; over sponsor type alone {sgn(gain_sp['value'])}" if gain_sp else "") + ". " if gain else "")
+            + ("So it ranks failures above chance but is not shown to beat simple baselines. " if gain and not beats else "")
+            + sl_words + f"{hit_line}. {abl_line}. Model {C['version']}: docs/metrics.json, docs/metrics_detail.json."
         ),
-        criterion="Readiness", sources=["docs/metrics.json"], draw=d9))
+        criterion="Readiness", sources=["docs/metrics.json", "docs/metrics_detail.json"], draw=d9))
 
     # 10 Learning loop --------------------------------------------------------------------
     if R["ok"] and R["better"] and float(R["retrained"]) > 0.95 * float(R["frozen"]):
@@ -1162,14 +1267,17 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
     elif R["ok"] and R["better"]:
         loop_title = f"Retraining as outcomes arrive lowered the Brier score from {R['frozen']} to {R['retrained']}"
     elif R["ok"]:
-        loop_title = f"Retraining as outcomes arrive did not beat the frozen model (Brier {R['retrained']} vs {R['frozen']})"
+        loop_title = (f"In a 2020–2023 replay, monthly retraining did not beat the frozen model (Brier "
+                      f"{R['retrained']} vs {R['frozen']})")
     else:
         loop_title = f"The learning loop grades every prediction; retrained Brier {R['retrained']} vs frozen {R['frozen']}"
     loop_lines = [
         f"Replay {R['first']} to {R['last']}: score each month, then learn its outcomes",
-        f"Pooled Brier over {R['n']} scored windows: retrained {R['retrained']}, frozen {R['frozen']}",
+        f"Pooled Brier over {R['n']} overlapping windows: retrained {R['retrained']}, frozen {R['frozen']}",
         "Every live prediction is logged in Tiger Data and scored when the trial ends",
     ]
+    if R["ok"] and R["first"][:4] != "2020" or R["ok"] and R["last"][:4] != "2023":
+        loop_title = loop_title.replace("In a 2020–2023 replay, m", "M")
 
     def d10(s):
         if has_replay:
@@ -1177,14 +1285,14 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
         else:
             missing_panel(s, MX, BODY_Y, 7.6, 3.9, "[TBD: replay chart from docs/replay.json]")
         x = MX + 7.6 + 0.45
-        body_lines(s, x, BODY_Y + 0.15, SW - x - MX, loop_lines, size=17)
+        body_lines(s, x, BODY_Y + 0.15, SW - x - MX, loop_lines, size=17, h=3.8)
         if R.get("placeholder_model"):
             text(s, x, 6.05, SW - x - MX, 0.6, "Provisional: replay ran with a placeholder model", size=13, color=CORAL)
     specs.append(SlideSpec(
         kicker="Learning loop", title=loop_title, lines=loop_lines,
         visual="Cumulative Brier by month, retrained vs frozen (docs/deck/img/replay_brier.png, from docs/replay.json).",
         notes=(
-            f"The replay freezes a model on {R.get('freeze', F.ph('freeze date'))}, then steps month by month from "
+            f"The replay freezes a model on {R.get('freeze') or F.ph('freeze date')}, then steps month by month from "
             f"{R['first']} to {R['last']}: it scores trials whose outcome arrives within {R.get('horizon', '?')} months, "
             "then adds that month's outcomes and retrains. The frozen arm never retrains. Pooled over "
             f"{R['n']} scored windows the retrained Brier is {R['retrained']} against {R['frozen']} frozen. Windows overlap, "
@@ -1193,15 +1301,29 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
         criterion="Readiness", sources=["docs/replay.json"], draw=d10))
 
     # 11 Limitations and responsible use ---------------------------------------------------
+    lim = []
+    if gain and not beats:
+        lim.append(("Not shown to beat simple baselines",
+                    "Accrual AUC is above chance, but its paired gain over a logistic baseline includes zero"))
+    if H.get("na"):
+        lim.append(("Amendment labels are missing",
+                    "Version histories are not loaded yet, so hit rate and amendment risk are unmeasured"))
+    else:
+        lim.append(("Registry edits are a proxy",
+                    "A widened rule on ClinicalTrials.gov is public evidence of an amendment, not the same thing"))
+    lim.append(("Personas are synthetic",
+                "Clinical traits come from published distributions"
+                + ("; too few simulated trials to test their benefit" if AB.get("na") else ", labelled as assumptions")))
+    lim.append(("Scores are correlational",
+                "They rank protocols against similar trials; they do not show that a rule caused a failure"))
+    if len(lim) < 4:
+        lim.insert(1, ("Stop reasons are free text",
+                       "Some terminations are business decisions; labels were spot-checked by a second model"))
+    lim = lim[:4]
+
     def d11(s):
-        items = [
-            ("Registry edits are a proxy", "A widened rule on ClinicalTrials.gov is public evidence of an amendment, not the same thing"),
-            ("Stop reasons are free text", "Some terminations are business decisions; labels were spot-checked by a second model"),
-            ("Personas are synthetic", "General-population records with clinical traits from published distributions, labelled as assumptions"),
-            ("Predictions are correlational", "Risk scores rank protocols; they do not prove that a rule caused a failure"),
-        ]
         w, h = (SW - 2 * MX - 0.3) / 2, 1.5
-        for i, (head, sub) in enumerate(items):
+        for i, (head, sub) in enumerate(lim):
             x = MX + (i % 2) * (w + 0.3)
             y = BODY_Y + 0.05 + (i // 2) * (h + 0.25)
             box(s, x, y, w, h, fill=TINT)
@@ -1214,18 +1336,15 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
              size=17, bold=True, color=WHITE, anchor=MSO_ANCHOR.MIDDLE)
     specs.append(SlideSpec(
         kicker="Limitations and responsible use", title="We show what the evidence can and cannot support",
-        lines=["Registry edits are a public proxy for amendments; stop reasons are free text",
-               "Personas are synthetic; predictions are correlational",
+        lines=[f"{lim[0][0]}; {lim[1][0].lower()}", f"{lim[2][0]}; {lim[3][0].lower()}",
                "Clinova advises; the protocol author decides. No real patient data"],
         visual="2x2 grid of limitation cards; teal banner with the responsible-use statement.",
         notes=(
-            "Four limits. Registry edits are a public proxy for amendments, not the same thing. Stop reasons are free text, "
-            "and some terminations are business decisions. Personas are general-population records given clinical traits "
-            "from published distributions, labelled as assumptions. Predictions are correlational. On responsible use: no "
-            "real patient data is used; Clinova advises the protocol author, logs every accept and reject, and never "
-            "approves a protocol. Source: docs/ARCHITECTURE.md section 10 and the caveats in docs/metrics.json notes."
+            "Four limits. " + " ".join(f"{t}." for _h, t in lim)
+            + " Clinova uses no real patient data, advises the protocol author, logs every accept and reject, and never "
+            "approves a protocol. Sources: docs/gate2_report.md, docs/metrics.json notes."
         ),
-        criterion="Readiness", sources=["docs/ARCHITECTURE.md", "docs/metrics.json"], draw=d11))
+        criterion="Readiness", sources=["docs/gate2_report.md", "docs/metrics.json"], draw=d11))
 
     # 12 Roadmap and repo -----------------------------------------------------------------
     def d12(s):
@@ -1262,12 +1381,31 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
     return specs
 
 
-def _edit_words(e: dict) -> str:
+OPS = {"le": "≤", "lt": "<", "ge": "≥", "gt": ">", "eq": "=", "ne": "≠"}
+
+
+def _num(v) -> str:
+    return f"{v:g}" if isinstance(v, (int, float)) else str(v)
+
+
+def _edit_words(e: dict, rule: dict | None = None) -> str:
     k, t = e["kind"], e["target_id"]
+    rule = rule or {}
+    name = SHORT_WORDS.get(rule.get("field"), field_words(rule["field"]) if rule.get("field") else t)
     if k == "relax_rule":
-        return f"relax {t} to {e.get('new_value')}" if e.get("new_value") is not None else f"relax {t}"
+        new_v, new_op = e.get("new_value"), e.get("new_operator")
+        old_op, old_v = rule.get("operator"), rule.get("value")
+        if isinstance(new_v, list):
+            return f"Widen {name} ({t})"
+        if new_op and old_op and new_op != old_op and {new_op[0], old_op[0]} == {"l", "g"}:
+            return f"Lift {name} limit ({t})"
+        op = OPS.get(new_op or old_op or "", new_op or old_op or "")
+        unit = f" {rule['unit']}" if rule.get("unit") and rule["unit"] not in ("score",) else ""
+        if old_v is not None and not isinstance(old_v, list):
+            return f"{name} ({t}): {op} {_num(old_v)} to {op} {_num(new_v)}{unit}"
+        return f"{name} ({t}): {op} {_num(new_v)}{unit}"
     if k == "drop_rule":
-        return f"drop {t}"
+        return f"Drop {name} ({t})"
     if k == "cut_visit":
         return f"cut visit {t}"
     if k == "merge_visits":
