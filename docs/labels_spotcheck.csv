@@ -1,0 +1,35 @@
+nct_id,status,stop_category,why_stopped
+NCT02768558,TERMINATED,efficacy_futility,Another treatment found efficacious
+NCT02257619,TERMINATED,accrual,Sponsor decision to not initiate part 2 due to slow enrollment and competing trials.
+NCT04211922,TERMINATED,business_funding,Sponsor R\&D Strategy Adjustment
+NCT06558799,TERMINATED,business_funding,EF-50/LUNAR-4 was terminated because available real-world data are expected to enable Novocure to achieve the study objectives without an interventional clinical study. Termination was not due to safety concerns.
+NCT05551117,TERMINATED,business_funding,Business reasons
+NCT02564380,TERMINATED,accrual,Since trial start in Jan. 2016 only 41 patients could be recruited until planned date of end of follow up period. Under consideration of this fact the recruitment of the planned 130 patients was not possible within a reasonable recruitment period.
+NCT04629339,TERMINATED,business_funding,Strategic business decision to terminate the study effective immediately. This is due to a company decision to prioritize another oral PD-L1 inhibitor with a more favorable profile.
+NCT02409355,TERMINATED,other,"The study was closed due to low patient enrollment and the Sponsor's decision to include patients with squamous NSCLC into the GO29431 study, NCT02409342."
+NCT04422392,TERMINATED,accrual,"since the CheckMate816 study is published in NEJM, enrolling patients becomes difficult"
+NCT04971187,TERMINATED,other,PI Request
+NCT05746481,TERMINATED,business_funding,Decision by agent provider
+NCT02285855,TERMINATED,accrual,Poor Accrual
+NCT04222972,TERMINATED,business_funding,Early termination of the study resulted from organizational and commercial decisions that led to the discontinuation of pralsetinib's global marketing and development in all territories (excluding US and Greater China).
+NCT03430063,TERMINATED,business_funding,Business decision
+NCT06333678,TERMINATED,accrual,Study closed by Amgen due to lack of enrollment
+NCT00480025,TERMINATED,efficacy_futility,The study was terminated following assessment of the lack of efficacy of the study product by the Independent Data monitoring Committee for the study.
+NCT04524689,TERMINATED,business_funding,"Sponsor decision, the decision is not related to any safety concern."
+NCT02706626,TERMINATED,accrual,Did not meet enrollment objectives.
+NCT05493501,TERMINATED,business_funding,The study is being closed based on corporate changes at EQRx and is not related to any efficacy or safety issues with aumolertinib.
+NCT02831933,TERMINATED,business_funding,Lack of funding
+NCT02949843,TERMINATED,accrual,"Slow accrual, closed by IRB"
+NCT04866017,TERMINATED,other,This decision was conducted by the sponsor and not driven by safety concerns as no new safety signals have been observed in the ociperlimab program.
+NCT03496766,TERMINATED,accrual,The recruitment was closed prematurely to due to slow recruitment.
+NCT04933695,TERMINATED,efficacy_futility,Futility
+NCT03091491,TERMINATED,accrual,"Slow recruitment due to general pessimism for immunotherapy in NSCLC, availability of alternative therapy and clinician's choice to put patient on immunotherapy outside of trial setting."
+NCT03866980,TERMINATED,business_funding,corporate strategy adjustment
+NCT03050060,TERMINATED,accrual,Terminated due to slow accrual
+NCT03644823,TERMINATED,accrual,slow recruiting
+NCT05001724,TERMINATED,efficacy_futility,"Because the efficacy data did not meet expectations, the sponsor decided to terminate the study."
+NCT04856176,TERMINATED,efficacy_futility,Futility
+NCT03425331,TERMINATED,other,"Slow accrual, competing studies, and lack of efficacy"
+NCT04405401,TERMINATED,accrual,Poor accrual
+NCT04394624,TERMINATED,business_funding,"Sponsor decision, the decision is not related to any safety concern."
+NCT02588261,TERMINATED,safety,"Following recommendation by SOLAR Study IDMC, Astellas closed enrollment in ASP8273 studies"
