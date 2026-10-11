@@ -19,6 +19,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+import re
 import weakref
 from collections.abc import Coroutine, Sequence
 from functools import lru_cache
@@ -67,6 +68,16 @@ def _cache_get(keys: Sequence[str]) -> dict[str, Any]:
         return dict(rows.fetchall())
 
 
+def _cache_scan(namespace: str, model: str, seed: int, schema_name: str) -> list[tuple[Any, Any]]:
+    """(request, response) of every cached generate call with this namespace, model, seed and schema name."""
+    with get_conn() as conn:
+        return conn.execute(
+            "SELECT request, response FROM llm_cache WHERE namespace = %s AND model = %s "
+            "AND request->>'seed' = %s AND request->>'schema' = %s",
+            (namespace, model, str(seed), schema_name),
+        ).fetchall()
+
+
 def _cache_put(rows: Sequence[tuple[str, str, str, Any, Any]]) -> None:
     """rows: (key, namespace, model, request, response)."""
     with get_conn() as conn, conn.cursor() as cur:
@@ -99,6 +110,15 @@ def _usage_add(namespace: str, model: str, fingerprint: str, kind: str,
 
 def _key(*parts: str) -> str:
     return hashlib.sha256("\x1f".join(parts).encode("utf-8")).hexdigest()
+
+
+_LONG_FLOAT = re.compile(r"\d+\.\d{6,}")
+
+
+def _loose(prompt: str) -> str:
+    """Prompt with long float literals cut to 10 significant digits. Unrounded floats (e.g. persona lab values)
+    differ in the last digit between platforms' math libraries, which changes the exact cache key."""
+    return _LONG_FLOAT.sub(lambda m: f"{float(m.group()):.10g}", prompt)
 
 
 def _fingerprint(api_key: str) -> str:
@@ -184,6 +204,14 @@ async def agenerate_json(prompt: str, schema: type[T], *, namespace: str, seed: 
     if hit is not None:
         return schema.model_validate(hit)
     if s.CLINOVA_MODE == "demo":
+        # The cache was filled on Windows; a Linux container computes some floats 1 ulp apart. Accept a cached
+        # response whose prompt matches after rounding long floats (demo mode only; live mode keys stay exact).
+        # ponytail: scans the namespace per miss; fine for the demo cache, index on a loose key if it grows.
+        want = _loose(prompt)
+        rows = await asyncio.to_thread(_cache_scan, namespace, model, seed, schema.__name__)
+        for request, response in rows:
+            if request.get("temperature") == temperature and _loose(request.get("prompt", "")) == want:
+                return schema.model_validate(response)
         raise CacheMiss(f"demo mode: no cached response in namespace {namespace!r}")
 
     config = types.GenerateContentConfig(
