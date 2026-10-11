@@ -149,6 +149,10 @@ def test_run_uses_real_modules_when_present(client, monkeypatch, parsed_protocol
     from clinova.contracts import RiskScore
 
     real = [RiskScore.model_validate(x) for x in fixture_risks]
+    try:
+        import clinova.model.predict  # noqa: F401
+    except OSError as exc:  # LightGBM's native library (libomp) cannot load on this machine
+        pytest.skip(f"clinova.model.predict cannot load here: {type(exc).__name__}")
     monkeypatch.setattr("clinova.model.predict.score", lambda protocol, **k: real)
     st = wait_done(client, client.post("/runs", json={}).json()["run_id"])
     assert st.stage == "done"

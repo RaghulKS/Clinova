@@ -15,6 +15,8 @@ def main(argv: list[str] | None = None) -> int:
         "--theme.backgroundColor=#F5F7F9",
         "--theme.secondaryBackgroundColor=#ECF0F3",
         "--theme.textColor=#1D2733",
+        "--client.toolbarMode=minimal",
+        "--browser.gatherUsageStats=false",
     ]
     return subprocess.call([sys.executable, "-m", "streamlit", "run", str(entry), *theme, *(argv or sys.argv[1:])])
 
