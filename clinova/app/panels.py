@@ -346,10 +346,11 @@ def _fmt(v: float | None, kind: str = "pct") -> str:
 
 
 # higher is better for these measures; lower is better for the rest
-_HIGHER_BETTER = {"eligible_frac", "enroll_rate", "diversity_index"}
+_HIGHER_BETTER = {"eligible_frac", "enroll_rate", "enroll_speed", "diversity_index"}
 _SPEC = [
     ("Eligible virtual patients", "eligible_frac", "pct"),
     ("Enrollment rate of eligible", "enroll_rate", "pct"),
+    ("Would enroll, share of screened", "enroll_speed", "pct"),
     ("Dropout (share of enrolled)", "dropout_rate", "pct"),
     ("Diversity index", "diversity_index", "index"),
     ("Accrual-failure risk", "accrual_fail_p", "pct"),
