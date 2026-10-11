@@ -1,0 +1,65 @@
+{
+ "tables": {
+  "trials": {
+   "rows": 2480,
+   "sha256": "eb1fde22b348b20c5352ca279b38a1011ca41d9f1f1f833359e9b66ece9b64b2",
+   "bytes": 16241613
+  },
+  "trial_versions": {
+   "rows": 0,
+   "sha256": "092e8ed9480e6ca0245e89076298037e11d0c6e84f228584135d696d48d72886",
+   "bytes": 95
+  },
+  "criteria_rules": {
+   "rows": 3887,
+   "sha256": "24127015817f00664859a6d764974f41cb7552e110c47ee06d7994d17090802d",
+   "bytes": 127519
+  },
+  "trial_embeddings": {
+   "rows": 233,
+   "sha256": "8067a08b68b9dab3ad154e0bd9e867c9eb71398cb54b562f9048f5b55838b7ed",
+   "bytes": 855421
+  },
+  "sim_runs": {
+   "rows": 2,
+   "sha256": "f0b1a8058b67eaacfeba4d262e03163cd303bae6d89a49786385061a4235f479",
+   "bytes": 1987
+  },
+  "persona_outcomes": {
+   "rows": 2000,
+   "sha256": "dfedb0cf99e4e7c9b439c4c96756c7e2eb5008c8150b93636d4d6d4869ea9d56",
+   "bytes": 347186
+  },
+  "predictions": {
+   "rows": 7581,
+   "sha256": "2f43947b9fdf66be51f3a5f54e54401b9c21db40075ed8d4a05be4eb2f2637e8",
+   "bytes": 205252
+  },
+  "prediction_scores": {
+   "rows": 7578,
+   "sha256": "a7bb007dee33560af97496957be987c89164f2eed1dab4a318f6d2ba03d0f865",
+   "bytes": 220097
+  },
+  "outcomes": {
+   "rows": 2929,
+   "sha256": "a5ad10c603f5739bc68283da437694251557d83d402e92a9754809f39615fe43",
+   "bytes": 20096
+  },
+  "fixes": {
+   "rows": 12,
+   "sha256": "fe7e07d77f0a8ad0f59da7034d7b8284c66866cd6c44c00c061f28be4eacd5d2",
+   "bytes": 2121
+  },
+  "llm_cache": {
+   "rows": 695,
+   "sha256": "ce4891e2980d0b99dfc72a58f0898779e7944dc96541031c85485d52e97141a8",
+   "bytes": 2097684
+  }
+ },
+ "files": {
+  "files/bundle/v1.0/bundle.joblib": "a046b26b7fa65180ee67cc4e0a429d9aab09b64c975b2ce25f482255aad4eff8",
+  "files/bundle/v1.0/meta.json": "b440e21059b101da90b89a7be6e83108977410f83cda1a6e00301f18192116d8",
+  "files/cohort_any_2000_42.parquet": "1da5d693eaf614c9e48e2d908d8b1e79d7d55bf65c36115d96200b343cf62cab",
+  "files/surrogate.json": "659add6c68eab29900ad8cb91440229e59054eedd61c153708dd0dbbd011a104"
+ }
+}

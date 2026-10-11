@@ -1,0 +1,14 @@
+.git
+.venv
+.data
+.worktrees
+.claude
+.env
+.env.*
+!.env.example
+models
+**/__pycache__
+.pytest_cache
+.ruff_cache
+clinova-orchestration-bundle.zip
+orchestration
