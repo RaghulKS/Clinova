@@ -24,7 +24,7 @@ def test_blank_values_and_inline_comments_behave_as_unset(monkeypatch):
         monkeypatch.delenv(k, raising=False)
     s = Settings(_env_file=REPO_ROOT / ".env.example")
     assert s.GEMINI_API_KEY is None
-    assert s.DEMO_NCT_ID is None
+    assert s.DEMO_NCT_ID == Settings.model_fields["DEMO_NCT_ID"].default  # blank = default
     assert s.SKIP_MIROFISH is False
     assert s.NTFY_TOPIC is None
     assert s.DATABASE_URL is not None  # blank falls back to the local docker default

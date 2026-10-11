@@ -19,7 +19,8 @@ from clinova.simulate.runner import simulate_trial
 def registered_protocols(limit: int, trial_id: str | None = None) -> list[ParsedProtocol]:
     """Build from first-version fields using the shared cached parser and visit estimator."""
     with get_conn() as conn:
-        cursor = conn.execute("SELECT * FROM trials WHERE (%s::text IS NULL OR nct_id=%s) ORDER BY nct_id LIMIT %s",
+        cursor = conn.execute("SELECT * FROM trials WHERE (%s::text IS NULL OR nct_id=%s) AND first_version <> '{}'::jsonb "
+                              "AND coalesce(eligibility_text_first, '') <> '' ORDER BY nct_id LIMIT %s",
                               (trial_id, trial_id, limit))
         columns = [column.name for column in cursor.description]
         rows = cursor.fetchall()

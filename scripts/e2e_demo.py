@@ -39,7 +39,7 @@ def main() -> None:
             "top_reasons": [r.model_dump(mode="json") for r in s.top_reasons],
             "stages": [st.model_dump(mode="json") for st in s.funnel.stages] if s.funnel else [],
             "top_exclusions": [
-                {**m.model_dump(mode="json"), "text": rules[m.rule_id].source_text}
+                {**m.model_dump(mode="json"), "text": rules[m.rule_id].raw_text}
                 for m in (s.funnel.marginal[:5] if s.funnel else []) if m.rule_id in rules
             ],
             "skipped_rules": s.funnel.skipped_rules if s.funnel else [],

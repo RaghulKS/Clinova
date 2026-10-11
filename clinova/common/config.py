@@ -66,7 +66,7 @@ class Settings(BaseSettings):
     DATABASE_URL: SecretStr | None = SecretStr("postgresql://postgres:postgres@localhost:5432/clinova")
     DATA_DIR: Path = MAIN_ROOT / ".data"
     SEED: int = 42
-    DEMO_NCT_ID: str | None = None
+    DEMO_NCT_ID: str | None = "NCT03232892"  # G1 pick, see docs/demo_trial.md; backups NCT03417882, NCT06333678
     SKIP_MIROFISH: bool = False
     NTFY_TOPIC: str | None = None  # used by scripts/orch.sh, not by Python code
 
