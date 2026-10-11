@@ -1,0 +1,22 @@
+# Render Blueprint: two web services from the same Dockerfile (demo mode, no Gemini key needed).
+# Set DATABASE_URL (Tiger Cloud, after `make tiger-load`) on the api service in the Render dashboard.
+services:
+  - type: web
+    name: clinova-api
+    runtime: docker
+    healthCheckPath: /health
+    dockerCommand: sh -c "python -m clinova.api --host 0.0.0.0 --port $PORT"
+    envVars:
+      - {key: CLINOVA_MODE, value: demo}
+      - {key: MODEL_VERSION, value: v1.0}
+      - {key: DATABASE_URL, sync: false}
+  - type: web
+    name: clinova-app
+    runtime: docker
+    healthCheckPath: /_stcore/health
+    dockerCommand: sh -c "python -m clinova.app --server.port=$PORT --server.address=0.0.0.0 --server.headless=true"
+    envVars:
+      - {key: CLINOVA_MODE, value: demo}
+      - {key: MODEL_VERSION, value: v1.0}
+      - key: CLINOVA_API_URL
+        fromService: {type: web, name: clinova-api, envVarKey: RENDER_EXTERNAL_URL}
