@@ -120,3 +120,41 @@ class HealthResponse(Body):
     contracts_version: str
     mode: str
     db: bool = Field(description="Database reachable.")
+
+
+class Measures(Body):
+    """The numbers shown side by side before and after accepting a fix. ``None`` = not available."""
+
+    eligible_frac: float | None = Field(None, description="Share of virtual patients who pass the criteria.")
+    enroll_rate: float | None = Field(None, description="Share of eligible virtual patients who enroll.")
+    dropout_rate: float | None = Field(None, description="Share of enrolled who drop out before the last visit.")
+    diversity_index: float | None = Field(None, description="1.0 matches the NSCLC reference population.")
+    accrual_fail_p: float | None = None
+    shortfall_p: float | None = None
+    amend_p: float | None = None
+
+
+class AcceptRequest(Body):
+    """Accept one fix of a finished run."""
+
+    run_id: str
+    fix_id: str
+    user_name: str = "anonymous"
+    comment: str | None = None
+
+
+class AcceptResponse(Body):
+    """Result of accepting a fix: the logged decision plus before and after numbers.
+
+    ``basis`` says how ``after`` was produced: ``quick_rerun`` = code screen, surrogate and model re-run
+    with no new LLM calls; ``optimizer_estimate`` = the optimizer's own deltas applied to ``before``
+    (used while the engine is on fixtures or a stage is unavailable)."""
+
+    feedback: Feedback
+    feedback_source: Source = Field(description="live = stored in the database; fixture = kept in memory only.")
+    basis: Literal["quick_rerun", "optimizer_estimate"]
+    before: Measures
+    after: Measures
+    protocol: ParsedProtocol = Field(description="The protocol with the fix's edits applied.")
+    source: Source = Field(description="live when every re-run stage used the real engine, else fixture.")
+    note: str | None = None

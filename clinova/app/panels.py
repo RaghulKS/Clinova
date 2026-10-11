@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from clinova.api.schemas import FeedbackIn
+from clinova.api.schemas import AcceptResponse, FeedbackIn
 from clinova.app import charts, theme
 from clinova.app.client import ApiClient, ApiError
 from clinova.app.rules_table import rule_in_words
@@ -222,43 +222,48 @@ def _fix_card(fix: Fix, protocol: ParsedProtocol, decision: str | None) -> str:
     )
 
 
-def _decide(client: ApiClient, fix: Fix, decision: str, trial_id: str) -> None:
+def _decide(client: ApiClient, fix: Fix, decision: str, status: RunStatus) -> None:
+    """Accept goes to /fixes/accept (logs the decision, re-runs fast, returns before and after);
+    reject only logs the decision."""
+    trial_id = status.result.protocol.trial_id if status.result else status.trial_id
     try:
-        resp = client.feedback(
-            FeedbackIn(target_type="fix", target_id=fix.fix_id, trial_id=trial_id, decision=decision)  # type: ignore[arg-type]
-        )
+        if decision == "accept":
+            resp = client.accept_fix(status.run_id, fix.fix_id)
+            st.session_state.setdefault("accepts", {})[fix.fix_id] = resp.model_dump(mode="json")
+            st.session_state["feedback_source"] = resp.feedback_source.value
+        else:
+            resp = client.feedback(FeedbackIn(target_type="fix", target_id=fix.fix_id, trial_id=trial_id, decision="reject"))
+            st.session_state["feedback_source"] = resp.source.value
         st.session_state.setdefault("decisions", {})[fix.fix_id] = decision
-        st.session_state["feedback_source"] = resp.source.value
     except ApiError as exc:
         st.session_state["fix_error"] = str(exc)
 
 
-def _before_after(status: RunStatus, fix: Fix, after: RunStatus | None) -> list[dict]:
-    res = status.result
-    assert res is not None
-    sims = res.sim
-    comp = sum(s.completion_rate for s in sims) / len(sims) if sims else None
-    risk = {r.target.value: r for r in res.risks}
-    rows: list[dict] = []
-    live_after = after is not None and after.result is not None and after.source.value == "live"
-    if live_after:
-        a = after.result  # type: ignore[union-attr]
-        a_comp = sum(s.completion_rate for s in a.sim) / len(a.sim) if a.sim else None
-        a_risk = {r.target.value: r for r in a.risks}
-        if res.funnel and a.funnel:
-            rows.append({"Measure": "Eligible virtual patients", "Before": pct(res.funnel.eligible_frac), "After": pct(a.funnel.eligible_frac), "Basis": "re-run"})
-        if comp is not None and a_comp is not None:
-            rows.append({"Measure": "Dropout (share of enrolled)", "Before": pct(1 - comp), "After": pct(1 - a_comp), "Basis": "re-run"})
-        for key, label in (("accrual_fail", "Accrual-failure risk"), ("amend", "Amendment risk")):
-            if key in risk and key in a_risk:
-                rows.append({"Measure": label, "Before": pct(risk[key].p), "After": pct(a_risk[key].p), "Basis": "re-run"})
-        return rows
-    rows.append({"Measure": "Enrollment speed (index)", "Before": "1.00", "After": f"{1 + fix.delta_enroll:.2f}", "Basis": "optimizer estimate"})
-    if comp is not None:
-        rows.append({"Measure": "Dropout (share of enrolled)", "Before": pct(1 - comp), "After": pct(max(0.0, 1 - comp + fix.delta_dropout)), "Basis": "optimizer estimate"})
-    if "amend" in risk:
-        rows.append({"Measure": "Amendment risk", "Before": pct(risk["amend"].p), "After": pct(max(0.0, risk["amend"].p + fix.delta_p_amend)), "Basis": "optimizer estimate"})
-    return rows
+def _fmt(v: float | None, kind: str = "pct") -> str:
+    if v is None:
+        return "not estimated"
+    return f"{v:.2f}" if kind == "index" else pct(v, 1)
+
+
+def before_after_rows(resp: AcceptResponse) -> list[dict]:
+    """Rows of the before and after table. The Basis column says whether the after number is a re-run
+    or the optimizer's estimate."""
+    basis = "re-run (surrogate, no new LLM calls)" if resp.basis == "quick_rerun" else "optimizer estimate"
+    b, a = resp.before, resp.after
+    spec = [
+        ("Eligible virtual patients", b.eligible_frac, a.eligible_frac, "pct"),
+        ("Enrollment rate of eligible", b.enroll_rate, a.enroll_rate, "pct"),
+        ("Dropout (share of enrolled)", b.dropout_rate, a.dropout_rate, "pct"),
+        ("Diversity index", b.diversity_index, a.diversity_index, "index"),
+        ("Accrual-failure risk", b.accrual_fail_p, a.accrual_fail_p, "pct"),
+        ("Enrollment-shortfall risk", b.shortfall_p, a.shortfall_p, "pct"),
+        ("Amendment risk", b.amend_p, a.amend_p, "pct"),
+    ]
+    return [
+        {"Measure": label, "Before": _fmt(bv, k), "After": _fmt(av, k), "Basis": basis}
+        for label, bv, av, k in spec
+        if bv is not None or av is not None
+    ]
 
 
 def fixes_panel(status: RunStatus, client: ApiClient) -> None:
@@ -277,34 +282,24 @@ def fixes_panel(status: RunStatus, client: ApiClient) -> None:
         d = decisions.get(fix.fix_id)
         st.markdown(_fix_card(fix, res.protocol, d), unsafe_allow_html=True)
         c1, c2, _ = st.columns([1, 1, 2])
-        c1.button("Accept", key=f"acc_{fix.fix_id}", type="primary", on_click=_decide, args=(client, fix, "accept", res.protocol.trial_id), disabled=d is not None)
-        c2.button("Reject", key=f"rej_{fix.fix_id}", on_click=_decide, args=(client, fix, "reject", res.protocol.trial_id), disabled=d is not None)
+        c1.button("Accept", key=f"acc_{fix.fix_id}", type="primary", on_click=_decide, args=(client, fix, "accept", status), disabled=d is not None)
+        c2.button("Reject", key=f"rej_{fix.fix_id}", on_click=_decide, args=(client, fix, "reject", status), disabled=d is not None)
     if err := st.session_state.pop("fix_error", None):
         st.error(err)
-    accepted = [f for f in res.fixes if decisions.get(f.fix_id) == "accept"]
+    accepts: dict = st.session_state.get("accepts", {})
+    accepted = [f for f in res.fixes if f.fix_id in accepts]
     if accepted:
         fix = accepted[-1]
+        resp = AcceptResponse.model_validate(accepts[fix.fix_id])
         st.markdown('<div class="cl-section">Before and after</div>', unsafe_allow_html=True)
-        afters: dict = st.session_state.setdefault("after_runs", {})
-        if fix.fix_id not in afters:
-            with st.spinner("Re-checking the protocol with this change..."):
-                try:
-                    created = client.start_run(res.protocol, edits=fix.edits)
-                    afters[fix.fix_id] = client.wait_for_run(created.run_id)
-                except ApiError as exc:
-                    afters[fix.fix_id] = None
-                    st.error(str(exc))
-        after = afters.get(fix.fix_id)
-        rows = _before_after(status, fix, after)
-        st.dataframe(rows, hide_index=True, width="stretch")
-        if after is not None and after.stage == "failed":
-            st.warning(f"The re-run did not finish: {after.message}")
-        elif after is None or after.source.value != "live":
-            st.markdown(
-                '<div class="cl-note">The engine is on fixture data, so these figures are the optimizer\'s estimates and a re-run cannot change them. '
-                "With the live engine this table shows a real re-run.</div>",
-                unsafe_allow_html=True,
-            )
+        st.dataframe(before_after_rows(resp), hide_index=True, width="stretch")
+        if resp.note:
+            st.markdown(f'<div class="cl-note">{esc(resp.note)}</div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="cl-note">Your decision was recorded ({"database" if resp.feedback_source.value == "live" else "kept in memory only"}). '
+            "Clinova suggests; the final protocol is yours to decide.</div>",
+            unsafe_allow_html=True,
+        )
 
 
 # --------------------------------------------------------------------------------------------------------

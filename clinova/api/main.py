@@ -17,10 +17,13 @@ from datetime import UTC, datetime
 
 from fastapi import FastAPI, HTTPException
 
-from clinova.api import fallbacks, live
+from clinova.api import fallbacks, live, quick
 from clinova.api.audit import MEMORY
-from clinova.api.runs import RUNS
+from clinova.api.backtest import run_backtest
+from clinova.api.runs import RUNS, apply_edits_local
 from clinova.api.schemas import (
+    AcceptRequest,
+    AcceptResponse,
     AuditResponse,
     FeedbackIn,
     FeedbackResponse,
@@ -138,9 +141,9 @@ def parse_protocol(req: ParseRequest) -> ParseResponse:
     if not (req.eligibility_text and req.eligibility_text.strip()):
         raise HTTPException(422, "Give eligibility_text or an nct_id.")
     try:
-        protocol = live.parse_text(
-            req.eligibility_text, req.schedule_text, trial_id=f"draft-{uuid.uuid4().hex[:8]}", phase=req.phase
-        )
+        draft_id = f"draft-{uuid.uuid4().hex[:8]}"
+        protocol = live.parse_text(req.eligibility_text, req.schedule_text, trial_id=draft_id, phase=req.phase)
+        live.save_draft(draft_id, req.eligibility_text, req.schedule_text, protocol)
         return ParseResponse(protocol=protocol, source=Source.live)
     except _FALLBACK_ERRORS:
         return ParseResponse(
@@ -176,9 +179,13 @@ def get_run(run_id: str) -> RunStatus:
 def backtest(nct_id: str) -> BacktestResult:
     nct = _check_id(nct_id)
     try:
-        return live.backtest(nct)
+        return run_backtest(nct)
+    except LookupError:
+        pass  # not in the database: the fixture trial still works offline of the data load
     except _FALLBACK_ERRORS:
         pass
+    except RuntimeError as exc:
+        raise HTTPException(500, str(exc)) from exc
     result = fallbacks.backtest(nct)
     if result is None:
         raise HTTPException(
@@ -198,19 +205,84 @@ def optimize(req: OptimizeRequest) -> OptimizeResponse:
         return OptimizeResponse(fixes=fallbacks.fixes(), source=Source.fixture)
 
 
+# --- accept a fix -----------------------------------------------------------------------------------------
+
+
+def _store_feedback(fb: Feedback) -> tuple[Feedback, Source]:
+    """Ledger when available, else the in-memory audit (fixture)."""
+    try:
+        live._need_db()
+        return live.record_feedback(fb), Source.live
+    except _FALLBACK_ERRORS:
+        MEMORY.add_feedback(fb)
+        return fb, Source.fixture
+
+
+@app.post("/fixes/accept", response_model=AcceptResponse)
+def accept_fix(req: AcceptRequest) -> AcceptResponse:
+    """Record the accept, apply the fix's edits, re-run screen, surrogate and score (no new Gemini calls)
+    and return before and after numbers. Falls back to the optimizer's own estimates when a stage is missing."""
+    status = RUNS.get(req.run_id)
+    if status is None or status.result is None:
+        raise HTTPException(404, f"No finished run {req.run_id}; run Clinova again.")
+    result = status.result
+    fix = next((f for f in result.fixes if f.fix_id == req.fix_id), None)
+    if fix is None:
+        raise HTTPException(404, f"Run {req.run_id} has no fix {req.fix_id}.")
+    fb, fb_source = _store_feedback(
+        Feedback(
+            feedback_id=uuid.uuid4().hex,
+            created_at=datetime.now(UTC),
+            user_name=req.user_name,
+            target_type="fix",
+            target_id=fix.fix_id,
+            trial_id=result.protocol.trial_id,
+            decision="accept",
+            comment=req.comment,
+        )
+    )
+    before_m = quick.measures(result, quick.before_diversity(result))
+    try:
+        after_result, after_protocol, div = quick.quick_rerun(result, fix.edits)
+        return AcceptResponse(
+            feedback=fb,
+            feedback_source=fb_source,
+            basis="quick_rerun",
+            before=before_m,
+            after=quick.measures(after_result, div),
+            protocol=after_protocol,
+            source=status.source,
+            note="Re-run with the edits applied: criteria re-screened, enrollment and dropout re-estimated by the "
+            "fast surrogate, risks re-scored. No new LLM calls.",
+        )
+    except ValueError as exc:  # a locked or unknown target: the edit cannot be applied
+        raise HTTPException(422, str(exc)) from exc
+    except _FALLBACK_ERRORS as exc:
+        log.info("quick re-run unavailable (%s); using the optimizer estimate", exc)
+    try:
+        after_protocol = apply_edits_local(result.protocol, fix.edits)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    return AcceptResponse(
+        feedback=fb,
+        feedback_source=fb_source,
+        basis="optimizer_estimate",
+        before=before_m,
+        after=quick.estimate_after(before_m, fix),
+        protocol=after_protocol,
+        source=Source.fixture,
+        note="The re-run engine is not available, so the after column applies the optimizer's own estimates.",
+    )
+
+
 # --- feedback and audit -----------------------------------------------------------------------------------
 
 
 @app.post("/feedback", response_model=FeedbackResponse)
 def post_feedback(body: FeedbackIn) -> FeedbackResponse:
     fb = Feedback(feedback_id=uuid.uuid4().hex, created_at=datetime.now(UTC), **body.model_dump())
-    try:
-        live._need_db()
-        stored = live.record_feedback(fb)
-        return FeedbackResponse(feedback=stored, source=Source.live)
-    except _FALLBACK_ERRORS:
-        MEMORY.add_feedback(fb)
-        return FeedbackResponse(feedback=fb, source=Source.fixture)
+    stored, source = _store_feedback(fb)
+    return FeedbackResponse(feedback=stored, source=source)
 
 
 @app.get("/audit", response_model=AuditResponse)

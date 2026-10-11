@@ -13,6 +13,7 @@ from collections.abc import Callable
 import httpx
 
 from clinova.api.schemas import (
+    AcceptResponse,
     AuditResponse,
     FeedbackIn,
     FeedbackResponse,
@@ -88,13 +89,18 @@ class ApiClient:
             time.sleep(poll_s)
 
     def backtest(self, nct_id: str) -> BacktestResult:
-        return BacktestResult.model_validate(self._call("GET", f"/trials/{nct_id}/backtest"))
+        # a first live backtest runs the whole pipeline, so allow far longer than a normal call
+        return BacktestResult.model_validate(self._call("GET", f"/trials/{nct_id}/backtest", timeout=900.0))
 
     def optimize(self, protocol: ParsedProtocol) -> OptimizeResponse:
         return OptimizeResponse.model_validate(self._call("POST", "/optimize", json={"protocol": protocol.model_dump(mode="json")}))
 
     def feedback(self, fb: FeedbackIn) -> FeedbackResponse:
         return FeedbackResponse.model_validate(self._call("POST", "/feedback", json=fb.model_dump(mode="json")))
+
+    def accept_fix(self, run_id: str, fix_id: str) -> AcceptResponse:
+        body = {"run_id": run_id, "fix_id": fix_id}
+        return AcceptResponse.model_validate(self._call("POST", "/fixes/accept", json=body))
 
     def validation(self) -> ValidationResponse:
         return ValidationResponse.model_validate(self._call("GET", "/validation"))

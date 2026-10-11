@@ -41,7 +41,7 @@ ss = st.session_state
 
 
 def reset_results() -> None:
-    for k in ("status", "decisions", "after_runs", "backtest"):
+    for k in ("status", "decisions", "accepts", "backtest"):
         ss.pop(k, None)
 
 
