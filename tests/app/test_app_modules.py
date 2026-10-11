@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
@@ -133,7 +134,10 @@ def test_client_end_to_end_on_fixtures(api_client, parsed_protocol):
 def test_client_errors_are_plain(api_client):
     with pytest.raises(ApiError):
         api_client.backtest("NCT12345678")
-    dead = ApiClient("http://127.0.0.1:1")
+    def unavailable(request):
+        raise httpx.ConnectError("offline fixture", request=request)
+
+    dead = ApiClient("http://127.0.0.1:1", transport=httpx.MockTransport(unavailable))
     with pytest.raises(ApiError, match="Cannot reach"):
         dead.health()
 
