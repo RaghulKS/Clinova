@@ -66,7 +66,7 @@ jobs:
                   status = json.load(response)
               assert status["stage"] != "failed", status
               if status["stage"] == "done":
-                  assert status["source"] == "live", status
+                  assert status["source"] in ("live", "cache"), status  # cache: frozen v1.0 risk/flags/fixes
                   result = status["result"]
                   assert result["protocol"]["trial_id"] == "NCT03232892", result
                   assert result["funnel"] and result["sim"], result
@@ -82,12 +82,20 @@ jobs:
         timeout-minutes: 2
         run: |
           docker compose exec -T api python - <<'PY' || true
-          import logging
-          logging.basicConfig(level=logging.INFO)
+          import hashlib
+          from clinova.simulate import agents
+          seen = []
+          _orig = agents.agent_prompt
+          def rec(*a, **k):
+              s = _orig(*a, **k); seen.append(s); return s
+          agents.agent_prompt = rec
           from clinova.api.runs import RUNS
           from clinova.api.schemas import RunRequest
           st = RUNS.get(RUNS.submit(RunRequest(nct_id="NCT03232892"), background=False))
-          print(st.stage, st.source, st.message)
+          print("RESULT", st.stage, st.source, len(seen))
+          for s in seen:
+              print("SHA", hashlib.sha256(s.encode()).hexdigest()[:12])
+          print("PROMPT0>>>"); print(seen[0] if seen else ""); print("<<<PROMPT0")
           PY
       - name: Demo stack logs and cleanup
         if: always()

@@ -68,16 +68,16 @@ def test_dockerfile_non_root_and_slim():
 
 
 def test_cached_optimizer_shim_serves_only_matching_rules(parsed_protocol):
-    from clinova.api import live
+    from clinova.api import demo_cache
     from clinova.contracts import ParsedProtocol
 
     saved = json.loads((ROOT / "docs/demo_results/NCT03232892_optimize.json").read_text())
     proto = ParsedProtocol.model_validate(saved["protocol"])
-    fixes = live.cached_fixes(proto)
+    fixes = demo_cache.lookup(proto).fixes
     assert [f.fix_id for f in fixes] == [f["fix_id"] for f in saved["fixes"]] and len(fixes) == 3
     edited = proto.model_copy(update={"rules": proto.rules[1:]})
-    assert live.cached_fixes(edited) is None  # an edited protocol goes to the real optimizer
-    assert live.cached_fixes(parsed_protocol) is None  # the fixture protocol has no cached result
+    assert demo_cache.lookup(edited) is None  # an edited protocol goes to the real optimizer
+    assert demo_cache.lookup(parsed_protocol) is None  # the fixture protocol has no cached result
 
 
 # ---- needs the seeded database ----------------------------------------------------------------------------
@@ -178,7 +178,8 @@ def test_demo_flow_reproduces_frozen_results(demo_env, demo_runs):
         frozen_fixes = json.loads((ROOT / f"docs/demo_results/{nct}_optimize.json").read_text())["fixes"]
         assert [f.fix_id for f in st.result.fixes] == [f["fix_id"] for f in frozen_fixes], nct
     # the demo trial has cached agent decisions, so even the simulation stage is real, not a fixture
-    assert demo_runs["NCT03232892"][1].source.value == "live"
+    # (since T32 the frozen risk/flags/fixes make the run's source "cache" rather than "live")
+    assert demo_runs["NCT03232892"][1].source.value == "cache"
     assert demo_env == [], f"network or Gemini attempts: {demo_env}"
 
 
