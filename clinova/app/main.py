@@ -169,6 +169,18 @@ with tab_main:
             ),
             unsafe_allow_html=True,
         )
+        steps = [
+            ("Load", "A registered trial as first registered, or your own draft. Review every parsed criterion."),
+            ("Simulate", "1,000 synthetic NSCLC patients are screened; eligible ones decide whether to enroll and stay."),
+            ("Decide", "See where enrollment stalls, calibrated risk with ranges, and three fixes with trade-offs. You decide."),
+        ]
+        cols = st.columns(3, gap="medium")
+        for i, (col, (head, body)) in enumerate(zip(cols, steps, strict=True), start=1):
+            col.markdown(
+                f'<div class="cl-card" style="margin-top:0.8rem"><div class="cl-h2" style="margin:0 0 0.3rem;font-size:1.05rem">'
+                f'<span class="n">{i}</span>{esc(head)}</div><div class="cl-note">{esc(body)}</div></div>',
+                unsafe_allow_html=True,
+            )
     else:
         trial_bar(protocol, meta, meta.get("source"))
         with st.expander("2. Review the parsed criteria", expanded=not has_results):
