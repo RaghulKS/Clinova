@@ -148,7 +148,7 @@ def estimate_after(before_m: Measures, fix: Fix) -> Measures:
         enroll_rate=None if before_m.enroll_rate is None else _clip01(before_m.enroll_rate * (1 + fix.delta_enroll)),
         dropout_rate=add(before_m.dropout_rate, fix.delta_dropout),
         diversity_index=None if before_m.diversity_index is None else before_m.diversity_index + fix.delta_diversity,
-        accrual_fail_p=before_m.accrual_fail_p,
-        shortfall_p=before_m.shortfall_p,
+        accrual_fail_p=None,  # the optimizer only estimates amendment risk; never show an unchanged number as a result
+        shortfall_p=None,
         amend_p=add(before_m.amend_p, fix.delta_p_amend),
     )
