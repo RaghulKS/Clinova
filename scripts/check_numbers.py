@@ -9,6 +9,10 @@ Paths use target names instead of list offsets; replay.months uses YYYY-MM keys.
 Replay summary fields: retrained_brier, frozen_brier, n_scored, n_unique, n_train.
 Other prose-note numbers can use metrics.notes.<index>.numbers.<index>.
 Annotations select sources, never supply expected values or suppress mismatches.
+Further sources: detail.* (docs/metrics_detail.json), demo.* and demo_opt.* (the demo
+trial's docs/demo_results JSON), metrics.split_year.
+Literature figures outside every JSON report use <!-- external: <file> -->; each visible
+number on that line must then appear verbatim in the cited file.
 """
 
 from __future__ import annotations
@@ -22,6 +26,8 @@ from pathlib import Path
 DOCUMENTS = ("README.md", "docs/deck/outline.md", "docs/video/script.md", "docs/submission/devpost.md")
 NUMBER = re.compile(r"(?<![\w.])[+-]?(?:(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?|\.\d+)\s*%?(?!\w|\.\d)")
 ANNOTATION = re.compile(r"<!--\s*numbers:\s*(.*?)\s*-->")
+EXTERNAL = re.compile(r"<!--\s*external:\s*(\S+)\s*-->")
+DEMO_TRIAL = "NCT03232892"
 METRIC = re.compile(
     r"auc|brier|hit[-_ ]rate|ablation|accrual|shortfall|amend|baseline|replay|"
     r"train(?:ing)?\s+(?:rows|trials|set)|test\s+(?:rows|trials|set)|"
@@ -33,7 +39,10 @@ METRIC = re.compile(
 
 def numeric_tokens(text: str) -> list[str]:
     """Remove structural numbers before extracting visible quantitative claims."""
-    text = re.sub(r"<!--.*?-->", "", text)
+    text = re.sub(r"<!--.*?-->", "", text).replace("−", "-")
+    text = re.sub(r"\(\d+ words\)", "", text)
+    text = re.sub(r"[\w./-]+\.(?:png|json|md|pdf|pptx|csv|py)\b", "", text)
+    text = re.sub(r"\b(?:CC BY(?:-[A-Z]+)*|A?GPL|LGPL)[- ]\d+(?:\.\d+)?\b", "", text)
     text = re.sub(r"\[[^\]]*\]\([^)]*\)", lambda m: m[0].split("](")[0][1:], text)
     text = re.sub(r"`[^`]*`", lambda m: m[0][1:-1] if not re.search(r"[/\\=]|NCT\d", m[0]) else "", text)
     text = re.sub(r"https?://\S+|NCT\d+|\bv\d+(?:\.\d+)*\b", "", text, flags=re.I)
@@ -42,7 +51,7 @@ def numeric_tokens(text: str) -> list[str]:
     text = re.sub(r"\b(?:19|20)\d{2}\s*[-–—]\s*(?:19|20)\d{2}\b", "", text)
     text = re.sub(r"\b\d{1,2}:\d{2}(?::\d{2})?\b", "", text)
     text = re.sub(r"\bGate\s+\d+\b", "", text, flags=re.I)
-    text = re.sub(r"\b95\s*%\s*(?:confidence|CI)\b", "CI", text, flags=re.I)
+    text = re.sub(r"\b95\s*%\s*(?:bootstrap\s+)?(?:confidence|CIs?|interval)\b", "CI", text, flags=re.I)
     text = re.sub(r"^\s*(?:#{1,6}\s+)?\d+[.)]\s+", "", text)
     text = re.sub(r"\b\d+(?:\.\d+)?\s*(?:ms|seconds?|minutes?|hours?|screens?|slides?)\b", "", text, flags=re.I)
     return [match[0].strip() for match in NUMBER.finditer(text)]
@@ -60,10 +69,14 @@ def flatten(value: object, prefix: str, out: dict[str, object]) -> None:
         out[prefix] = value
 
 
-def sources(metrics: dict, replay: dict) -> dict[str, object]:
+def sources(metrics: dict, replay: dict, extra: dict[str, object] | None = None) -> dict[str, object]:
     out: dict[str, object] = {}
     flatten(metrics, "metrics", out)
     flatten(replay, "replay", out)
+    for prefix, value in (extra or {}).items():
+        flatten(value, prefix, out)
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(metrics.get("split_date", ""))):
+        out["metrics.split_year"] = int(metrics["split_date"][:4])
     out["replay.n_months"] = len(replay.get("months", []))
     summary = re.search(
         r"Brier ([\d.]+) vs ([\d.]+); ([\d,]+) scored windows, ([\d,]+) unique trials, "
@@ -158,7 +171,7 @@ def infer_paths(context: str, count: int, source: dict[str, object]) -> list[str
     return paths if len(paths) == count and all(path in source for path in paths) else []
 
 
-def check_text(text: str, source: dict[str, object], filename: str) -> tuple[list[str], int]:
+def check_text(text: str, source: dict[str, object], filename: str, root: Path | None = None) -> tuple[list[str], int]:
     errors: list[str] = []
     checked = 0
     table: list[str] = []
@@ -172,6 +185,18 @@ def check_text(text: str, source: dict[str, object], filename: str) -> tuple[lis
         if line.startswith("#"):
             table = []
         annotation = ANNOTATION.search(line)
+        external = EXTERNAL.search(line)
+        if external:
+            cited = (root or Path.cwd()) / external[1]
+            if not cited.is_file():
+                errors.append(f"{filename}:{line_no}: external source {external[1]} not found")
+                continue
+            body = cited.read_text(encoding="utf-8-sig")
+            for token in numeric_tokens(line):
+                checked += 1
+                if token not in body:
+                    errors.append(f"{filename}:{line_no}: {token} not found in {external[1]}")
+            continue
         if "|" in line and line.strip().startswith("|"):
             cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
             if all(re.fullmatch(r"[: -]+", cell) for cell in cells):
@@ -252,6 +277,12 @@ Demo trial NCT03232892 accrual probability 0.123 (docs/demo_results/NCT03232892.
     assert matches("70.1%", 0.7010859728506788)
     assert matches(".701", 0.7010859728506788)
     assert not matches("70.2%", 0.7010859728506788)
+    repo = Path(__file__).resolve().parents[1]
+    assert not check_text("57% of protocols. (12 words) <!-- external: docs/ARCHITECTURE.md -->", source, "f.md", repo)[0]
+    assert check_text("58% of protocols. <!-- external: docs/ARCHITECTURE.md -->", source, "t.md", repo)[0]
+    assert check_text("57% of protocols. <!-- external: docs/missing.md -->", source, "t.md", repo)[0]
+    assert not check_text("Split 2018. <!-- numbers: metrics.split_year -->", sources({"split_date": "2018-01-01"}, {}), "f.md")[0]
+    assert numeric_tokens("gain −0.04 (95% CIs) in img/a-03.png under CC BY 4.0") == ["-0.04"]
     print("Self-test passed: rounded values, CIs, percentages, scoped baselines, missing metrics and tampering.")
 
 
@@ -265,7 +296,12 @@ def main() -> int:
         return 0
     root = Path(__file__).resolve().parents[1]
     try:
-        source = sources(*(json.loads((root / name).read_text(encoding="utf-8-sig")) for name in ("docs/metrics.json", "docs/replay.json")))
+        def load(name: str) -> dict:
+            return json.loads((root / name).read_text(encoding="utf-8-sig"))
+
+        extra = {"detail": load("docs/metrics_detail.json"), "demo": load(f"docs/demo_results/{DEMO_TRIAL}.json"),
+                 "demo_opt": load(f"docs/demo_results/{DEMO_TRIAL}_optimize.json")}
+        source = sources(load("docs/metrics.json"), load("docs/replay.json"), extra)
     except (OSError, ValueError) as exc:
         print(f"Cannot load evaluation sources: {exc}")
         return 1
@@ -279,7 +315,7 @@ def main() -> int:
             else:
                 errors.append(f"Missing expected artifact: {filename}")
             continue
-        found, count = check_text(path.read_text(encoding="utf-8-sig"), source, filename)
+        found, count = check_text(path.read_text(encoding="utf-8-sig"), source, filename, root)
         errors.extend(found)
         checked += count
     for error in errors:
