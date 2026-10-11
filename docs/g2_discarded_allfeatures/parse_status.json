@@ -1,0 +1,79 @@
+{
+ "bundle_dir": "v0.g2-allfeatures-discarded",
+ "model_version": "v1.0",
+ "target": "accrual_fail",
+ "splits": {
+  "train": {
+   "all": {
+    "n": 1383,
+    "pos": 136,
+    "auc": 0.936
+   },
+   "auc_of_has_parsed_rules_indicator": 0.713,
+   "parsed": {
+    "n": 99,
+    "pos": 62,
+    "prevalence": 0.626,
+    "mean_p": 0.635,
+    "auc": 0.952
+   },
+   "unparsed": {
+    "n": 1284,
+    "pos": 74,
+    "prevalence": 0.058,
+    "mean_p": 0.061,
+    "auc": 0.908
+   },
+   "embedded": {
+    "n": 74,
+    "pos": 46,
+    "prevalence": 0.622,
+    "mean_p": 0.636,
+    "auc": 0.957
+   },
+   "not_embedded": {
+    "n": 1309,
+    "pos": 90,
+    "prevalence": 0.069,
+    "mean_p": 0.072,
+    "auc": 0.917
+   }
+  },
+  "test": {
+   "all": {
+    "n": 347,
+    "pos": 34,
+    "auc": 0.874
+   },
+   "auc_of_has_parsed_rules_indicator": 0.785,
+   "parsed": {
+    "n": 77,
+    "pos": 25,
+    "prevalence": 0.325,
+    "mean_p": 0.634,
+    "auc": 0.755
+   },
+   "unparsed": {
+    "n": 270,
+    "pos": 9,
+    "prevalence": 0.033,
+    "mean_p": 0.123,
+    "auc": 0.74
+   },
+   "embedded": {
+    "n": 138,
+    "pos": 29,
+    "prevalence": 0.21,
+    "mean_p": 0.495,
+    "auc": 0.838
+   },
+   "not_embedded": {
+    "n": 209,
+    "pos": 5,
+    "prevalence": 0.024,
+    "mean_p": 0.065,
+    "auc": 0.645
+   }
+  }
+ }
+}

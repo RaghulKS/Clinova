@@ -24,7 +24,7 @@ def initial(n_pos=6, n_neg=6):
 def fake_features(frame):
     """Synthetic raw features (one informative column) so the real T22 trainer runs offline."""
     y = pd.to_numeric(frame["label_accrual_fail"], errors="coerce").fillna(0.5).to_numpy()
-    raw = pd.DataFrame({"signal": y + 0.01 * np.arange(len(frame)), "n_rules": 10.0}, index=frame["nct_id"])
+    raw = pd.DataFrame({"text_len": y + 0.01 * np.arange(len(frame)), "n_rules": 10.0}, index=frame["nct_id"])
     return raw, {}, {}
 
 

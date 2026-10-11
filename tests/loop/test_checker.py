@@ -108,7 +108,7 @@ def test_retrain_threshold_accumulates_and_marks_only_success(monkeypatch, tmp_p
 
     def fit(rows, features, cfg, prefix):
         # Real T22 defaults, never saved into the shared models/ directory.
-        assert features == "features" and cfg == {"save": False} and prefix == "T22-checker-"
+        assert features == "features" and cfg == checker.CHECKER_CFG and prefix == "T22-checker-"
         trained.append(1)
         return {"models": {"accrual_fail": 1}, "version": "T22-checker-test"}
 

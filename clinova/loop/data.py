@@ -21,11 +21,13 @@ from clinova.model.features import (
     load_protocols,
     load_sim_features,
 )
-from clinova.model.train import predict_p, train
+from clinova.model.train import FIRST_VERSION_FEATURES, predict_p, train
 
-# Replay arms share one fixed setting: no tuning (one-point grid), no bootstraps, nothing saved.
-REPLAY_CFG: dict[str, Any] = {"save": False, "bootstraps": 0, "use_sim": False,
+# Replay arms share one fixed setting: no tuning (one-point grid), no bootstraps, nothing saved, and
+# v1.0's first-registration feature set (see model.train.FIRST_VERSION_FEATURES).
+REPLAY_CFG: dict[str, Any] = {"save": False, "bootstraps": 0, "use_sim": False, "features": FIRST_VERSION_FEATURES,
                               "grid": [{"num_leaves": 4, "min_child_samples": 5, "n_estimators": 100}]}
+CHECKER_CFG: dict[str, Any] = {"save": False, "features": FIRST_VERSION_FEATURES}
 
 
 def training_frame() -> pd.DataFrame:

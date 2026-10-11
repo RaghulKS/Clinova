@@ -105,7 +105,7 @@ def run_replay(
     initial = available_training(frame, freeze)
     frozen = current = fit(initial, features, REPLAY_CFG, "T22-replay-")
     snapshot = frame.sort_values("nct_id").to_json(date_format="iso", orient="records")
-    run_id = hashlib.sha256(f"T22|{snapshot}|{freeze}|{start}|{end}|{horizon_months}".encode()).hexdigest()[:16]
+    run_id = hashlib.sha256(f"T22|{REPLAY_CFG.get('features')}|{snapshot}|{freeze}|{start}|{end}|{horizon_months}".encode()).hexdigest()[:16]
     results, retrained_p, frozen_p, labels = [], [], [], []
     unique_scored, skipped, reasons = set(), 0, set()
     for month in pd.date_range(first, last, freq="MS"):

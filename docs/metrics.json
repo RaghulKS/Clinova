@@ -1,89 +1,89 @@
 {
- "model_version": "v0.202610110350",
- "generated_at": "2026-10-11T03:51:48.319875Z",
+ "model_version": "v1.0",
+ "generated_at": "2026-10-11T04:36:15.204757Z",
  "split_date": "2018-01-01",
- "n_train": 164,
- "n_test": 187,
+ "n_train": 1417,
+ "n_test": 355,
  "targets": [
   {
    "target": "accrual_fail",
-   "n_test": 186,
+   "n_test": 354,
    "n_pos": 34,
    "auc": {
-    "value": 0.7128482972136222,
-    "ci_low": 0.6047029467764594,
-    "ci_high": 0.8059154170120469
+    "value": 0.7049632352941176,
+    "ci_low": 0.6299195139152035,
+    "ci_high": 0.7783580901856764
    },
    "baseline_auc": {
-    "value": 0.6836300309597524,
-    "ci_low": 0.5720167523448775,
-    "ci_high": 0.788680304400241
+    "value": 0.66875,
+    "ci_low": 0.6005098875052618,
+    "ci_high": 0.7330272937979538
    },
-   "brier": 0.1974281571165118,
-   "baseline_brier": 0.13358814792527535,
+   "brier": 0.083712155403728,
+   "baseline_brier": 0.08478632547880866,
    "reliability": [
     {
      "bin_low": 0.0,
      "bin_high": 0.1,
-     "mean_pred": 0.06107630222861936,
-     "frac_pos": 0.08571428571428572,
-     "n": 35
+     "mean_pred": 0.059104878034683485,
+     "frac_pos": 0.06938775510204082,
+     "n": 245
     },
     {
      "bin_low": 0.1,
      "bin_high": 0.2,
-     "mean_pred": 0.14621412703204828,
-     "frac_pos": 0.09090909090909091,
-     "n": 11
+     "mean_pred": 0.14253120247097006,
+     "frac_pos": 0.13541666666666666,
+     "n": 96
     },
     {
      "bin_low": 0.2,
      "bin_high": 0.30000000000000004,
-     "mean_pred": 0.25989191851838833,
-     "frac_pos": 0.1111111111111111,
-     "n": 18
+     "mean_pred": 0.20899395931396278,
+     "frac_pos": 0.3076923076923077,
+     "n": 13
     },
     {
      "bin_low": 0.30000000000000004,
      "bin_high": 0.4,
-     "mean_pred": 0.34772411593522246,
-     "frac_pos": 0.06451612903225806,
-     "n": 31
+     "mean_pred": null,
+     "frac_pos": null,
+     "n": 0
     },
     {
      "bin_low": 0.4,
      "bin_high": 0.5,
-     "mean_pred": 0.4427091145400417,
-     "frac_pos": 0.24,
-     "n": 25
+     "mean_pred": null,
+     "frac_pos": null,
+     "n": 0
     },
     {
      "bin_low": 0.5,
      "bin_high": 0.6000000000000001,
-     "mean_pred": 0.5571004145873516,
-     "frac_pos": 0.08695652173913043,
-     "n": 23
+     "mean_pred": null,
+     "frac_pos": null,
+     "n": 0
     },
     {
      "bin_low": 0.6000000000000001,
      "bin_high": 0.7000000000000001,
-     "mean_pred": 0.6423669421193765,
-     "frac_pos": 0.391304347826087,
-     "n": 23
+     "mean_pred": null,
+     "frac_pos": null,
+     "n": 0
     },
     {
      "bin_low": 0.7000000000000001,
      "bin_high": 0.8,
-     "mean_pred": 0.7418141390957509,
-     "frac_pos": 0.46153846153846156,
-     "n": 13
+     "mean_pred": null,
+     "frac_pos": null,
+     "n": 0
     },
     {
      "bin_low": 0.8,
      "bin_high": 0.9,
-     "mean_pred": 0.8359375977988724,
-     "frac_pos": 0.42857142857142855,
-     "n": 7
+     "mean_pred": null,
+     "frac_pos": null,
+     "n": 0
     },
     {
      "bin_low": 0.9,
@@ -96,90 +96,90 @@
   },
   {
    "target": "shortfall",
-   "n_test": 185,
-   "n_pos": 121,
+   "n_test": 348,
+   "n_pos": 190,
    "auc": {
-    "value": 0.6313274793388429,
-    "ci_low": 0.5498951690821257,
-    "ci_high": 0.7083776075948415
+    "value": 0.6004830113257829,
+    "ci_low": 0.5433254295085566,
+    "ci_high": 0.6541492865340339
    },
    "baseline_auc": {
-    "value": 0.5609504132231405,
-    "ci_low": 0.47557967828332104,
-    "ci_high": 0.641510077572413
+    "value": 0.6083944037308461,
+    "ci_low": 0.5442561518141619,
+    "ci_high": 0.6648945404846336
    },
-   "brier": 0.22844516565201617,
-   "baseline_brier": 0.27012550612303204,
+   "brier": 0.2515127643798909,
+   "baseline_brier": 0.2478784589161848,
    "reliability": [
     {
      "bin_low": 0.0,
      "bin_high": 0.1,
-     "mean_pred": 0.09672191893858761,
-     "frac_pos": 1.0,
-     "n": 1
+     "mean_pred": null,
+     "frac_pos": null,
+     "n": 0
     },
     {
      "bin_low": 0.1,
      "bin_high": 0.2,
-     "mean_pred": 0.1556336210488174,
-     "frac_pos": 0.0,
-     "n": 2
+     "mean_pred": 0.171962781022119,
+     "frac_pos": 0.5,
+     "n": 4
     },
     {
      "bin_low": 0.2,
      "bin_high": 0.30000000000000004,
-     "mean_pred": 0.25604897114522773,
-     "frac_pos": 0.7142857142857143,
-     "n": 7
+     "mean_pred": 0.2626556670172092,
+     "frac_pos": 0.53125,
+     "n": 32
     },
     {
      "bin_low": 0.30000000000000004,
      "bin_high": 0.4,
-     "mean_pred": 0.3626629930642964,
-     "frac_pos": 0.5833333333333334,
-     "n": 24
+     "mean_pred": 0.3506902312531831,
+     "frac_pos": 0.4778761061946903,
+     "n": 113
     },
     {
      "bin_low": 0.4,
      "bin_high": 0.5,
-     "mean_pred": 0.4475199460503176,
-     "frac_pos": 0.5365853658536586,
-     "n": 41
+     "mean_pred": 0.4438138889245369,
+     "frac_pos": 0.46153846153846156,
+     "n": 65
     },
     {
      "bin_low": 0.5,
      "bin_high": 0.6000000000000001,
-     "mean_pred": 0.5546204078205962,
-     "frac_pos": 0.5666666666666667,
-     "n": 30
+     "mean_pred": 0.5581578121524973,
+     "frac_pos": 0.5375,
+     "n": 80
     },
     {
      "bin_low": 0.6000000000000001,
      "bin_high": 0.7000000000000001,
-     "mean_pred": 0.6559899368257177,
-     "frac_pos": 0.631578947368421,
-     "n": 38
+     "mean_pred": 0.629888440449244,
+     "frac_pos": 0.8113207547169812,
+     "n": 53
     },
     {
      "bin_low": 0.7000000000000001,
      "bin_high": 0.8,
-     "mean_pred": 0.7367737290531895,
-     "frac_pos": 0.9375,
-     "n": 16
+     "mean_pred": 0.7074806335992605,
+     "frac_pos": 1.0,
+     "n": 1
     },
     {
      "bin_low": 0.8,
      "bin_high": 0.9,
-     "mean_pred": 0.8465072789548154,
-     "frac_pos": 0.85,
-     "n": 20
+     "mean_pred": null,
+     "frac_pos": null,
+     "n": 0
     },
     {
      "bin_low": 0.9,
      "bin_high": 1.0,
-     "mean_pred": 0.9281508986097627,
-     "frac_pos": 1.0,
-     "n": 6
+     "mean_pred": null,
+     "frac_pos": null,
+     "n": 0
     }
    ]
   }
@@ -187,13 +187,14 @@
  "hit_rate": null,
  "ablation": null,
  "notes": [
-  "accrual_fail: trained on 146 labeled train trials (21 positive); time-ordered tuning fit 70 / validated 76 (val AUC 0.662), out-of-fold AUC 0.763.",
-  "shortfall: trained on 129 labeled train trials (61 positive); time-ordered tuning fit 55 / validated 74 (val AUC 0.74), out-of-fold AUC 0.674.",
-  "amend: no model (0 positive / 1 negative labeled training trials (< 5)).",
+  "accrual_fail: trained on 1376 labeled train trials (136 positive); time-ordered tuning fit 1144 / validated 232 (val AUC 0.692), out-of-fold AUC 0.659.",
+  "shortfall: trained on 781 labeled train trials (350 positive); time-ordered tuning fit 551 / validated 230 (val AUC 0.675), out-of-fold AUC 0.638.",
+  "amend: no model (0 positive / 22 negative labeled training trials (< 5)).",
   "Hit rate not computed: no test trials with label_amend yet (version histories not loaded).",
-  "Simulation ablation not computed: 11 simulated trials, 4 labeled in train and 7 labeled in test (7 positive); needs >= 10 of each with both classes.",
-  "Feature coverage on test: parsed rules 41%, embedding 74%, first-registration sites 48%; missing features are NaN, not imputed.",
-  "Simulation features were not used (fewer than 300 simulated trials); screen features on a fixed virtual cohort were.",
+  "Simulation ablation not computed: 16 simulated trials, 8 labeled in train and 7 labeled in test (7 positive); needs >= 10 of each with both classes.",
+  "Feature coverage on test: parsed rules 22%, embedding 39%, first-registration sites 55%; missing features are NaN, not imputed.",
+  "Simulation features were not used (fewer than 300 simulated trials).",
+  "Features (19): first-registration JSON only (design, operations, visit estimate, text length). Rule, screen and embedding features were left out because only trials already parsed or embedded have them and that processing order tracks the outcome; see docs/gate2_report.md.",
   "Data were still loading when this ran: numbers will move as more trials are labeled. Re-run `python -m clinova.model train && python -m clinova.model evaluate`."
  ]
 }

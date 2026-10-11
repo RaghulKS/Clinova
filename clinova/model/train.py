@@ -33,6 +33,17 @@ META_COLS = ("split", "start_date", *LABELS.values())
 MODELS_DIR = get_settings().MODELS_DIR  # default <main clone>/models, shared by every worktree; gitignored
 MIN_SIM_TRIALS = 300
 
+# G2: features computed from the first registered version's JSON alone (T11 mapping + visit estimate).
+# Rule, screen and embedding features exist only for trials T12 has already parsed/embedded, and that
+# processing order is label-correlated (train: 63% accrual failures among parsed trials vs 6% among the
+# rest), so their missingness is a proxy for the outcome and every deployed (parsed) protocol would be
+# scored as if it were in the high-risk "parsed" group. v1.0 therefore uses only these features.
+# ponytail: switch back to the full set (feature_set="all") once every trial is parsed and embedded.
+FIRST_VERSION_FEATURES = [
+    "text_len", "phase_num", "n_arms", "randomized", "masking_level", "iv_drug", "iv_biological", "iv_radiation",
+    "iv_other", "log_planned_enrollment", "n_sites", "n_countries", "us_share", "sponsor_industry", "sponsor_gov",
+    "age_min", "age_max", "visit_count", "visit_hours", "visit_invasive", "visit_travel",
+]
 BASELINE_FEATURES = [  # ten interpretable features for the logistic baseline
     "phase_num", "log_planned_enrollment", "n_arms", "randomized", "sponsor_industry",
     "n_rules", "n_unparseable", "text_len", "visit_hours", "screen_eligible_frac",
@@ -89,7 +100,8 @@ def _bootstraps(X: pd.DataFrame, y: np.ndarray, params: Mapping[str, Any], cfg: 
 
 
 def feature_list(df: pd.DataFrame, cfg: Mapping[str, Any]) -> list[str]:
-    feats = list(cfg["features"]) if cfg.get("features") else [c for c in df.columns if c not in META_COLS]
+    feats = ([c for c in cfg["features"] if c in df] if cfg.get("features")
+             else [c for c in df.columns if c not in META_COLS])
     use_sim = cfg.get("use_sim")
     if use_sim is None:
         present = [c for c in SIM_COLS if c in df]

@@ -9,13 +9,18 @@ import time
 import warnings
 
 
-def _train(version: str | None, bootstraps: int, use_sim: str) -> dict:
+def _train(version: str | None, bootstraps: int, use_sim: str, feature_set: str = "first_version") -> dict:
     from clinova.model.features import load_dataset
     from clinova.model.train import save_bundle, train
 
     df, ref = load_dataset()
     cfg = {"ref": ref, "version": version, "bootstraps": bootstraps,
            "use_sim": {"auto": None, "yes": True, "no": False}[use_sim]}
+    if feature_set == "first_version":  # see train.FIRST_VERSION_FEATURES for why this is the default
+        from clinova.model.features import SIM_COLS
+        from clinova.model.train import FIRST_VERSION_FEATURES
+
+        cfg["features"] = FIRST_VERSION_FEATURES + (list(SIM_COLS) if use_sim != "no" else [])
     bundle = train(df[df["split"] == "train"], cfg)
     path = save_bundle(bundle)
     print(json.dumps({"version": bundle["version"], "path": str(path), "n_train": bundle["n_train"],
@@ -54,6 +59,8 @@ def main(argv: list[str] | None = None) -> int:
     t.add_argument("--version", default=None)
     t.add_argument("--bootstraps", type=int, default=30)
     t.add_argument("--use-sim", choices=["auto", "yes", "no"], default="auto")
+    t.add_argument("--feature-set", choices=["first_version", "all"], default="first_version",
+                   help="first_version: first-registration JSON features only (v1.0); all: add parse/embedding features.")
     e = sub.add_parser("evaluate", help="Write docs/metrics.json and docs/figures/*.png on the test split.")
     e.add_argument("--version", default=None)
     w = sub.add_parser("watch", help="Every --interval s: retrain + evaluate when sims reach --min-sim or labels grow.")
@@ -63,7 +70,7 @@ def main(argv: list[str] | None = None) -> int:
     a = p.parse_args(argv)
     warnings.filterwarnings("ignore", category=UserWarning)
     if a.cmd == "train":
-        _train(a.version, a.bootstraps, a.use_sim)
+        _train(a.version, a.bootstraps, a.use_sim, a.feature_set)
     elif a.cmd == "evaluate":
         _evaluate(a.version)
     else:

@@ -282,8 +282,16 @@ def evaluate(bundle: Mapping[str, Any], df: pd.DataFrame, *, out_dir: Path | Non
                  + "; missing features are NaN, not imputed.")
     coverage |= {"simulation": float(test.reindex(columns=SIM_COLS).notna().any(axis=1).mean()),
                  "n_test_trials": len(test), "n_test_labeled": labeled(test)}
+    feats = bundle["feature_names"]
     notes.append("Simulation features " + ("were used." if bundle["use_sim"] else
-                 "were not used (fewer than 300 simulated trials); screen features on a fixed virtual cohort were."))
+                 "were not used (fewer than 300 simulated trials)."))
+    if "screen_eligible_frac" not in feats and "n_rules" not in feats:
+        notes.append(f"Features ({len(feats)}): first-registration JSON only (design, operations, visit estimate, "
+                     "text length). Rule, screen and embedding features were left out because only trials already "
+                     "parsed or embedded have them and that processing order tracks the outcome; see "
+                     "docs/gate2_report.md.")
+    elif "screen_eligible_frac" in feats:
+        notes.append("Screen features on a fixed virtual cohort were used.")
     notes.append("Data were still loading when this ran: numbers will move as more trials are labeled. Re-run "
                  "`python -m clinova.model train && python -m clinova.model evaluate`.")
     vm = ValidationMetrics(model_version=bundle["version"], generated_at=now, n_train=labeled(train_rows),

@@ -4,32 +4,32 @@ Generated from Tiger Cloud by clinova.ingest.report.
 
 ```json
 {
-  "total": 1494,
+  "total": 1879,
   "status": {
-    "COMPLETED": 1017,
+    "COMPLETED": 1373,
     "TERMINATED": 419,
-    "WITHDRAWN": 58
+    "WITHDRAWN": 87
   },
   "split": {
-    "train": 1186,
-    "pending": 14,
-    "test": 294
+    "train": 1441,
+    "pending": 85,
+    "test": 353
   },
-  "originals": 1494,
+  "originals": 1879,
   "version_events": 0,
   "labels": {
     "accrual_fail": {
-      "known": 1428,
+      "known": 1742,
       "positive": 170,
-      "prevalence": 0.11904761904761904
+      "prevalence": 0.09758897818599312
     },
     "shortfall": {
-      "known": 934,
-      "positive": 477,
-      "prevalence": 0.5107066381156317
+      "known": 1135,
+      "positive": 540,
+      "prevalence": 0.47577092511013214
     },
     "amend": {
-      "known": 21,
+      "known": 24,
       "positive": 0,
       "prevalence": 0.0
     }
