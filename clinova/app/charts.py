@@ -96,7 +96,7 @@ def funnel_waterfall(funnel: Funnel, sims: list[SimRunSummary], highlight: str |
     comp = _mean([s.completion_rate for s in sims]) if sims else None
     if enroll is not None and comp is not None:
         n_enr = round(funnel.n_eligible * enroll)
-        tail += [("Enroll", n_enr), ("Complete", round(n_enr * comp))]
+        tail += [("Enroll", n_enr), ("Finish", round(n_enr * comp))]
     fig = go.Figure()
     fig.add_trace(
         go.Bar(

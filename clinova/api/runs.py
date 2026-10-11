@@ -252,6 +252,8 @@ class RunManager:
         While the ledger or database is unavailable the score goes to the in-memory audit instead."""
         from clinova.api.audit import MEMORY
 
+        if any(d.feature == "no_model" for d in risk.top_drivers):
+            return  # a placeholder (e.g. amendment with no model) is not a prediction; never log it as one
         ctx = "fixture" if fixture else context
         try:
             live._need_db()
