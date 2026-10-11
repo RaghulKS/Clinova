@@ -8,8 +8,12 @@ sync:
 lint:
 	uv run ruff check .
 
+# macOS without Homebrew libomp: borrow scikit-learn's copy for LightGBM (empty and harmless elsewhere; T32).
+# Set inline in the recipe so SIP cannot strip it between make and uv. Untested on macOS by the integrator.
+SKLEARN_OMP = $(shell uv run python -c "import sklearn,os;print(os.path.join(os.path.dirname(sklearn.__file__),'.dylibs'))" 2>/dev/null)
+
 test:
-	uv run pytest -q
+	DYLD_FALLBACK_LIBRARY_PATH="$(SKLEARN_OMP)" uv run pytest -q
 
 # Every task must pass this before finishing.
 check: lint test

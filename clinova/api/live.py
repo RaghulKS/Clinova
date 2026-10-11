@@ -8,13 +8,15 @@ to fixtures. Database trouble raises ``LiveUnavailable`` and is handled the same
 from __future__ import annotations
 
 import functools
+import json
 import logging
 import os
 import time
 from typing import Any
 
+from clinova.common.config import REPO_ROOT, get_settings
 from clinova.common.llm import BudgetExceeded, CacheMiss
-from clinova.contracts import Feedback, ParsedProtocol, Prediction, TrialRecord, VersionEvent
+from clinova.contracts import Feedback, Fix, ParsedProtocol, Prediction, TrialRecord, VersionEvent
 
 log = logging.getLogger("clinova.api")
 
@@ -140,8 +142,22 @@ def flag_criteria(protocol):
     return _flags(protocol, k=3)
 
 
+def cached_fixes(protocol) -> list[Fix] | None:
+    """Fixes frozen in docs/demo_results/<NCT>_optimize.json, if they were computed for exactly these rules."""
+    path = REPO_ROOT / "docs" / "demo_results" / f"{protocol.trial_id}_optimize.json"
+    if not path.is_file():
+        return None
+    saved = json.loads(path.read_text(encoding="utf-8"))
+    if saved["protocol"]["rules"] != [r.model_dump(mode="json") for r in protocol.rules]:
+        return None
+    return [Fix.model_validate(f) for f in saved["fixes"]]
+
+
 def optimize(protocol, max_edits=3):
     _need_db()  # edit space and precedents query the database (T23 contract change)
+    # demo mode: the real optimizer takes ~2 minutes per trial, so serve the frozen result (T31 contract change)
+    if get_settings().CLINOVA_MODE == "demo" and (fixes := cached_fixes(protocol)) is not None:
+        return fixes
     from clinova.optimize.search import optimize as _optimize
 
     return _optimize(protocol, max_edits=max_edits)

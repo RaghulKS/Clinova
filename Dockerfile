@@ -10,7 +10,7 @@ ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy PATH=/app/.venv/bin:$PATH PYTHONUNBU
 COPY pyproject.toml uv.lock README.md ./
 RUN uv sync --frozen --no-dev --no-install-project
 COPY clinova ./clinova
-COPY scripts/seed.py scripts/demo_serve.py ./scripts/
+COPY scripts/seed.py ./scripts/
 COPY db ./db
 COPY docs ./docs
 COPY tests/fixtures ./tests/fixtures
@@ -22,4 +22,4 @@ RUN uv sync --frozen --no-dev \
     && chown -R clinova:clinova /app
 USER clinova
 EXPOSE 8000 8501
-CMD ["python", "scripts/demo_serve.py", "--host", "0.0.0.0"]
+CMD ["python", "-m", "clinova.api", "--host", "0.0.0.0"]

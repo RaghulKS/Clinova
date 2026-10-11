@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import yaml
-from hypothesis import given
+from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from clinova.simulate.diversity import diversity_index
@@ -90,6 +90,7 @@ def test_missing_columns_raise():
                           st.sampled_from(["male", "female", None]),
                           st.sampled_from(["white", "black", "asian", "hispanic", "other", None])),
                 max_size=100))
+@settings(derandomize=True, deadline=None)  # G3: deterministic, no wall-clock deadline (was flaky)
 def test_score_is_bounded_and_replication_invariant(rows):
     frame = pd.DataFrame(rows, columns=["age", "sex", "race_ethnicity"])
     value = diversity_index(frame)

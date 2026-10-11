@@ -68,17 +68,16 @@ def test_dockerfile_non_root_and_slim():
 
 
 def test_cached_optimizer_shim_serves_only_matching_rules(parsed_protocol):
-    import demo_serve
-
+    from clinova.api import live
     from clinova.contracts import ParsedProtocol
 
     saved = json.loads((ROOT / "docs/demo_results/NCT03232892_optimize.json").read_text())
     proto = ParsedProtocol.model_validate(saved["protocol"])
-    fixes = demo_serve.cached_fixes(proto)
+    fixes = live.cached_fixes(proto)
     assert [f.fix_id for f in fixes] == [f["fix_id"] for f in saved["fixes"]] and len(fixes) == 3
     edited = proto.model_copy(update={"rules": proto.rules[1:]})
-    assert demo_serve.cached_fixes(edited) is None  # an edited protocol goes to the real optimizer
-    assert demo_serve.cached_fixes(parsed_protocol) is None  # the fixture protocol has no cached result
+    assert live.cached_fixes(edited) is None  # an edited protocol goes to the real optimizer
+    assert live.cached_fixes(parsed_protocol) is None  # the fixture protocol has no cached result
 
 
 # ---- needs the seeded database ----------------------------------------------------------------------------
@@ -147,8 +146,6 @@ def demo_env(tmp_path_factory):
         raise AssertionError("demo mode reached the Gemini client")
 
     mp.setattr(llm, "_client", no_gemini)
-    import demo_serve  # noqa: F401  (cached optimizer, as the API container runs it)
-
     from clinova.api import live
 
     live._DB_CHECK = None

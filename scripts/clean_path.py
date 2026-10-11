@@ -117,7 +117,7 @@ def main() -> None:
             shutil.copy(clone / "db/seed/files/cohort_any_2000_42.parquet", clone / ".data/model")
             run = ["uv", "run", "--frozen", "--no-dev", "python"]
             subprocess.run([*run, "scripts/seed.py", "load"], cwd=clone, check=True, env=env)
-            procs.append(subprocess.Popen([*run, "scripts/demo_serve.py"], cwd=clone, env=env))
+            procs.append(subprocess.Popen([*run, "-m", "clinova.api"], cwd=clone, env=env))
             wait_http(f"{API}/health", 120)
             procs.append(subprocess.Popen(
                 [*run, "-m", "clinova.app", "--server.port=8501", "--server.headless=true"], cwd=clone, env=env))
