@@ -132,7 +132,10 @@ async def _call(kind: str, namespace: str, model: str, method: str, **kwargs: An
     if s.GEMINI_API_KEY is None:
         raise LLMError("CLINOVA_MODE=live needs GEMINI_API_KEY")
     fp = _fingerprint(s.GEMINI_API_KEY.get_secret_value())
-    fn = getattr(_client().models, method)
+    # Hold the Client itself: genai.Client.__del__ closes its HTTP session, and lru_cache can build
+    # a duplicate under thread races that is garbage-collected while `fn` is still in use.
+    client = _client()
+    fn = getattr(client.models, method)
     async with _sem():
         async for attempt in AsyncRetrying(
             retry=retry_if_exception(_retryable),

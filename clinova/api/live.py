@@ -78,6 +78,7 @@ def fetch_trial(nct_id: str) -> TrialRecord:
 
 def protocol_from_trial(trial: TrialRecord) -> Any:
     """Parse a trial's FIRST registered eligibility text (leakage rule) into a ParsedProtocol."""
+    _need_db()  # Gemini calls go through llm_cache in Postgres
     from clinova.parse.parser import parse_protocol
     from clinova.parse.visits import estimate_visits
 
@@ -93,6 +94,7 @@ def protocol_from_trial(trial: TrialRecord) -> Any:
 
 
 def parse_text(eligibility_text, schedule_text, *, trial_id, phase):
+    _need_db()  # Gemini calls go through llm_cache in Postgres
     from clinova.parse.parser import parse_protocol
 
     return parse_protocol(eligibility_text, schedule_text, trial_id=trial_id, version_no=0, phase=phase)
@@ -111,6 +113,7 @@ def screen(rules, cohort_df, trial_id):
 
 
 def simulate(protocol, n, seeds):
+    _need_db()  # Gemini calls go through llm_cache in Postgres
     from clinova.simulate.runner import simulate_trial
 
     return simulate_trial(protocol, n=n, seeds=tuple(seeds))
