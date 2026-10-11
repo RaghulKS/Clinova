@@ -7,12 +7,14 @@ to fixtures. Database trouble raises ``LiveUnavailable`` and is handled the same
 
 from __future__ import annotations
 
+import functools
 import logging
 import os
 import time
 from typing import Any
 
-from clinova.contracts import Feedback, Prediction, TrialRecord
+from clinova.common.llm import BudgetExceeded, CacheMiss
+from clinova.contracts import Feedback, ParsedProtocol, Prediction, TrialRecord, VersionEvent
 
 log = logging.getLogger("clinova.api")
 
@@ -23,6 +25,9 @@ class LiveUnavailable(Exception):
     """The live path cannot run right now (no database, trial not loaded). Routes fall back."""
 
 
+FALLBACK_ERRORS: tuple[type[BaseException], ...] = (NotImplementedError, LiveUnavailable, CacheMiss, BudgetExceeded)
+# What routes and run stages treat as "this part is not available": a stub, no database, an LLM response that
+# demo mode has not cached, or a spent Gemini budget. They fall back to fixtures, always tagged as such.
 def db_available(max_age_s: float = 30.0) -> bool:
     """True when the database answers within 3 seconds. The answer is remembered for 30 seconds."""
     global _DB_CHECK
@@ -97,10 +102,16 @@ def parse_text(eligibility_text, schedule_text, *, trial_id, phase):
     return parse_protocol(eligibility_text, schedule_text, trial_id=trial_id, version_no=0, phase=phase)
 
 
-def make_cohort(n, seed, setting):
+@functools.lru_cache(maxsize=6)
+def _cohort_cached(n, seed, setting):
     from clinova.cohort.generate import generate_cohort_df
 
     return generate_cohort_df(n, seed, setting)
+
+
+def make_cohort(n, seed, setting):
+    """The cohort dataframe for (n, seed, setting). Deterministic, so it is cached; callers must not mutate it."""
+    return _cohort_cached(n, seed, setting)
 
 
 def screen(rules, cohort_df, trial_id):
@@ -156,9 +167,75 @@ def record_feedback(feedback: Feedback) -> Feedback:
     return _record(feedback)
 
 
-def backtest(nct_id: str):
-    """Owner T25: loads the trial, runs the first version, adds version events and rule changes."""
-    raise NotImplementedError("T25 implements the live backtest")
+@functools.lru_cache(maxsize=1)
+def _surrogate():
+    from clinova.simulate.surrogate import Surrogate
+
+    try:
+        return Surrogate.load()
+    except FileNotFoundError as exc:  # T24 has not fitted and saved one yet
+        raise LiveUnavailable("no fitted surrogate on disk") from exc
+
+
+def surrogate_score(protocol, eligible_df) -> tuple[float, float]:
+    """``(enroll_rate, dropout_risk)`` from the fast surrogate: no Gemini calls."""
+    return _surrogate().score(protocol, eligible_df)
+
+
+def diversity(eligible_df) -> float:
+    from clinova.simulate.diversity import diversity_index
+
+    return diversity_index(eligible_df)
+
+
+def diff_rules(old, new):
+    from clinova.parse.diff import diff_rules as _diff
+
+    return _diff(old, new)
+
+
+def read_version_events(nct_id: str) -> list[VersionEvent]:
+    """Field-level history of one trial from ``trial_versions``, oldest first."""
+    _need_db()
+    from psycopg.rows import dict_row
+
+    from clinova.common.db import get_conn
+
+    try:
+        with get_conn() as conn:
+            rows = conn.cursor(row_factory=dict_row).execute(
+                "SELECT * FROM trial_versions WHERE nct_id = %s ORDER BY version_no, version_date, field",
+                (nct_id.upper(),),
+            ).fetchall()
+    except Exception as exc:
+        raise LiveUnavailable(f"version history read failed: {type(exc).__name__}") from exc
+    return [VersionEvent.model_validate(r) for r in rows]
+
+
+# --- drafts (table owned by T25) -------------------------------------------------------------------
+
+
+def save_draft(draft_id: str, text: str, schedule_text: str | None, parsed: ParsedProtocol | None) -> bool:
+    """Store a pasted draft protocol and its parse in ``drafts``. Best effort: returns False without a
+    database or on any database error (a draft that cannot be saved must never break a run)."""
+    if not db_available():
+        return False
+    from psycopg.types.json import Jsonb
+
+    from clinova.common.db import get_conn
+
+    try:
+        with get_conn() as conn:
+            conn.execute(
+                "INSERT INTO drafts (draft_id, text, schedule_text, parsed) VALUES (%s, %s, %s, %s) "
+                "ON CONFLICT (draft_id) DO UPDATE SET text = EXCLUDED.text, "
+                "schedule_text = EXCLUDED.schedule_text, parsed = EXCLUDED.parsed",
+                (draft_id, text, schedule_text, Jsonb(parsed.model_dump(mode="json")) if parsed else None),
+            )
+        return True
+    except Exception as exc:
+        log.info("draft not saved: %s", type(exc).__name__)
+        return False
 
 
 def read_feedback(limit: int = 200) -> list[Feedback]:

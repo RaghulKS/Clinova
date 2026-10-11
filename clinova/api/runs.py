@@ -32,7 +32,7 @@ from clinova.contracts import (
 log = logging.getLogger("clinova.api")
 
 PIPELINE: list[RunStage] = ["parse", "cohort", "screen", "agents", "score", "flags", "optimize"]
-_FALLBACK_ERRORS = (NotImplementedError, live.LiveUnavailable)
+_FALLBACK_ERRORS = live.FALLBACK_ERRORS
 
 
 def stage_delay() -> float:
@@ -133,7 +133,7 @@ class RunManager:
             st = self._runs[run_id]
             self._runs[run_id] = st.model_copy(update={**changes, "updated_at": _now()})
 
-    def submit(self, req: RunRequest, *, background: bool = True) -> str:
+    def submit(self, req: RunRequest, *, background: bool = True, context: str = "live") -> str:
         run_id = uuid.uuid4().hex
         trial_id = (req.protocol.trial_id if req.protocol else req.nct_id) or fallbacks.FIXTURE_TRIAL_ID
         st = RunStatus(
@@ -150,9 +150,9 @@ class RunManager:
         with self._lock:
             self._runs[run_id] = st
         if background:
-            threading.Thread(target=self._execute, args=(run_id, req), daemon=True, name=f"run-{run_id[:6]}").start()
+            threading.Thread(target=self._execute, args=(run_id, req, context), daemon=True, name=f"run-{run_id[:6]}").start()
         else:
-            self._execute(run_id, req)
+            self._execute(run_id, req, context)
         return run_id
 
     # one stage: real call, fixture on fallback errors
@@ -170,10 +170,10 @@ class RunManager:
         self._set(run_id, stages_done=list(state["done"]), progress=len(state["done"]) / len(PIPELINE))
         return value
 
-    def _execute(self, run_id: str, req: RunRequest) -> None:
+    def _execute(self, run_id: str, req: RunRequest, context: str = "live") -> None:
         state: dict[str, Any] = {"done": [], "fixture": []}
         try:
-            result = self._pipeline(run_id, req, state)
+            result = self._pipeline(run_id, req, state, context)
         except Exception as exc:
             log.exception("run %s failed", run_id)
             self._set(run_id, stage="failed", message=f"{type(exc).__name__}: {exc}")
@@ -183,7 +183,7 @@ class RunManager:
         msg = "Done" if not fixture else f"Done. Fixture data used for: {', '.join(fixture)}."
         self._set(run_id, stage="done", stages_done=[*PIPELINE], progress=1.0, message=msg, source=source, result=result)
 
-    def _pipeline(self, run_id: str, req: RunRequest, state: dict) -> RunResult:
+    def _pipeline(self, run_id: str, req: RunRequest, state: dict, context: str = "live") -> RunResult:
         # parse: a reviewed protocol skips parsing; an NCT id loads the first registered version
         def live_parse() -> ParsedProtocol:
             if req.protocol is not None:
@@ -191,9 +191,10 @@ class RunManager:
             if req.nct_id:
                 return live.protocol_from_trial(live.fetch_trial(req.nct_id))
             if req.eligibility_text:
-                return live.parse_text(
-                    req.eligibility_text, req.schedule_text, trial_id=f"draft-{uuid.uuid4().hex[:8]}", phase=req.phase
-                )
+                draft_id = f"draft-{uuid.uuid4().hex[:8]}"
+                parsed = live.parse_text(req.eligibility_text, req.schedule_text, trial_id=draft_id, phase=req.phase)
+                live.save_draft(draft_id, req.eligibility_text, req.schedule_text, parsed)
+                return parsed
             raise live.LiveUnavailable("nothing to parse")
 
         def fixture_parse() -> ParsedProtocol:
@@ -222,21 +223,30 @@ class RunManager:
         )
         risks = self._stage(run_id, "score", state, lambda: live.score(protocol, sims), fallbacks.risks)
         for r in risks:
-            self._log_prediction(protocol.trial_id, r, fixture="score" in state["fixture"])
-        flags = self._stage(run_id, "flags", state, lambda: live.flag_criteria(protocol), fallbacks.flags)
-        fixes = self._stage(run_id, "optimize", state, lambda: live.optimize(protocol), fallbacks.fixes)
+            self._log_prediction(protocol.trial_id, r, fixture="score" in state["fixture"], context=context)
+        # Fixture flags and fixes name the fixture protocol's rules (I12 ...). On any other protocol they would point at
+        # the wrong criteria and accepting one would edit the wrong rule, so there the fallback is "none yet".
+        is_fixture_protocol = protocol.trial_id == fallbacks.FIXTURE_TRIAL_ID
+        flags = self._stage(
+            run_id, "flags", state, lambda: live.flag_criteria(protocol), fallbacks.flags if is_fixture_protocol else list
+        )
+        fixes = self._stage(
+            run_id, "optimize", state, lambda: live.optimize(protocol), fallbacks.fixes if is_fixture_protocol else list
+        )
         return RunResult(protocol=protocol, funnel=funnel, sim=sims, risks=risks, flags=flags, fixes=fixes)
 
-    def _log_prediction(self, trial_id: str, risk, *, fixture: bool) -> None:
-        """Log a score in the ledger. While the ledger is a stub, fixture scores go to the in-memory audit."""
+    def _log_prediction(self, trial_id: str, risk, *, fixture: bool, context: str = "live") -> None:
+        """Log a score in the ledger (context live or backtest; fixture scores are tagged fixture).
+        While the ledger or database is unavailable the score goes to the in-memory audit instead."""
         from clinova.api.audit import MEMORY
 
+        ctx = "fixture" if fixture else context
         try:
             live._need_db()
-            live.record_prediction(trial_id, risk, "fixture" if fixture else "live")
+            live.record_prediction(trial_id, risk, ctx)
         except Exception as exc:  # the ledger must never break a run
             log.info("prediction not stored in the ledger (%s)", type(exc).__name__)
-            MEMORY.add_prediction(trial_id, risk, "fixture" if fixture else "live")
+            MEMORY.add_prediction(trial_id, risk, ctx)
 
 
 RUNS = RunManager()
