@@ -264,8 +264,11 @@ def reliability(metrics: ValidationMetrics, target_index: int = 0) -> go.Figure:
             hovertemplate="predicted %{x:.2f}, observed %{y:.2f}<br>%{text}<extra></extra>",
         )
     )
-    fig.update_xaxes(title="Predicted probability", range=[0, 1], gridcolor=theme.LINE)
-    fig.update_yaxes(title="Observed rate", range=[0, 1], gridcolor=theme.LINE)
+    # zoom to the data: compressed probabilities would otherwise sit in one corner
+    top = max([b.mean_pred for b in bins] + [b.frac_pos for b in bins] + [0.1])  # type: ignore[operator]
+    hi = min(1.0, round(top * 1.25 + 0.05, 1))
+    fig.update_xaxes(title="Predicted probability", range=[0, hi], gridcolor=theme.LINE)
+    fig.update_yaxes(title="Observed rate", range=[0, hi], gridcolor=theme.LINE)
     return _base(fig, 340, showlegend=False)
 
 

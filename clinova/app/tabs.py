@@ -113,7 +113,7 @@ def validation_tab(client: ApiClient) -> None:
         st.markdown('<div class="cl-section">Do the top flags point at the rule sponsors later widened?</div>', unsafe_allow_html=True)
         fig = charts.hit_rate(m)
         if fig is None:
-            st.markdown(theme.empty("Hit rate has not been computed yet."), unsafe_allow_html=True)
+            st.markdown(theme.empty("Hit rate has not been computed yet.", "It needs held-out trials whose criteria were later widened; see the caveats."), unsafe_allow_html=True)
         else:
             st.plotly_chart(fig, width="stretch", key="val_hit", config={"displayModeBar": False})
             h = m.hit_rate
@@ -128,7 +128,7 @@ def validation_tab(client: ApiClient) -> None:
         st.markdown('<div class="cl-section">Does the simulation help?</div>', unsafe_allow_html=True)
         a = m.ablation
         if a is None:
-            st.markdown(theme.empty("The simulation ablation has not been computed yet."), unsafe_allow_html=True)
+            st.markdown(theme.empty("The simulation ablation has not been computed yet.", "It needs enough simulated trials in both splits; see the caveats."), unsafe_allow_html=True)
         else:
             helps = "raises" if a.diff.ci_low > 0 else ("lowers" if a.diff.ci_high < 0 else "does not clearly change")
             st.markdown(

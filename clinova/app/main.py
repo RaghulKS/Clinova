@@ -280,6 +280,12 @@ with tab_main:
         res = status.result
         if theme.is_fixture(status.source) and status.message:
             st.markdown(f'<div class="cl-warn">{esc(status.message)} Those parts show placeholder data, not results.</div>', unsafe_allow_html=True)
+        elif status.source.value == "cache":
+            st.markdown(
+                '<div class="cl-note" style="margin-top:0.6rem">Risk, flags and fixes for this exact protocol are the frozen v1.0 results '
+                "(computed once and cached, because the optimizer takes about two minutes). Edit any criterion to run the live engine.</div>",
+                unsafe_allow_html=True,
+            )
         h2(1, "Where enrollment stalls, and how likely trouble is", anchor="cl-results")
         col_f, col_r = st.columns([1.45, 1], gap="large")
         with col_f:
@@ -306,7 +312,7 @@ with tab_main:
                 st.markdown(theme.empty("The trial history could not be loaded.", bt["error"]), unsafe_allow_html=True)
             else:
                 pointed = [r for r in [panels.stall_rule(res)[0], *[f.rule_id for f in res.flags[:3]]] if r]
-                panels.reveal(bt, pointed)
+                panels.reveal(bt, pointed, res.fixes)
 
         h2(step, "Suggested fixes", "Three trade-offs for you to weigh. Accepting one records your decision and re-checks the protocol in seconds.", anchor="cl-fixes")
         panels.fixes_row(status, client, reference())

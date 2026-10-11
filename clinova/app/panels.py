@@ -168,9 +168,10 @@ def funnel_panel(status: RunStatus) -> None:
     top = next((m for m in f.marginal if m.rule_id == hi), None)
     if top is not None:
         lead = "Clinova's top flag" if why == "flag" else "The funnel stalls here"
+        n_txt = f"In this run's {f.n_screened:,} virtual patients, on its own"
         st.markdown(
             f'<div class="cl-callout"><b>{lead}: {esc(top.rule_id)}, {esc(_rule_label(top.label))}.</b> '
-            f"On its own it rules out {top.excluded_n:,} of {f.n_screened:,} virtual patients ({pct(top.excluded_frac)}); "
+            f"{n_txt} it rules out {top.excluded_n:,} ({pct(top.excluded_frac)}); "
             f"{top.excluded_only_n:,} of them fail only this criterion. You may want to check whether it is needed as written.</div>",
             unsafe_allow_html=True,
         )
@@ -560,7 +561,7 @@ def fixes_row(status: RunStatus, client: ApiClient, ref: Reference | None = None
 # --------------------------------------------------------------------------------------------------------
 
 
-def reveal(payload: dict, pointed_at: list[str]) -> None:
+def reveal(payload: dict, pointed_at: list[str], fixes: list[Fix] | None = None) -> None:
     """Version-history reveal for a backtest: when the sponsor widened the criteria, when the trial ended,
     and whether that was a rule Clinova pointed at on the original protocol."""
     bt = BacktestResult.model_validate(payload)
@@ -604,8 +605,19 @@ def reveal(payload: dict, pointed_at: list[str]) -> None:
         rows = ""
         matched_keys = {(c.field, c.old_rule_id, c.new_rule_id) for c in matched}
         first_rules = {r.rule_id: r for r in bt.run.protocol.rules} if bt.run else {}
+        fix_names: dict[str, list[str]] = {}
+        for fx in fixes or []:
+            for e in fx.edits:
+                if e.kind in ("relax_rule", "drop_rule"):
+                    fix_names.setdefault(e.target_id, []).append(FIX_TITLES.get(fx.label, fx.label))
+        notes_col = bool(matched) or any(c.old_rule_id in fix_names for c in bt.changes)
         for c in bt.changes:
             hit = (c.field, c.old_rule_id, c.new_rule_id) in matched_keys
+            notes = []
+            if hit:
+                notes.append("Flagged by Clinova")
+            if c.change in rv.RELAXING and c.old_rule_id in fix_names:
+                notes.append("Also changed by the " + ", ".join(f'"{n}"' for n in dict.fromkeys(fix_names[c.old_rule_id])) + " fix")
             style = f" style='background:{theme.ACCENT_SOFT};font-weight:650'" if hit else ""
             old_rule = first_rules.get(c.old_rule_id or "")
             was = f"{c.old_rule_id}: {old_rule.raw_text}" if old_rule is not None else rv.condition_words(c.old)
@@ -613,12 +625,12 @@ def reveal(payload: dict, pointed_at: list[str]) -> None:
             rows += (
                 f"<tr{style}><td>{esc(c.field.value.replace('_', ' '))}</td><td>{esc(c.change)}</td>"
                 f"<td>{esc(was[:220])}</td><td>{esc(later)}</td>"
-                + (f"<td>{'Pointed at by Clinova' if hit else ''}</td>" if matched else "")
+                + (f"<td>{esc('; '.join(notes))}</td>" if notes_col else "")
                 + "</tr>"
             )
         st.markdown(
             "<table class='cl-ba'><thead><tr><th>Criterion</th><th>Change</th><th>As first registered</th><th>Later</th>"
-            + ("<th></th>" if matched else "")
+            + ("<th>Clinova</th>" if notes_col else "")
             + f"</tr></thead><tbody>{rows}</tbody></table>",
             unsafe_allow_html=True,
         )

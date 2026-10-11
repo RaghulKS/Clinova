@@ -282,7 +282,7 @@ def accept_fix(req: AcceptRequest) -> AcceptResponse:
         before=before_m,
         after=quick.estimate_after(before_m, fix),
         protocol=after_protocol,
-        source=Source.fixture,
+        source=status.source,  # the optimizer's own numbers: as real as the run they came from (basis says how)
         note="The re-run engine is not available, so the after column applies the optimizer's own estimates.",
     )
 
