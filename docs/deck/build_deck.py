@@ -373,7 +373,7 @@ def chart_auc(F: Facts, path: Path, fixture: bool = False) -> bool:
             ax.text(a["ci_high"] + 0.012, y + dy, f"{a['value']:.2f}", va="center", fontsize=19,
                     color="#" + (TEAL if key == "auc" else GREY), fontweight="bold" if key == "auc" else "normal")
     ax.axvline(0.5, color="#" + RULE, lw=2, ls="--", zorder=0)
-    ax.text(0.505, len(rows) - 0.45, "chance", fontsize=15, color="#" + GREY, va="bottom")
+    ax.text(0.505, -0.55, "chance", fontsize=15, color="#" + GREY, va="bottom")
     ax.set_yticks(range(len(rows)))
     ax.set_yticklabels([f"{TARGET_NAMES.get(t['target'], t['target'])}\n(n={t['n_test']})" for t in reversed(rows)],
                        fontsize=18)
@@ -384,7 +384,7 @@ def chart_auc(F: Facts, path: Path, fixture: bool = False) -> bool:
     ax.tick_params(axis="x", labelsize=16)
     ax.tick_params(axis="y", length=0)
     ax.spines["left"].set_visible(False)
-    ax.legend(loc="lower right", fontsize=15, frameon=False, handletextpad=0.3)
+    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), ncol=2, fontsize=15, frameon=False, handletextpad=0.3)
     if fixture:
         _watermark(ax)
     fig.tight_layout()
@@ -420,6 +420,37 @@ def chart_hit(F: Facts, path: Path, fixture: bool = False) -> bool:
     ax.set_axisbelow(True)
     if fixture:
         _watermark(ax)
+    fig.tight_layout()
+    fig.savefig(path)
+    plt.close(fig)
+    return True
+
+
+def chart_reliability(F: Facts, path: Path, target: str = "accrual_fail") -> bool:
+    """10-bin reliability plot from docs/metrics.json (calibrated LightGBM), dot size = trials in bin."""
+    t = F.target(target)
+    if not t or not t.get("reliability"):
+        return False
+    bins = [b for b in t["reliability"] if b.get("mean_pred") is not None and b.get("n")]
+    if not bins:
+        return False
+    fig, ax = plt.subplots(figsize=(7.0, 4.6))
+    ax.plot([0, 1], [0, 1], ls="--", color="#" + LIGHT, lw=2, zorder=0)
+    ax.text(0.98, 0.93, "perfect calibration", ha="right", fontsize=14, color="#" + GREY, rotation=0)
+    ax.plot([b["mean_pred"] for b in bins], [b["frac_pos"] for b in bins], color="#" + TEAL, lw=2.5, zorder=1)
+    nmax = max(b["n"] for b in bins)
+    ax.scatter([b["mean_pred"] for b in bins], [b["frac_pos"] for b in bins],
+               s=[60 + 500 * b["n"] / nmax for b in bins], color="#" + TEAL, zorder=2)
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.set_xticks([0, 0.25, 0.5, 0.75, 1.0])
+    ax.set_xticklabels(["0%", "25%", "50%", "75%", "100%"], fontsize=15)
+    ax.set_yticks([0, 0.25, 0.5, 0.75, 1.0])
+    ax.set_yticklabels(["0%", "25%", "50%", "75%", "100%"], fontsize=15)
+    ax.set_xlabel("Predicted accrual-failure risk", fontsize=16, color="#" + GREY)
+    ax.set_ylabel("Observed failure rate", fontsize=16, color="#" + GREY)
+    ax.yaxis.grid(True, color="#" + RULE, lw=1)
+    ax.set_axisbelow(True)
     fig.tight_layout()
     fig.savefig(path)
     plt.close(fig)
@@ -696,6 +727,7 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
     IMG.mkdir(parents=True, exist_ok=True)
     has_auc = chart_auc(F, IMG / "auc_vs_baseline.png", fixture=fixture_charts)
     has_hit = chart_hit(F, IMG / "hit_rate.png", fixture=fixture_charts)
+    has_rel = chart_reliability(F, IMG / "reliability.png")
     has_replay = chart_replay(F, IMG / "replay_brier.png", fixture=fixture_charts)
     has_excl = chart_exclusions(F, D, IMG / "demo_exclusions.png")
     screens = ROOT / "docs" / "screens"
@@ -1086,23 +1118,35 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
     else:
         abl_line = f"Simulation ablation: {AB['diff']}"
     auc_line = f"Accrual failure: AUC {A['auc']} (95% CI {A['ci']}) vs baseline {A['base']} ({A['base_ci']})"
+    brier_line = f"Calibration, Brier score (lower is better): Clinova {A['brier']} vs baseline {A['base_brier']}"
+    if H.get("na") and AB.get("na"):
+        val_lines = [auc_line, brier_line,
+                     "Hit rate and simulation ablation not computed: too few amendment labels and simulated trials"]
+    elif H.get("na"):
+        val_lines = [auc_line, brier_line, abl_line]
+    else:
+        val_lines = [auc_line, hit_line, abl_line]
 
     def d9(s):
         if has_auc:
-            picture_fit(s, IMG / "auc_vs_baseline.png", MX, BODY_Y - 0.1, 6.5, 3.2)
+            picture_fit(s, IMG / "auc_vs_baseline.png", MX, BODY_Y - 0.15, 6.5, 3.1)
         else:
             missing_panel(s, MX, BODY_Y, 6.5, 3.4, "[TBD: AUC chart from docs/metrics.json]")
         if has_hit:
-            picture_fit(s, IMG / "hit_rate.png", 7.45, BODY_Y - 0.1, SW - 7.45 - MX, 3.2)
+            picture_fit(s, IMG / "hit_rate.png", 7.45, BODY_Y - 0.15, SW - 7.45 - MX, 3.1)
+        elif has_rel:
+            picture_fit(s, IMG / "reliability.png", 7.45, BODY_Y - 0.15, SW - 7.45 - MX, 3.1)
         else:
             missing_panel(s, 7.45, BODY_Y, SW - 7.45 - MX, 3.4,
                           hit_line if "not computed" in hit_line else "[TBD: hit-rate chart from docs/metrics.json]")
-        body_lines(s, MX, BODY_Y + 3.3, SW - 2 * MX, [auc_line, hit_line, abl_line], size=16, h=1.6)
+        body_lines(s, MX, BODY_Y + 3.05, SW - 2 * MX, val_lines, size=16, h=1.55)
     specs.append(SlideSpec(
         kicker="Validation on trials the model never saw", title=val_title,
-        lines=[auc_line, hit_line, abl_line],
+        lines=val_lines,
         visual="Left: AUC vs logistic baseline per target with bootstrap 95% CI whiskers (docs/deck/img/auc_vs_baseline.png). "
-               "Right: hit rate vs random and largest-marginal-exclusion baselines (docs/deck/img/hit_rate.png).",
+               + ("Right: hit rate vs random and largest-marginal-exclusion baselines (docs/deck/img/hit_rate.png)."
+                  if has_hit else "Right: reliability plot of the calibrated accrual-failure model (docs/deck/img/reliability.png), "
+                  "shown because the hit rate was not computed."),
         notes=(
             f"Time split: train on trials that started before 2018 ({C['n_train']} labelled), test on 2018 or later "
             f"({C['n_test']}). Accrual-failure AUC is {A['auc']}, 95% CI {A['ci']}, against {A['base']} for a ten-feature "
