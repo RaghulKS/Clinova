@@ -51,7 +51,11 @@ def browser_flow() -> dict:
         page = b.new_page(viewport={"width": 1920, "height": 1080})
         t0 = time.time()
         page.goto(APP)
-        page.get_by_text(UI["mode"]).wait_for(timeout=60000)
+        try:
+            page.get_by_text(UI["mode"]).wait_for(timeout=60000)
+        except Exception:
+            print("PAGE TEXT:", page.inner_text("body")[:1500])
+            raise
         page.get_by_text(UI["mode"]).click()
         page.get_by_label("NCT ID").fill(NCT)
         page.keyboard.press("Enter")
