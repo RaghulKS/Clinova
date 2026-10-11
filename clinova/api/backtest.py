@@ -34,7 +34,7 @@ def _rule_changes(trial: TrialRecord, first) -> list[RuleChange]:
         return []
     try:
         parsed_now = live.parse_text(current, None, trial_id=f"{trial.nct_id}-current", phase=trial.phase)
-        return live.diff_rules(first, parsed_now)
+        return live.diff_rules(first.rules, parsed_now.rules)  # diff_rules takes rule lists
     except Exception as exc:
         log.warning("rule diff for %s unavailable: %s", trial.nct_id, type(exc).__name__)
         return []

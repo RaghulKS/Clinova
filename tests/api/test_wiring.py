@@ -194,7 +194,7 @@ def test_live_backtest_uses_first_version_only_and_logs_backtest_context(client,
     monkeypatch.setattr(live, "protocol_from_trial", fake_first)
     monkeypatch.setattr(live, "parse_text", fake_parse_text)
     monkeypatch.setattr(live, "read_version_events", lambda nct: load_fixture("version_events.json", list[VersionEvent]))
-    monkeypatch.setattr(live, "diff_rules", lambda a, b: [RuleChange(field="crcl_ml_min", change="relaxed", old_rule_id="I12", new_rule_id="I12", old="ge 60", new="ge 45")])
+    monkeypatch.setattr(live, "diff_rules", lambda a, b: [RuleChange(field="crcl_ml_min", change="relaxed", old_rule_id="I12", new_rule_id="I12", old="ge 60", new="ge 45")] if isinstance(a, list) and isinstance(b, list) else 1 / 0)
     monkeypatch.setattr(live, "score", lambda p, sim=None, **k: load_fixture("risk_scores.json", list[RiskScore]))
     monkeypatch.setattr(live, "_need_db", lambda: None)
     recorded: list[tuple[str, str]] = []

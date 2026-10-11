@@ -116,7 +116,7 @@ def measures(res: RunResult, diversity_index: float | None = None) -> Measures:
     risk = {r.target.value: r.p for r in res.risks}
     n = len(sims)
     return Measures(
-        eligible_frac=(sum(s.eligible_frac for s in sims) / n) if n else (res.funnel.eligible_frac if res.funnel else None),
+        eligible_frac=res.funnel.eligible_frac if res.funnel else ((sum(s.eligible_frac for s in sims) / n) if n else None),
         enroll_rate=(sum(s.enroll_rate for s in sims) / n) if n else None,
         dropout_rate=(1.0 - sum(s.completion_rate for s in sims) / n) if n else None,
         diversity_index=diversity_index,
