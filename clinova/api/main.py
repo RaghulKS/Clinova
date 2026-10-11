@@ -15,7 +15,8 @@ import uuid
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 
 from clinova.api import fallbacks, live, quick
 from clinova.api.audit import MEMORY
@@ -79,6 +80,16 @@ app = FastAPI(
     description="Predicts where a draft NSCLC trial protocol may stall enrollment or lose patients. Advisory only.",
     lifespan=lifespan,
 )
+
+@app.exception_handler(Exception)
+async def _plain_500(request: Request, exc: Exception) -> JSONResponse:
+    """Never send a stack trace to the app: log it here, answer with one plain sentence."""
+    log.exception("unhandled error on %s %s", request.method, request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Clinova hit an internal error ({type(exc).__name__}) on {request.url.path}. Details are in the API log."},
+    )
+
 
 _FALLBACK_ERRORS = live.FALLBACK_ERRORS
 _NCT_RE = re.compile(r"^[A-Za-z0-9_-]{3,32}$")
