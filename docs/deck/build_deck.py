@@ -809,12 +809,12 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
     has_flags = chart_flags(F, D, IMG / "demo_flags.png")
     has_diff = chart_auc_diff(F, IMG / "auc_gain.png")
     screens = ROOT / "docs" / "screens"
-    crop_screen(screens / "03-results.png", IMG / "screen_results.png", aspect=16 / 9, y_frac=0.555)
-    crop_screen(screens / "03-results.png", IMG / "screen_title.png", aspect=4 / 3, y_frac=0.585, width_frac=0.66)
+    crop_screen(screens / "03-funnel-risk.png", IMG / "screen_results.png", aspect=16 / 9, y_frac=0.06, x_frac=0.5, width_frac=0.94)
+    crop_screen(screens / "03-funnel-risk.png", IMG / "screen_title.png", aspect=1.6, y_frac=0.1, x_frac=0.09, width_frac=0.55)
 
     # 1 Title ------------------------------------------------------------------
     def d1(s):
-        text(s, MX, 1.75, 6.6, 1.0, "Clinova", size=66, bold=True, color=WHITE)
+        text(s, MX, 1.65, 6.6, 1.2, "Clinova", size=66, bold=True, color=WHITE)
         text(s, MX, 2.95, 6.4, 1.3, "Test-fly your NSCLC trial on thousands of virtual patients before enrolling a real one",
              size=24, color=WHITE, line_spacing=1.15)
         text(s, MX, 4.6, 6.3, 1.0,
@@ -824,7 +824,7 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
         img = IMG / "screen_title.png"
         if img.exists():
             w = 5.2
-            h = w * 3 / 4
+            h = w / 1.6
             box(s, 7.45 - 0.05, 1.75 - 0.05, w + 0.1, h + 0.1, fill="FFFFFF", radius=0.03)
             s.shapes.add_picture(str(img), Inches(7.45), Inches(1.75), Inches(w), Inches(h))
     specs.append(SlideSpec(
@@ -832,7 +832,7 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
         dark=True,
         lines=["Test-fly your NSCLC trial on thousands of virtual patients before enrolling a real one",
                "Every prediction is graded against how real ClinicalTrials.gov trials turned out", repo],
-        visual="Dark teal title slide; funnel and risk panels of the results screen (docs/screens/03-results.png, cropped) at right.",
+        visual="Dark teal title slide; funnel panel of the app on the demo trial (docs/screens/03-funnel-risk.png, cropped) at right.",
         notes=(
             "Clinova is a flight simulator for non-small cell lung cancer trial protocols. A study designer pastes a draft "
             "protocol or an NCT ID, and Clinova shows where enrollment will stall and where patients will drop out, before "
@@ -879,7 +879,7 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
     # 3 Why now ---------------------------------------------------------------------
     def d3(s):
         cards = [
-            ("Amendments are public", "ClinicalTrials.gov keeps every registered version, so a widened rule is a checkable label"),
+            ("History is public", "ClinicalTrials.gov keeps every registered version, so a widened rule is a checkable label"),
             ("LLMs read eligibility", "Gemini turns free-text criteria into rules that code can check on virtual patients"),
             ("Design is the AI gap", "Tufts CSDD 2024: full AI adoption is lowest in trial design and planning"),
         ]
@@ -911,7 +911,7 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
             ("Read", "Draft text or NCT ID to coded rules and visits"),
             ("Simulate", "Virtual NSCLC cohort, screened in code; persona agents decide"),
             ("Calibrate", "LightGBM on real trials, explained by SHAP"),
-            ("Optimize", "Test edits; trade-offs with ranges and dollars"),
+            ("Optimize", "Test edits; see trade-offs with ranges"),
             ("Learn", "Log every prediction, score it when the trial ends"),
         ]
         n = len(steps)
@@ -935,7 +935,7 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
             "Five steps. Read: Gemini turns eligibility rules and the visit schedule into code-checkable logic. Simulate: a "
             "virtual NSCLC cohort is screened in code, then persona agents decide whether to enroll and when they would drop "
             "out. Calibrate: LightGBM trained on real ClinicalTrials.gov trials gives calibrated risk, explained by SHAP. "
-            "Optimize: test edits such as relaxing a criterion or cutting a visit, with ranges and a dollar value. Learn: every "
+            "Optimize: test edits such as relaxing a criterion or cutting a visit, with ranges across cohort seeds. Learn: every "
             "prediction is logged and scored when the trial ends. Source: docs/ARCHITECTURE.md section 1."
         ),
         criterion="Utility and Relevance", sources=["docs/ARCHITECTURE.md"], draw=d4))
@@ -1014,23 +1014,23 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
         x = MX + 7.7 + 0.5
         body_lines(s, x, BODY_Y + 0.1, SW - x - MX, h=4.0, lines=[
             "Funnel: who is excluded by which rule, who enrolls, who completes",
-            "Risk: probability with a range, a confidence badge and top drivers in plain words",
-            "Fixes: three trade-offs; accept one and it re-runs in seconds",
+            "Risk: probability with a range, its rank among test trials and plain-word drivers",
+            "Labels say “not validated” or “no model yet” where the evidence is thin",
         ], size=18)
     specs.append(SlideSpec(
-        kicker="Live demo", title="One screen shows the funnel, the risk and three fixes",
+        kicker="Live demo", title="The app shows where enrollment stalls and how likely trouble is, in plain words",
         lines=["Funnel: who is excluded by which rule, who enrolls, who completes",
-               "Risk: probability with a range, a confidence badge and top drivers in plain words",
-               "Fixes: three trade-offs; accept one and it re-runs in seconds"],
-        visual="Results-screen screenshot (docs/screens/03-results.png, cropped to the three panels).",
+               "Risk: probability with a range, its rank among test trials and plain-word drivers",
+               "Labels say “not validated” or “no model yet” where the evidence is thin"],
+        visual="App screenshot of the demo trial: funnel and risk (docs/screens/03-funnel-risk.png).",
         notes=(
-            "This is the results screen of the running app. Left, the funnel: virtual patients screened, excluded by each "
-            "criterion, enrolled and completing, with the biggest exclusion highlighted. Middle, risk: probabilities of "
-            "accrual failure and enrollment shortfall, each with a range, a confidence badge and the top drivers in plain "
-            "words. Right, three fixes the author can accept or reject. Everything else sits behind tabs: validation, "
-            "replay, community pulse and the audit log. Screenshot: docs/screens/03-results.png."
+            "This is the running app on the demo trial. Left, the funnel: virtual patients screened against each criterion "
+            "in protocol order, with Clinova's top flag highlighted. Right, risk: each target's probability with a range, "
+            "its rank among held-out test trials and the drivers in plain words. Weak evidence is labelled \"not "
+            "validated\" or \"no model yet\". Below sit flags, the reveal and three fixes; tabs hold validation, replay "
+            "and the audit log. Screenshot: docs/screens/03-funnel-risk.png."
         ),
-        criterion="Design and Packaging", sources=["docs/screens/03-results.png"], draw=d6))
+        criterion="Design and Packaging", sources=["docs/screens/03-funnel-risk.png"], draw=d6))
 
     # 7 Optimizer -------------------------------------------------------------------
     fixes = D.get("fixes")
