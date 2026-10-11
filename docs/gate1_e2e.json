@@ -1,0 +1,471 @@
+{
+ "nct_id": "NCT03232892",
+ "setting": "second_line_plus",
+ "n_rules": 25,
+ "n_parseable": 20,
+ "n_visits": 15,
+ "runs": [
+  {
+   "run_id": "aa0f5c1b2d9244c399d935649c44d800",
+   "seed": 1,
+   "n_eligible": 214,
+   "eligible_frac": 0.214,
+   "n_agents": 200,
+   "enroll_rate": 0.505,
+   "completion_rate": 0.8217821782178217,
+   "dropout_curve": [
+    0.0,
+    0.0,
+    0.009900990099009901,
+    0.0297029702970297,
+    0.06930693069306931,
+    0.09900990099009901,
+    0.1188118811881188,
+    0.1485148514851485,
+    0.1485148514851485,
+    0.16831683168316833,
+    0.16831683168316833,
+    0.1782178217821782,
+    0.1782178217821782,
+    0.1782178217821782,
+    0.1782178217821782
+   ],
+   "median_dropout_visit": 6,
+   "top_reasons": [
+    {
+     "tag": "travel",
+     "share": 0.7435897435897436
+    },
+    {
+     "tag": "time_off_work",
+     "share": 0.5128205128205128
+    },
+    {
+     "tag": "caregiving",
+     "share": 0.26495726495726496
+    },
+    {
+     "tag": "cost",
+     "share": 0.26495726495726496
+    },
+    {
+     "tag": "too_unwell",
+     "share": 0.10256410256410256
+    }
+   ],
+   "stages": [
+    {
+     "rule_id": null,
+     "label": "Screened",
+     "remaining": 1000,
+     "excluded": 0
+    },
+    {
+     "rule_id": "I1",
+     "label": "histology not squamous (I1)",
+     "remaining": 674,
+     "excluded": 326
+    },
+    {
+     "rule_id": "I3",
+     "label": "Prior platinum chemotherapy (I3)",
+     "remaining": 592,
+     "excluded": 82
+    },
+    {
+     "rule_id": "I4",
+     "label": "Measurable disease (RECIST 1.1) (I4)",
+     "remaining": 560,
+     "excluded": 32
+    },
+    {
+     "rule_id": "I5",
+     "label": "Life expectancy >= 3 months (I5)",
+     "remaining": 542,
+     "excluded": 18
+    },
+    {
+     "rule_id": "I6",
+     "label": "ECOG <= 1 (I6)",
+     "remaining": 360,
+     "excluded": 182
+    },
+    {
+     "rule_id": "I7",
+     "label": "Age >= 18 years (I7)",
+     "remaining": 360,
+     "excluded": 0
+    },
+    {
+     "rule_id": "I8",
+     "label": "ANC >= 1.2 x10^9/L (I8)",
+     "remaining": 348,
+     "excluded": 12
+    },
+    {
+     "rule_id": "I9",
+     "label": "Hemoglobin >= 9 g/dL (I9)",
+     "remaining": 320,
+     "excluded": 28
+    },
+    {
+     "rule_id": "I10",
+     "label": "Platelets >= 100 x10^9/L (I10)",
+     "remaining": 312,
+     "excluded": 8
+    },
+    {
+     "rule_id": "I11",
+     "label": "Bilirubin <= 1.5 xULN (I11)",
+     "remaining": 301,
+     "excluded": 11
+    },
+    {
+     "rule_id": "I12",
+     "label": "AST <= 2.5 xULN (I12)",
+     "remaining": 290,
+     "excluded": 11
+    },
+    {
+     "rule_id": "I13",
+     "label": "ALT <= 2.5 xULN (I13)",
+     "remaining": 290,
+     "excluded": 0
+    },
+    {
+     "rule_id": "I14",
+     "label": "Creatinine clearance >= 50 mL/min (I14)",
+     "remaining": 260,
+     "excluded": 30
+    },
+    {
+     "rule_id": "I15",
+     "label": "Can consent (I15)",
+     "remaining": 257,
+     "excluded": 3
+    },
+    {
+     "rule_id": "E1",
+     "label": "Excl. brain metastases untreated (E1)",
+     "remaining": 237,
+     "excluded": 20
+    },
+    {
+     "rule_id": "E2",
+     "label": "Excl. leptomeningeal (E2)",
+     "remaining": 235,
+     "excluded": 2
+    },
+    {
+     "rule_id": "E3",
+     "label": "Excl. pregnancy or breastfeeding (E3)",
+     "remaining": 235,
+     "excluded": 0
+    },
+    {
+     "rule_id": "E4",
+     "label": "Excl. interstitial lung disease (E4)",
+     "remaining": 230,
+     "excluded": 5
+    },
+    {
+     "rule_id": "E5",
+     "label": "Excl. active infection (E5)",
+     "remaining": 226,
+     "excluded": 4
+    },
+    {
+     "rule_id": "E6",
+     "label": "Excl. cardiac condition (E6)",
+     "remaining": 214,
+     "excluded": 12
+    }
+   ],
+   "top_exclusions": [
+    {
+     "rule_id": "I6",
+     "field": "ecog",
+     "label": "ECOG <= 1 (I6)",
+     "excluded_n": 353,
+     "excluded_frac": 0.353,
+     "excluded_only_n": 87,
+     "text": "Eastern Cooperative Oncology Group (ECOG) performance status of 0 to 1."
+    },
+    {
+     "rule_id": "I1",
+     "field": "histology",
+     "label": "histology not squamous (I1)",
+     "excluded_n": 326,
+     "excluded_frac": 0.326,
+     "excluded_only_n": 122,
+     "text": "non-squamous, NSCLC"
+    },
+    {
+     "rule_id": "I3",
+     "field": "prior_platinum",
+     "label": "Prior platinum chemotherapy (I3)",
+     "excluded_n": 115,
+     "excluded_frac": 0.115,
+     "excluded_only_n": 22,
+     "text": "one of which must have been platinum (carboplatin or cisplatin) doublet chemotherapy"
+    },
+    {
+     "rule_id": "I9",
+     "field": "hemoglobin",
+     "label": "Hemoglobin >= 9 g/dL (I9)",
+     "excluded_n": 106,
+     "excluded_frac": 0.106,
+     "excluded_only_n": 20,
+     "text": "Hemoglobin: \u2265 9 g/dL"
+    },
+    {
+     "rule_id": "I14",
+     "field": "crcl_ml_min",
+     "label": "Creatinine clearance >= 50 mL/min (I14)",
+     "excluded_n": 100,
+     "excluded_frac": 0.1,
+     "excluded_only_n": 25,
+     "text": "Calculated creatinine clearance (calculated by the Cockcroft-Gault formula): \u2265 50 mL/min"
+    }
+   ],
+   "skipped_rules": [
+    "I2",
+    "E7",
+    "E8",
+    "E9",
+    "E10"
+   ]
+  },
+  {
+   "run_id": "698b7c20131b4ce8a5663efd791c49ba",
+   "seed": 2,
+   "n_eligible": 237,
+   "eligible_frac": 0.237,
+   "n_agents": 200,
+   "enroll_rate": 0.58,
+   "completion_rate": 0.7155172413793104,
+   "dropout_curve": [
+    0.0,
+    0.0,
+    0.017241379310344827,
+    0.0603448275862069,
+    0.12931034482758622,
+    0.1896551724137931,
+    0.22413793103448276,
+    0.25,
+    0.27586206896551724,
+    0.28448275862068967,
+    0.28448275862068967,
+    0.28448275862068967,
+    0.28448275862068967,
+    0.28448275862068967,
+    0.28448275862068967
+   ],
+   "median_dropout_visit": 6,
+   "top_reasons": [
+    {
+     "tag": "travel",
+     "share": 0.7350427350427351
+    },
+    {
+     "tag": "time_off_work",
+     "share": 0.5726495726495726
+    },
+    {
+     "tag": "caregiving",
+     "share": 0.3162393162393162
+    },
+    {
+     "tag": "cost",
+     "share": 0.23931623931623933
+    },
+    {
+     "tag": "too_unwell",
+     "share": 0.1111111111111111
+    }
+   ],
+   "stages": [
+    {
+     "rule_id": null,
+     "label": "Screened",
+     "remaining": 1000,
+     "excluded": 0
+    },
+    {
+     "rule_id": "I1",
+     "label": "histology not squamous (I1)",
+     "remaining": 698,
+     "excluded": 302
+    },
+    {
+     "rule_id": "I3",
+     "label": "Prior platinum chemotherapy (I3)",
+     "remaining": 627,
+     "excluded": 71
+    },
+    {
+     "rule_id": "I4",
+     "label": "Measurable disease (RECIST 1.1) (I4)",
+     "remaining": 591,
+     "excluded": 36
+    },
+    {
+     "rule_id": "I5",
+     "label": "Life expectancy >= 3 months (I5)",
+     "remaining": 572,
+     "excluded": 19
+    },
+    {
+     "rule_id": "I6",
+     "label": "ECOG <= 1 (I6)",
+     "remaining": 394,
+     "excluded": 178
+    },
+    {
+     "rule_id": "I7",
+     "label": "Age >= 18 years (I7)",
+     "remaining": 394,
+     "excluded": 0
+    },
+    {
+     "rule_id": "I8",
+     "label": "ANC >= 1.2 x10^9/L (I8)",
+     "remaining": 385,
+     "excluded": 9
+    },
+    {
+     "rule_id": "I9",
+     "label": "Hemoglobin >= 9 g/dL (I9)",
+     "remaining": 358,
+     "excluded": 27
+    },
+    {
+     "rule_id": "I10",
+     "label": "Platelets >= 100 x10^9/L (I10)",
+     "remaining": 343,
+     "excluded": 15
+    },
+    {
+     "rule_id": "I11",
+     "label": "Bilirubin <= 1.5 xULN (I11)",
+     "remaining": 337,
+     "excluded": 6
+    },
+    {
+     "rule_id": "I12",
+     "label": "AST <= 2.5 xULN (I12)",
+     "remaining": 325,
+     "excluded": 12
+    },
+    {
+     "rule_id": "I13",
+     "label": "ALT <= 2.5 xULN (I13)",
+     "remaining": 325,
+     "excluded": 0
+    },
+    {
+     "rule_id": "I14",
+     "label": "Creatinine clearance >= 50 mL/min (I14)",
+     "remaining": 285,
+     "excluded": 40
+    },
+    {
+     "rule_id": "I15",
+     "label": "Can consent (I15)",
+     "remaining": 281,
+     "excluded": 4
+    },
+    {
+     "rule_id": "E1",
+     "label": "Excl. brain metastases untreated (E1)",
+     "remaining": 268,
+     "excluded": 13
+    },
+    {
+     "rule_id": "E2",
+     "label": "Excl. leptomeningeal (E2)",
+     "remaining": 265,
+     "excluded": 3
+    },
+    {
+     "rule_id": "E3",
+     "label": "Excl. pregnancy or breastfeeding (E3)",
+     "remaining": 265,
+     "excluded": 0
+    },
+    {
+     "rule_id": "E4",
+     "label": "Excl. interstitial lung disease (E4)",
+     "remaining": 260,
+     "excluded": 5
+    },
+    {
+     "rule_id": "E5",
+     "label": "Excl. active infection (E5)",
+     "remaining": 257,
+     "excluded": 3
+    },
+    {
+     "rule_id": "E6",
+     "label": "Excl. cardiac condition (E6)",
+     "remaining": 237,
+     "excluded": 20
+    }
+   ],
+   "top_exclusions": [
+    {
+     "rule_id": "I6",
+     "field": "ecog",
+     "label": "ECOG <= 1 (I6)",
+     "excluded_n": 334,
+     "excluded_frac": 0.334,
+     "excluded_only_n": 86,
+     "text": "Eastern Cooperative Oncology Group (ECOG) performance status of 0 to 1."
+    },
+    {
+     "rule_id": "I1",
+     "field": "histology",
+     "label": "histology not squamous (I1)",
+     "excluded_n": 302,
+     "excluded_frac": 0.302,
+     "excluded_only_n": 101,
+     "text": "non-squamous, NSCLC"
+    },
+    {
+     "rule_id": "I14",
+     "field": "crcl_ml_min",
+     "label": "Creatinine clearance >= 50 mL/min (I14)",
+     "excluded_n": 123,
+     "excluded_frac": 0.123,
+     "excluded_only_n": 34,
+     "text": "Calculated creatinine clearance (calculated by the Cockcroft-Gault formula): \u2265 50 mL/min"
+    },
+    {
+     "rule_id": "I9",
+     "field": "hemoglobin",
+     "label": "Hemoglobin >= 9 g/dL (I9)",
+     "excluded_n": 106,
+     "excluded_frac": 0.106,
+     "excluded_only_n": 19,
+     "text": "Hemoglobin: \u2265 9 g/dL"
+    },
+    {
+     "rule_id": "I3",
+     "field": "prior_platinum",
+     "label": "Prior platinum chemotherapy (I3)",
+     "excluded_n": 100,
+     "excluded_frac": 0.1,
+     "excluded_only_n": 27,
+     "text": "one of which must have been platinum (carboplatin or cisplatin) doublet chemotherapy"
+    }
+   ],
+   "skipped_rules": [
+    "I2",
+    "E7",
+    "E8",
+    "E9",
+    "E10"
+   ]
+  }
+ ]
+}

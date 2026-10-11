@@ -78,22 +78,21 @@ def fetch_trial(nct_id: str) -> TrialRecord:
 
 
 def protocol_from_trial(trial: TrialRecord) -> Any:
-    """Parse a trial's FIRST registered eligibility text (leakage rule) into a ParsedProtocol."""
-    from clinova.parse.parser import parse_protocol
-    from clinova.parse.visits import estimate_visits
+    """Parse a trial's FIRST registered version (leakage rule) into a ParsedProtocol, with the same
+    title/arms/visits the batch simulator uses (G1: reuse ``registered_protocols``)."""
+    _need_db()  # Gemini calls go through llm_cache in Postgres
+    from clinova.simulate.__main__ import registered_protocols
 
-    protocol = parse_protocol(
-        trial.eligibility_text_first or "", None, trial_id=trial.nct_id, version_no=0, phase=trial.phase
-    )
-    if not protocol.visits:
-        protocol = protocol.model_copy(update={"visits": estimate_visits(trial)})
-    return protocol
+    if not trial.first_version:
+        raise LookupError(f"{trial.nct_id} has no first registered version")
+    return registered_protocols(1, trial.nct_id)[0]
 
 
 # --- engine stages ---------------------------------------------------------------------------------
 
 
 def parse_text(eligibility_text, schedule_text, *, trial_id, phase):
+    _need_db()  # Gemini calls go through llm_cache in Postgres
     from clinova.parse.parser import parse_protocol
 
     return parse_protocol(eligibility_text, schedule_text, trial_id=trial_id, version_no=0, phase=phase)
@@ -118,9 +117,11 @@ def screen(rules, cohort_df, trial_id):
 
 
 def simulate(protocol, n, seeds):
+    _need_db()  # Gemini calls go through llm_cache in Postgres
     from clinova.simulate.runner import simulate_trial
 
-    return simulate_trial(protocol, n=n, seeds=tuple(seeds))
+    # G1: never persist API (possibly edited / draft) runs as first-version sim_runs.
+    return simulate_trial(protocol, n=n, seeds=tuple(seeds), persist=False)
 
 
 def score(protocol, sims):

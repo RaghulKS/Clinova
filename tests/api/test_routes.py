@@ -83,6 +83,7 @@ def test_parse_needs_input(client):
 
 def test_parse_uses_real_parser_when_available(client, monkeypatch, parsed_protocol):
     monkeypatch.setattr("clinova.parse.parser.parse_protocol", lambda *a, **k: parsed_protocol)
+    monkeypatch.setattr(live, "_need_db", lambda: None)
     r = client.post("/protocols/parse", json={"eligibility_text": "ECOG 0-1"})
     assert r.json()["source"] == "live"
 
@@ -97,7 +98,8 @@ def test_run_lifecycle_on_fixtures(client):
     assert st.stages_done == ["parse", "cohort", "screen", "agents", "score", "flags", "optimize"]
     assert st.result is not None
     assert len(st.result.risks) == 3 and len(st.result.fixes) == 3 and len(st.result.flags) == 3
-    assert st.result.funnel is not None and st.result.funnel.n_screened == 200
+    # G1: cohort and screen are real modules now (no LLM, no DB), so the funnel is live.
+    assert st.result.funnel is not None and st.result.funnel.n_screened > 0
     assert "Fixture" in (st.message or "")
     # fixture scores are logged in the in-memory ledger
     assert len(client.get("/audit").json()["predictions"]) == 3

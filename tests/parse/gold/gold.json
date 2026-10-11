@@ -1,0 +1,789 @@
+[
+ {
+  "nct_id": "NCT01364012",
+  "title": "A Study of Bevacizumab Versus Placebo in Combination With Carboplatin/Paclitaxel in Participants With Advanced or Recurrent Non-Squamous Non-Small Cell Lung Cancer Who Have Not Received Previous Chemotherapy",
+  "text": "Inclusion Criteria:\n\n* Locally advanced (Stage IIIb not amenable for combined modality treatment), metastatic (Stage IV) or recurrent non-squamous non-small cell lung cancer\n* Eastern Cooperative Oncology Group (ECOG) performance status of 0-1\n* Adequate hematological, renal and liver function\n\nExclusion Criteria:\n\n* Prior chemotherapy or treatment with another systemic anti-cancer agent for the treatment of the participant's current stage of the disease (Stage IIIb, IV or recurrent disease)\n* Mixed non-small cell and small cell tumors or mixed adenosquamous carcinomas with a predominant squamous component\n* Evidence of tumor invading major blood vessels on imaging\n* Central nervous system (CNS) metastases, even if previously treated\n* History of hemoptysis in the 3 months prior to enrollment\n* History or evidence of inherited bleeding diathesis or coagulopathy\n* Uncontrolled hypertension and/or history of hypertensive crisis or hypertensive encephalopathy\n* Clinically significant cardiovascular or vascular disease\n* Malignancies other than non-small cell lung cancer within 5 years prior to randomization, except for adequately treated carcinoma in situ of the cervix, basal or squamous cell skin cancer, or localized prostate cancer or ductal carcinoma in situ treated surgically with curative intent",
+  "rules": [
+   {
+    "kind": "inclusion",
+    "field": "stage",
+    "operator": "in",
+    "value": [
+     "IIIB",
+     "IVA",
+     "IVB"
+    ]
+   },
+   {
+    "kind": "inclusion",
+    "field": "histology",
+    "operator": "not_in",
+    "value": [
+     "squamous"
+    ]
+   },
+   {
+    "kind": "inclusion",
+    "field": "ecog",
+    "operator": "le",
+    "value": 1
+   },
+   {
+    "kind": "exclusion",
+    "field": "prior_lines",
+    "operator": "ge",
+    "value": 1
+   },
+   {
+    "kind": "exclusion",
+    "field": "brain_mets",
+    "operator": "in",
+    "value": [
+     "treated_stable",
+     "untreated"
+    ]
+   },
+   {
+    "kind": "exclusion",
+    "field": "cardiac_condition",
+    "operator": "present",
+    "value": null
+   }
+  ]
+ },
+ {
+  "nct_id": "NCT02283320",
+  "title": "A Study of BIND-014 (Docetaxel Nanoparticles for Injectable Suspension) as Second-line Therapy for Patients With KRAS Positive or Squamous Cell Non-Small Cell Lung Cancer",
+  "text": "Inclusion Criteria:\n\n* Males or females at least 18 years of age\n* Diagnosis of NSCLC with locally advanced or metastatic disease\n* Positive for KRAS mutation or Squamous cell histology\n* Previously treated with one platinum-based chemotherapy\n* Disease status must be that of measurable and/or evaluable disease\n* Performance status of 0 to 1 on the ECOG Scale\n* Prior chemotherapy completed at least 3 weeks prior to study enrollment\n* Prior radiation therapy allowed to \\< 25% of the bone marrow\n* Patient compliance and geographic proximity that allow adequate follow-up\n* Adequate organ function\n* Patients with reproductive potential must use contraceptive methods\n* Signed informed consent from patient\n\nExclusion Criteria:\n\n* Active infection\n* Pregnancy or planning to become pregnant\n* Breast feeding\n* Serious concomitant systemic disorders\n* Second primary malignancy\n* Patients who are symptomatic from brain metastasis\n* Presence of detectable (by physical exam) third-space fluid collections\n* More than 1 prior cytotoxic chemotherapy regimen for advanced disease\n* Prior treatment with docetaxel\n* History of severe hypersensitivity reaction to polysorbate 80\n* Peripheral neuropathy at study entry\n* Patients known to be HIV positive\n* Patients known to be seropositive for hepatitis C hepatitis B\n* Congenital long QT syndrome, congestive heart failure, or bradyarrhythmia",
+  "rules": [
+   {
+    "kind": "inclusion",
+    "field": "age",
+    "operator": "ge",
+    "value": 18
+   },
+   {
+    "kind": "inclusion",
+    "field": "stage",
+    "operator": "ge",
+    "value": "IIIB"
+   },
+   {
+    "kind": "inclusion",
+    "field": "prior_platinum",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "inclusion",
+    "field": "measurable_disease",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "inclusion",
+    "field": "ecog",
+    "operator": "le",
+    "value": 1
+   },
+   {
+    "kind": "inclusion",
+    "field": "consent_capacity",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "active_infection",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "pregnancy",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "brain_mets",
+    "operator": "in",
+    "value": "*"
+   },
+   {
+    "kind": "exclusion",
+    "field": "prior_lines",
+    "operator": "gt",
+    "value": 1
+   },
+   {
+    "kind": "exclusion",
+    "field": "cardiac_condition",
+    "operator": "present",
+    "value": null
+   }
+  ]
+ },
+ {
+  "nct_id": "NCT01319669",
+  "title": "Clinical Trial on the Prevention of Thrombocytopenia After First-line Chemotherapy",
+  "text": "Inclusion Criteria:\n\n1. Male or female patients at the age of 18 to 75 years old\n2. Histologically or cytologically diagnosed NSCLC cases\n3. Thrombocytopenia occurred in the selected chemotherapy cycle confirmed by double test results with platelet count lower than 75×109/L\n4. Fit for chemotherapy (WBC ≥ 4.0×109/L；neutrophil count\\> 1.5×109/L；PLT ≥ 80×109/L；ALT ≤ 3 times the upper limit of normal range；AST ≤ 3 times the upper limit of normal range；TBil ≤ twice the upper limit of normal range；ECOG PS ≤ 2；without severe cardiopulmonary defects)\n5. Expected lifespan over 12 weeks\n6. With understanding ability and voluntarily sign informed consent form\n7. Be able to comply with the study and follow-up process\n\nExclusion Criteria:\n\n1. With any unstable systemic diseases including active infection, uncontrolled hypertension, liver diseases, renal diseases or metabolic diseases\n2. With uncontrolled brain metastasis symptoms (patients whose brain metastasis controlled over 4 weeks without hormone therapy can still be enrolled)\n3. With heart cerebrovascular diseases, congestive heart failure with NYHA above II degree, with unstable angina pectoris, with acute myocardial infarction or cerebral infarction within 6 months\n4. Breast-feeding or pregnant women\n5. Platelet count over 300×109/L",
+  "rules": [
+   {
+    "kind": "inclusion",
+    "field": "age",
+    "operator": "ge",
+    "value": 18
+   },
+   {
+    "kind": "inclusion",
+    "field": "age",
+    "operator": "le",
+    "value": 75
+   },
+   {
+    "kind": "inclusion",
+    "field": "platelets",
+    "operator": "lt",
+    "value": "*"
+   },
+   {
+    "kind": "inclusion",
+    "field": "anc",
+    "operator": "gt",
+    "value": 1.5
+   },
+   {
+    "kind": "inclusion",
+    "field": "ast_x_uln",
+    "operator": "le",
+    "value": 3
+   },
+   {
+    "kind": "inclusion",
+    "field": "alt_x_uln",
+    "operator": "le",
+    "value": 3
+   },
+   {
+    "kind": "inclusion",
+    "field": "bilirubin_x_uln",
+    "operator": "le",
+    "value": 2
+   },
+   {
+    "kind": "inclusion",
+    "field": "ecog",
+    "operator": "le",
+    "value": 2
+   },
+   {
+    "kind": "inclusion",
+    "field": "life_expectancy_months",
+    "operator": "ge",
+    "value": "*"
+   },
+   {
+    "kind": "inclusion",
+    "field": "consent_capacity",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "active_infection",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "brain_mets",
+    "operator": "in",
+    "value": "*"
+   },
+   {
+    "kind": "exclusion",
+    "field": "cardiac_condition",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "pregnancy",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "platelets",
+    "operator": "gt",
+    "value": 300
+   }
+  ]
+ },
+ {
+  "nct_id": "NCT04262856",
+  "title": "Study to Evaluate Monotherapy and Combination Immunotherapies in Participants With PD-L1 Positive Non-small Cell Lung Cancer",
+  "text": "Inclusion Criteria:\n\n* Male or female participants; age ≥ 18 years\n* Histologically confirmed, treatment naive, metastatic squamous or non-squamous NSCLC with documented high PD-L1 expression, with no epidermal growth factor receptor (EGFR) or anaplastic lymphoma kinase (ALK) genomic tumor aberrations.\n* Eastern Cooperative Oncology Group (ECOG) performance status score of 0 or 1\n* Must have at least 1 measurable lesion per RECIST v1.1\n* Adequate organ and marrow function\n\nExclusion Criteria:\n\n* Use of any live vaccines against infectious diseases within 28 days of first dose of investigational medicinal products (IMPs)\n* Any gastrointestinal condition that would preclude the use of oral medications (eg, difficulty swallowing, nausea, vomiting, or malabsorption)\n* History of trauma or major surgery within 28 days prior to the first dose of IMP\n* Concurrent medical condition requiring the use of supra-physiologic doses of corticosteroids (\\> 10 mg/day of oral prednisone or equivalent) or immunosuppressive medications\n* Positive test results for Hepatitis B surface antigen, Hepatitis C virus antibody with presence of Hepatitis C qualitative RNA or human immunodeficiency virus (HIV-1 and/or HIV-2) antibody at screening\n* Any active autoimmune disease or a documented history of autoimmune disease or syndrome that required systemic treatment in the past 2 years (ie, with use of disease-modifying agents, corticosteroids, or immunosuppressive drugs), except for vitiligo or resolved childhood asthma/atopy.\n* Prior malignancy active within the previous 2 years except for locally curable cancers that have been apparently cured, such as basal or squamous cell skin cancer, superficial bladder cancer, or carcinoma in situ of the cervix, breast, or prostate cancer",
+  "rules": [
+   {
+    "kind": "inclusion",
+    "field": "age",
+    "operator": "ge",
+    "value": 18
+   },
+   {
+    "kind": "inclusion",
+    "field": "stage",
+    "operator": "in",
+    "value": [
+     "IVA",
+     "IVB"
+    ]
+   },
+   {
+    "kind": "inclusion",
+    "field": "prior_lines",
+    "operator": "eq",
+    "value": 0
+   },
+   {
+    "kind": "inclusion",
+    "field": "pdl1_tps",
+    "operator": "ge",
+    "value": "*"
+   },
+   {
+    "kind": "inclusion",
+    "field": "egfr_status",
+    "operator": "eq",
+    "value": "negative"
+   },
+   {
+    "kind": "inclusion",
+    "field": "alk_status",
+    "operator": "eq",
+    "value": "negative"
+   },
+   {
+    "kind": "inclusion",
+    "field": "ecog",
+    "operator": "le",
+    "value": 1
+   },
+   {
+    "kind": "inclusion",
+    "field": "measurable_disease",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "autoimmune_disease",
+    "operator": "present",
+    "value": null
+   }
+  ]
+ },
+ {
+  "nct_id": "NCT01217619",
+  "title": "Erlotinib as Neoadjuvant Treatment in Patients With Stage ⅢA N2 NSCLC With Activating EGFR Mutation.",
+  "text": "Inclusion Criteria:\n\nWritten informed consent provided. Males or females aged ≥18 years. Able to comply with the required protocol and follow-up procedures, and able to receive oral medications.\n\nStage IIIA N2 NSCLC according to the pathological evidence of endobronchial ultrasound(EBUS).\n\nThe biopsy specimen shows EGFR mutation in exon 19 or 21 by DNA sequencing. Measurable disease must be characterized according to RECIST criteria: measurable lesions are defined as those that can be accurately measured in at least one dimension (longest diameter to be recorded) as ≥20cm with conventional techniques (PE, CT, XR, MRI) or as ≥ 10cm with spiral scan.\n\nECOG performance status 0-1. Life expectancy ≥12 weeks.\n\nFemale subjects should not be pregnant or breast-feeding.\n\nExclusion Criteria:\n\nThe biopsy specimen shows EGFR wildtype in exon 19 or 21 by DNA sequencing. Patients with prior exposure to agents directed at the HER axis (e.g. erlotinib, gefitinib, cetuximab, trastuzumab).\n\nPatients with prior chemotherapy or therapy with systemic anti-tumour therapy (e.g. monoclonal antibody therapy).\n\nKnown hypersensitivity to Tarceva or any of its recipients.\n\nEvidence of any other disease, neurological or metabolic dysfunction, physical examination or laboratory finding giving reasonable suspicion of a disease or condition that contraindicates the use of an investigational drug or puts the subject at high risk for treatment-related complications.\n\nSexually active males and females(of childbearing potential) unwilling to practice contraception during the study.",
+  "rules": [
+   {
+    "kind": "inclusion",
+    "field": "consent_capacity",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "inclusion",
+    "field": "age",
+    "operator": "ge",
+    "value": 18
+   },
+   {
+    "kind": "inclusion",
+    "field": "stage",
+    "operator": "eq",
+    "value": "IIIA"
+   },
+   {
+    "kind": "inclusion",
+    "field": "egfr_status",
+    "operator": "eq",
+    "value": "positive"
+   },
+   {
+    "kind": "inclusion",
+    "field": "measurable_disease",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "inclusion",
+    "field": "ecog",
+    "operator": "le",
+    "value": 1
+   },
+   {
+    "kind": "inclusion",
+    "field": "life_expectancy_months",
+    "operator": "ge",
+    "value": "*"
+   },
+   {
+    "kind": "exclusion",
+    "field": "pregnancy",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "egfr_status",
+    "operator": "eq",
+    "value": "negative"
+   },
+   {
+    "kind": "exclusion",
+    "field": "prior_lines",
+    "operator": "ge",
+    "value": 1
+   }
+  ]
+ },
+ {
+  "nct_id": "NCT02713529",
+  "title": "Safety and Efficacy Study of AMG 820 and Pembrolizumab Combination in Select Advanced Solid Tumor Cancer",
+  "text": "Inclusion Criteria:\n\n* Pathologically documented, advanced colorectal, pancreatic or non-small cell lung cancer that is refractory to standard treatment, or the subjects have been intolerant to or refuse standard treatment.\n* Measurable disease per RECIST 1.1 guidelines.\n* Eastern Cooperative Oncology Group (ECOG) performance status of 0 - 1\n* Adequate hematologic, renal, and hepatic function determined by laboratory blood and urine tests.\n* Availability of recent tumor tissue within 3 months prior to enrollment, when feasible.\n\nExclusion Criteria:\n\n* Has known active central nervous system metastases and/or carcinomatous meningitis.\n* History of other malignancy with the past 2 years with some exceptions\n* Evidence of active non-infectious pneumonitis/interstitial lung disease\n* Evidence of other active autoimmune disease that has required prolonged systemic treatment in past 2 years.\n* Evidence of clinically significant immunosuppression such as organ or stem cell transplantation, any severe congenital or acquired cellular and/or humoral immune deficiency, concurrent opportunistic infection.\n* Receiving systemic immunostimulatory agents within 6 weeks or 5 half-lives, whichever is shorter, prior to first dose of study treatment (except ant PD-1/PD-L1 treatment if recruited into Group 4a or 4b).\n* Evidence of active infection within 2 weeks prior to first dose of study treatment.\n* Prior chemotherapy, radiotherapy, biological cancer therapy or major surgery within 28 days prior to enrollment\n* Currently participating or has participated in a study (treatment period only) of an investigational agent or used an investigational device within 28 days of enrollment\n* Received live vaccine within 28 days prior to enrollment\n* Adverse event due to cancer therapy administered more than 28 days prior to enrollment that has not recovered to Common Terminology Criteria for Adverse Events (CTCAE) grade 1 or better.\n* Positive for human immunodeficiency virus (HIV), Hepatitis B or C\n* Women planning to become pregnant or who are lactating/breastfeeding while on study through 4 months after receiving the last dose of study drug.",
+  "rules": [
+   {
+    "kind": "inclusion",
+    "field": "measurable_disease",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "inclusion",
+    "field": "ecog",
+    "operator": "le",
+    "value": 1
+   },
+   {
+    "kind": "exclusion",
+    "field": "brain_mets",
+    "operator": "in",
+    "value": "*"
+   },
+   {
+    "kind": "exclusion",
+    "field": "leptomeningeal",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "interstitial_lung_disease",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "autoimmune_disease",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "active_infection",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "pregnancy",
+    "operator": "present",
+    "value": null
+   }
+  ]
+ },
+ {
+  "nct_id": "NCT03565003",
+  "title": "A First-in-Human Study of JAB-3068 (SHP2 Inhibitor) in Adult Patients With Advanced Solid Tumors in China",
+  "text": "Inclusion Criteria:\n\n1. Written informed consent obtained prior to any study-related procedure being performed;\n2. Age 18 years or older;\n3. Dose escalation(phase I): Patients with histologically or cytologically confirmed, advanced solid tumors (including lymphoma) which have progressed from standard therapy or for whom no standard therapy exists; Dose expansion(phase IIa ): Patients with histologically or cytologically confirmed, advanced NSCLC, ESCC, HNSCC which have progressed from standard therapy;\n4. Patients with life expectancy ≥3 months;\n5. Dose expansion(phase IIa ): patients have available archival tissue can be provided or willing to perform biopsy to provide fresh tumor tissue.\n6. Patients with other solid tumors must have at least one measurable lesion as defined by RECIST v1.1;Patients with Lymphomas must have at least one measurable lesion as defined by IWG 2007 criteria;\n7. Eastern Cooperative Oncology Group performance score 0 or 1;\n8. Patients who have sufficient baseline organ function.\n\nExclusion Criteria:\n\n1. Patients with life-threatening autoimmune disease or with autoimmune disorder and who are on long-term steroid treatment;\n2. History or current evidence of retinal vein occlusion (RVO) or current risk factors for RVO;\n3. Lymphoma with brain metastasis; Other solid tumors:Known malignant central nervous system (CNS) disease other than neurologically stable, treated brain metastases;\n4. Active infection including hepatitis B, hepatitis C and human immunodeficiency virus (HIV)\n5. Patients who have any severe and/or uncontrolled medical conditions or other conditions that, in the opinion of the Investigator and Sponsor, could affect the patient's participation in the study\n6. Patients who have impaired cardiac function or clinically significant cardiac diseases\n7. Use of anti-cancer treatment drug ≤21 days prior to the first dose of JAB-3068.\n8. Use of an investigational drug during the past 30 days prior to the first dose of JAB-3068.",
+  "rules": [
+   {
+    "kind": "inclusion",
+    "field": "consent_capacity",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "inclusion",
+    "field": "age",
+    "operator": "ge",
+    "value": 18
+   },
+   {
+    "kind": "inclusion",
+    "field": "life_expectancy_months",
+    "operator": "ge",
+    "value": 3
+   },
+   {
+    "kind": "inclusion",
+    "field": "measurable_disease",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "inclusion",
+    "field": "ecog",
+    "operator": "le",
+    "value": 1
+   },
+   {
+    "kind": "inclusion",
+    "field": "prior_lines",
+    "operator": "ge",
+    "value": "*"
+   },
+   {
+    "kind": "exclusion",
+    "field": "autoimmune_disease",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "brain_mets",
+    "operator": "eq",
+    "value": "untreated"
+   },
+   {
+    "kind": "exclusion",
+    "field": "active_infection",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "cardiac_condition",
+    "operator": "present",
+    "value": null
+   }
+  ]
+ },
+ {
+  "nct_id": "NCT02949843",
+  "title": "Targeted Therapy in Treating Patients With Incurable Non-Small Cell Lung Cancer With Genetic Mutations",
+  "text": "Inclusion Criteria:\n\n* Patients must have histologically or cytologically confirmed incurable non-small cell lung cancer that harbors an activating mutation in EGFR, MET, BRAF, V600E, RET, HER2, translocation in Alk, or translocation in ROS-1\n* Patients must be receiving treatment or planning to start treatment with a tyrosine kinase inhibitor targeting the activated gene\n* Patients may not be receiving the treatment targeting the activated gene as part of a clinical treatment trial other than the Precision Oncology Trial\n* Eastern Cooperative Oncology Group (ECOG) performance status of 0-3\n* Total bilirubin =\\< 1.5 X institutional upper limit of normal\n* Aspartate transaminase (AST) (serum glutamic-oxaloacetic transaminase \\[SGOT\\])/alanine transaminase (ALT) (serum glutamate pyruvate transaminase \\[SGPT\\]) =\\< 2.5 X institutional upper limit of normal\n* Women of child-bearing potential and men must agree to use adequate contraception (hormonal or barrier method of birth control) prior to study entry and for the duration of study participation; should a woman become pregnant or suspect she is pregnant while participating in this study, she should inform her treating physician immediately\n* Ability to understand and the willingness to sign an Institutional Review Board (IRB)-approved informed consent document\n\nExclusion Criteria:\n\n* Emergent need for palliative radiation\n* Patients may not be receiving any other investigational agents for the treatment of non-small cell lung cancer\n* Uncontrolled intercurrent illness including, but not limited to ongoing or active infection, symptomatic congestive heart failure, unstable angina pectoris, cardiac arrhythmia, or psychiatric illness/social situations that would limit compliance with study requirements\n* Pregnant women are excluded; breastfeeding should be discontinued",
+  "rules": [
+   {
+    "kind": "inclusion",
+    "field": "ecog",
+    "operator": "le",
+    "value": 3
+   },
+   {
+    "kind": "inclusion",
+    "field": "bilirubin_x_uln",
+    "operator": "le",
+    "value": 1.5
+   },
+   {
+    "kind": "inclusion",
+    "field": "ast_x_uln",
+    "operator": "le",
+    "value": 2.5
+   },
+   {
+    "kind": "inclusion",
+    "field": "alt_x_uln",
+    "operator": "le",
+    "value": 2.5
+   },
+   {
+    "kind": "inclusion",
+    "field": "consent_capacity",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "pregnancy",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "active_infection",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "cardiac_condition",
+    "operator": "present",
+    "value": null
+   }
+  ]
+ },
+ {
+  "nct_id": "NCT03050554",
+  "title": "SBRT Combined With Avelumab (Anti-PD-L1) for Management of Early Stage Non-Small Cell Lung Cancer (NSCLC)",
+  "text": "Inclusion Criteria:\n\n* Tumor(s) to be treated is(are) ≤ 5.0 cm or ≤250 cm3\n* Stage I NSCLC and is deemed medically inoperable or refuses surgical resection.\n* Life expectancy ≥ 9 months.\n* Acceptable organ and marrow function\n\nExclusion Criteria:\n\n* Prior organ transplantation, including allogeneic stem cell transplantation\n* Significant acute or chronic infections including:\n\n  * Known history of human immunodeficiency virus (HIV) or known acquired immunodeficiency syndrome (AIDS)\n  * Known history of HBV or HCV\n* Active autoimmune disease\n\n  * Subjects with diabetes type I, vitiligo, psoriasis, hypo- or hyperthyroid disease not requiring immunosuppressive treatment are eligible.\n  * Subjects requiring hormone replacement with corticosteroids are eligible if the steroids are administered only for the purpose of hormonal replacement and at doses ≤ 10 mg or 10 mg equivalent prednisone per day\n  * Administration of steroids through a route known to result in a minimal systemic exposure (topical, intranasal, intro-ocular, or inhalation) are acceptable\n* Current use of immunosuppressive medication, EXCEPT for the following:\n\n  * intranasal, inhaled, topical steroids, or local steroid injection (eg, intra-articular injection)\n  * Systemic corticosteroids at physiologic doses ≤ 10 mg/day of prednisone or equivalent\n  * Steroids as premedication for hypersensitivity reactions (eg, CT scan premedication).\n* Cardiovascular disease: cerebral vascular accident/stroke (\\< 6 months prior to enrollment), myocardial infarction (\\< 6 months prior to enrollment), unstable angina, congestive heart failure, or serious cardiac arrhythmia requiring medication.\n* Known severe hypersensitivity reactions to monoclonal antibodies any history of anaphylaxis, or uncontrolled asthma\n* Pregnancy or lactation\n* Known alcohol or drug abuse\n* Prior radiotherapy to the treatment site(s).",
+  "rules": [
+   {
+    "kind": "inclusion",
+    "field": "stage",
+    "operator": "eq",
+    "value": "I"
+   },
+   {
+    "kind": "inclusion",
+    "field": "life_expectancy_months",
+    "operator": "ge",
+    "value": 9
+   },
+   {
+    "kind": "exclusion",
+    "field": "autoimmune_disease",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "active_infection",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "cardiac_condition",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "pregnancy",
+    "operator": "present",
+    "value": null
+   }
+  ]
+ },
+ {
+  "nct_id": "NCT00449657",
+  "title": "Phase II Trial of Pulsed Taxol With Concurrent Thoracic Radiotherapy, & Adjuvant Chemo in Stage III NSCLC",
+  "text": "Inclusion Criteria:\n\n1. Patients must have: IIIA or IIIB non-small cell lung cancer by radiographic or surgical staging, excluding: superior sulcus tumors, tumors with associated atelectasis or obstructive pneumonitis of the entire lung, and tumors with a malignant pleural effusion.\n2. Patients will be included in the study based on the following criteria:\n\n   * Patients must be older than 18 years old.\n   * Patients must have a Zubrod performance status of 0 to 2\n   * Patients with adequate bone marrow function\n   * Patients with adequate renal function\n   * Patients with adequate hepatic function\n   * Patients of childbearing potential must have a negative serum pregnancy test and use an effective form of contraception.\n   * Patients who are suitable for treatment with radical intent using concurrent chemotherapy and radiation.\n   * Patients who have signed an approved informed consent and authorization permitting release of personal health information.\n\nExclusion Criteria:\n\n1. Disease-Specific Exclusions\n\n   * Superior sulcus tumors\n   * Atelectasis or obstructive pneumonitis of the entire lung\n   * Malignant pleural effusion\n2. General Medical Exclusions\n\n   * Surgical candidates\n   * Patients who are pregnant at the time of diagnosis\n   * Serious concomitant systemic disorders incompatible with the study\n   * Inability to comply with study and/or follow-up procedures\n   * Life expectancy of less than 12 weeks\n   * Current, recent (within 4 weeks of the first infusion of this study), or planned participation in an experimental drug study\n   * Patients with septicemia or severe infection.\n   * Patients who have circumstances that will not permit completion of this study or the required follow-up\n   * Patients with any contraindication to gemcitabine, carboplatin, or paclitaxel",
+  "rules": [
+   {
+    "kind": "inclusion",
+    "field": "stage",
+    "operator": "in",
+    "value": [
+     "IIIA",
+     "IIIB"
+    ]
+   },
+   {
+    "kind": "inclusion",
+    "field": "age",
+    "operator": "gt",
+    "value": 18
+   },
+   {
+    "kind": "inclusion",
+    "field": "ecog",
+    "operator": "le",
+    "value": 2
+   },
+   {
+    "kind": "inclusion",
+    "field": "consent_capacity",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "pregnancy",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "life_expectancy_months",
+    "operator": "lt",
+    "value": "*"
+   },
+   {
+    "kind": "exclusion",
+    "field": "active_infection",
+    "operator": "present",
+    "value": null
+   }
+  ]
+ },
+ {
+  "nct_id": "NCT03922997",
+  "title": "A Study to Investigate the Safety and Efficacy of Atezolizumab in Previously-Treated Patients With Locally Advanced or Metastatic Non-Small Cell Lung Cancer",
+  "text": "Inclusion Criteria:\n\n* Histologically or cytologically documented Stage IIIb or Stage IV NSCLC that has progressed following standard systemic chemotherapy (including if given in combination with anti-PD-1 therapy or after anti-PD-1 as monotherapy). Patients with a previously detected EGFR mutation or ALK fusion oncogene will be excluded from this study. Overall, patients should not have received more than two lines of systemic chemotherapy. Patients who have discontinued first-line or second-line systemic chemotherapy, targeted therapy, or anti-PD-1 therapy due to intolerance are also eligible.\n* The last dose of prior systemic anticancer therapy must have been administered ≥ 21 days prior to the first study treatment.\n* The last dose of prior anti-PD-1 therapy must have been administered\n* Measurable disease, as defined by Response Evaluation Criteria for Solid Tumors, Version 1.1 (RECIST v1.1)\n* Patients with asymptomatic CNS metastases (treated or untreated), as determined by CT or MRI evaluation during screening and prior radiographic evaluation, are eligible\n* ECOG performance status 0, 1, or 2\n* Life expectancy ≥ 12 weeks\n* Adequate hematologic and end-organ function\n* For women of childbearing potential: agreement to remain abstinent or use contraceptive methods that result in a failure rate of \\< 1% per year during the treatment period and for at least 5 months after the last dose of atezolizumab\n* Patients must have recovered from all acute toxicities from previous therapy, excluding alopecia and toxicities related to prior anti-PD-1-therapy\n\nExclusion Criteria:\n\n* Patients with EGFR mutation or ALK fusion oncogene\n* Symptomatic CNS metastases\n* Spinal cord compression not definitively treated with surgery and/or radiation or previously diagnosed and treated spinal cord compression without evidence that disease has been clinically stable for ≥ 2 weeks prior to the first study treatment\n* Leptomeningeal disease\n* Uncontrolled pericardial effusion or ascites requiring recurrent drainage procedures\n* Pregnant or lactating, or intending to become pregnant during the study\n* Evidence of significant uncontrolled concomitant disease that could affect compliance with the protocol, including significant liver disease\n* Significant cardiovascular disease\n* Significant renal disorder requiring dialysis or indication for renal transplant\n* Treatment with any other investigational agent or participation in another clinical trial with therapeutic intent within 28 days prior to study treatment initiation\n* Major surgical procedure within 4 weeks prior to study treatment initiation or anticipation of need for a major surgical procedure during the course of the study other than for diagnosis\n* Prior allogeneic stem cell or solid organ transplantation",
+  "rules": [
+   {
+    "kind": "inclusion",
+    "field": "stage",
+    "operator": "in",
+    "value": [
+     "IIIB",
+     "IVA",
+     "IVB"
+    ]
+   },
+   {
+    "kind": "inclusion",
+    "field": "prior_platinum",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "inclusion",
+    "field": "prior_lines",
+    "operator": "le",
+    "value": 2
+   },
+   {
+    "kind": "inclusion",
+    "field": "measurable_disease",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "inclusion",
+    "field": "ecog",
+    "operator": "le",
+    "value": 2
+   },
+   {
+    "kind": "inclusion",
+    "field": "life_expectancy_months",
+    "operator": "ge",
+    "value": 3
+   },
+   {
+    "kind": "inclusion",
+    "field": "egfr_status",
+    "operator": "eq",
+    "value": "negative"
+   },
+   {
+    "kind": "inclusion",
+    "field": "alk_status",
+    "operator": "eq",
+    "value": "negative"
+   },
+   {
+    "kind": "exclusion",
+    "field": "egfr_status",
+    "operator": "eq",
+    "value": "positive"
+   },
+   {
+    "kind": "exclusion",
+    "field": "alk_status",
+    "operator": "eq",
+    "value": "positive"
+   },
+   {
+    "kind": "exclusion",
+    "field": "brain_mets",
+    "operator": "in",
+    "value": "*"
+   },
+   {
+    "kind": "exclusion",
+    "field": "leptomeningeal",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "pregnancy",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "cardiac_condition",
+    "operator": "present",
+    "value": null
+   }
+  ]
+ },
+ {
+  "nct_id": "NCT01639001",
+  "title": "A Study Of Crizotinib Versus Chemotherapy In Previously Untreated ALK Positive East Asian Non-Small Cell Lung Cancer Patients",
+  "text": "Inclusion Criteria:\n\n* Histologically or cytologically proven diagnosis of locally advanced not suitable for local treatment, recurrent and metastatic non-squamous cell carcinoma of the lung.\n* Positive for translocation or inversion events involving the ALK gene locus.\n* No prior systemic treatment for locally advanced or metastatic disease. Patients with brain metastases only if treated and neurologically stable for at least 2 weeks and are not taking any medications contraindicated in Exclusion Criteria\n* Evidence of a personally signed and dated informed consent document and willingness and ability to comply with scheduled visits, treatment plans, laboratory tests, and other study procedures including completion of patient reported outcome \\[PRO\\] measures.\n\nExclusion Criteria:\n\n* Current treatment on another therapeutic clinical trial.\n* Prior therapy directly targeting ALK.\n* Any of the following within the 3 months prior to starting study treatment: myocardial infarction, severe/unstable angina, coronary/peripheral artery bypass graft, congestive heart failure, or cerebrovascular accident including transient ischemic attack. Appropriate treatment with anticoagulants is permitted.\n* Ongoing cardiac dysrhythmias of NCI CTCAE Grade \\>=2, uncontrolled atrial fibrillation of any grade, or QTc interval \\>470 msec.\n* Pregnancy or breastfeeding.\n* Use of drugs or foods that are known potent CYP3A inducers/inhibitors Concurrent use of drugs that are CYP3A substrates with narrow therapeutic indices.\n* Known HIV infection\n* History of extensive disseminated/bilateral or known presence of Grade 3 or 4 interstitial fibrosis or interstitial lung disease, including a history of pneumonitis, hypersensitivity pneumonitis, interstitial pneumonia, interstitial lung disease, obliterative bronchiolitis, and pulmonary fibrosis, but not history of prior radiation pneumonitis.\n* Other severe acute or chronic medical conditions (including severe gastrointestinal conditions such as diarrhea or ulcer) or psychiatric conditions, or end-stage renal disease on hemodialysis, or laboratory abnormalities that would impart, in the judgment of the investigator and/or sponsor, excess risk associated with study participation or study drug administration, and which would, therefore, make the patient inappropriate for entry into this study.",
+  "rules": [
+   {
+    "kind": "inclusion",
+    "field": "stage",
+    "operator": "in",
+    "value": [
+     "IIIB",
+     "IVA",
+     "IVB"
+    ]
+   },
+   {
+    "kind": "inclusion",
+    "field": "histology",
+    "operator": "not_in",
+    "value": [
+     "squamous"
+    ]
+   },
+   {
+    "kind": "inclusion",
+    "field": "alk_status",
+    "operator": "eq",
+    "value": "positive"
+   },
+   {
+    "kind": "inclusion",
+    "field": "prior_lines",
+    "operator": "eq",
+    "value": 0
+   },
+   {
+    "kind": "inclusion",
+    "field": "consent_capacity",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "cardiac_condition",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "pregnancy",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "interstitial_lung_disease",
+    "operator": "present",
+    "value": null
+   },
+   {
+    "kind": "exclusion",
+    "field": "active_infection",
+    "operator": "present",
+    "value": null
+   }
+  ]
+ }
+]

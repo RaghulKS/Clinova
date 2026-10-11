@@ -1,0 +1,70 @@
+meta:
+  description: Census-inspired life context with NSCLC demographic margins; no fitted ACS joint table.
+  version: 1
+urbanicity:
+  probs: {urban: 0.40, suburban: 0.40, rural: 0.20}
+  assumption: true
+  confidence: low
+  source: []
+  reasoning: Illustrative 80% urban/suburban mixture; not a ZIP or Census classification of source geography.
+distance_km:
+  median: {urban: 15, suburban: 35, rural: 90}
+  sigma_log: 0.5
+  assumption: true
+  confidence: low
+  source: []
+  reasoning: Travel burden proxies sampled independently of source geography; no trial-site lookup.
+travel_access:
+  easy_below_km: 25
+  moderate_below_km: 75
+  assumption: true
+  confidence: low
+  source: []
+risk_tolerance:
+  probs: {low: 0.35, medium: 0.45, high: 0.20}
+  assumption: true
+  confidence: low
+  source: []
+health_literacy:
+  college: {low: 0.10, adequate: 0.60, high: 0.30}
+  other: {low: 0.35, adequate: 0.60, high: 0.05}
+  assumption: true
+  confidence: low
+  source: []
+  reasoning: Education association assumed; these are not measured NSCLC literacy rates.
+income_band:
+  college: {low: 0.15, middle: 0.45, high: 0.40}
+  other: {low: 0.40, middle: 0.50, high: 0.10}
+  assumption: true
+  confidence: low
+  source: []
+caregiver:
+  younger_than_age: 65
+  younger_p: 0.25
+  older_p: 0.15
+  married_increment: 0.05
+  assumption: true
+  confidence: low
+  source: []
+  reasoning: Illustrative caregiving prevalence; no NSCLC-specific measured conditional data.
+fallback_occupation:
+  probs: {service_worker: 0.30, office_worker: 0.30, manual_worker: 0.20, professional: 0.20}
+  assumption: true
+  confidence: low
+  source: []
+fallback_education:
+  probs: {less_than_high_school: 0.10, high_school: 0.28, some_college: 0.32, bachelors: 0.30}
+  assumption: true
+  confidence: low
+  source: []
+fallback_marital_status:
+  probs: {married_present: 0.50, never_married: 0.20, widowed: 0.15, divorced: 0.15}
+  assumption: true
+  confidence: low
+  source: []
+fallback_retirement:
+  minimum_age: 65
+  p: 0.80
+  assumption: true
+  confidence: low
+  source: []
