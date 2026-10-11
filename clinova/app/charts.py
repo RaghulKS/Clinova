@@ -221,7 +221,7 @@ def auc_compare(metrics: ValidationMetrics) -> go.Figure:
     names = [_TARGETS.get(t.target.value, t.target.value) for t in metrics.targets]
     for label, getter, color, off in (
         ("Baseline (logistic)", lambda t: t.baseline_auc, theme.GREY_DARK, -0.12),
-        ("Clinova (LightGBM + simulation)", lambda t: t.auc, theme.ACCENT, 0.12),
+        ("Clinova model", lambda t: t.auc, theme.ACCENT, 0.12),
     ):
         vals = [getter(t) for t in metrics.targets]
         fig.add_trace(

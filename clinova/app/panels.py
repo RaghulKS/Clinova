@@ -3,12 +3,14 @@ the API response; wording frames everything as a suggestion to the protocol auth
 
 from __future__ import annotations
 
+import bisect
 import time
+from dataclasses import dataclass, field
 
 import streamlit as st
 
 from clinova.api.fallbacks import FIXTURE_NCT_ID
-from clinova.api.schemas import AcceptResponse, FeedbackIn
+from clinova.api.schemas import AcceptResponse, FeedbackIn, ValidationResponse
 from clinova.app import charts, fmt, theme
 from clinova.app import reveal as rv
 from clinova.app.client import ApiClient, ApiError
@@ -44,6 +46,41 @@ CONFIDENCE_TEXT = {
     "medium": "Medium confidence",
     "low": "Low confidence: unlike most trials the model has seen",
 }
+
+
+@dataclass
+class Reference:
+    """What the held-out evaluation says about each target (only from real, non-fixture metrics).
+
+    ``status``: ``validated`` (test AUC interval above 0.5 and Brier better than the baseline's),
+    ``not_validated`` (evaluated, but not both), ``no_model`` (no test metrics for the target).
+    Empty when the metrics are fixture placeholders: the app then shows scores without these labels."""
+
+    status: dict[str, str] = field(default_factory=dict)
+    test_p: dict[str, list[float]] = field(default_factory=dict)
+    n_test: dict[str, int] = field(default_factory=dict)
+
+    def percentile(self, target: str, p: float) -> float | None:
+        xs = self.test_p.get(target)
+        if not xs:
+            return None
+        return bisect.bisect_left(xs, p) / len(xs)  # share of test trials scored strictly lower
+
+    def no_model(self, target: str) -> bool:
+        return self.status.get(target) == "no_model"
+
+
+def build_reference(resp: ValidationResponse | None) -> Reference:
+    if resp is None or theme.is_fixture(resp.source):
+        return Reference()
+    m = resp.metrics
+    status: dict[str, str] = {}
+    for t in m.targets:
+        ok = t.auc.ci_low > 0.5 and t.brier < t.baseline_brier
+        status[t.target.value] = "validated" if ok else "not_validated"
+    for target in TARGET_TITLES:
+        status.setdefault(target, "no_model")
+    return Reference(status=status, test_p=dict(resp.test_p), n_test={t.target.value: t.n_test for t in m.targets})
 
 
 def edit_in_words(edit: Edit, protocol: ParsedProtocol) -> str:
@@ -191,31 +228,48 @@ def _drivers(r: RiskScore, n: int) -> str:
     )
 
 
-def _risk_card(r: RiskScore, *, hero: bool, base_rate: float | None = None) -> str:
+def _risk_card(r: RiskScore, *, hero: bool, ref: Reference) -> str:
     title, sub = TARGET_TITLES.get(r.target.value, (r.target.value, ""))
-    level, cls = fmt.risk_level(r.p)
-    num_cls = "cl-hero" if hero else "cl-mid"
-    base = (
-        f'<div class="cl-note" style="margin-top:0.2rem">Rate among held-out test trials: {pct(base_rate)}</div>'
-        if base_rate is not None
-        else ""
-    )
+    target = r.target.value
+    pad = "" if hero else " tight"
+    big = "cl-hero" if hero else "cl-mid"
+    if ref.no_model(target):
+        why = r.top_drivers[0].label if r.top_drivers else "There are too few labeled trials to train this model."
+        return (
+            f'<div class="cl-card{pad}" style="opacity:0.8"><h4>{esc(title)}<span class="cl-level low">No model yet</span></h4>'
+            f'<div class="cl-note" style="margin-bottom:0.4rem">{esc(sub)}</div>'
+            f'<div class="{big}" style="color:{theme.GREY_DARK}">n/a</div>'
+            f'<div class="cl-note" style="margin-top:0.3rem">{esc(why)}</div></div>'
+        )
+    q = ref.percentile(target, r.p)
+    if q is not None:
+        level, cls = fmt.percentile_level(q)
+        n = ref.n_test.get(target, len(ref.test_p.get(target, [])))
+        context = f"Higher than {pct(q, 0)} of {n} held-out test trials"
+    else:
+        level, cls = fmt.risk_level(r.p)
+        context = ""
+    chip = f'<span class="cl-level {cls}">{level}</span>'
+    if ref.status.get(target) == "not_validated":
+        chip = '<span class="cl-level low">Not validated</span>'
+        context = (context + ". " if context else "") + "On held-out trials this model did not beat the baseline; treat it as a rough signal"
     drivers = _drivers(r, 4 if hero else 2)
     return (
-        f'<div class="cl-card accent{"" if hero else " tight"}"><h4>{esc(title)}<span class="cl-level {cls}">{level}</span></h4>'
+        f'<div class="cl-card accent{pad}"><h4>{esc(title)}{chip}</h4>'
         f'<div class="cl-note" style="margin-bottom:0.4rem">{esc(sub)}</div>'
-        f'<div class="{num_cls}">{pct(r.p)}</div>'
-        f'<div class="cl-range">likely range {pct(r.ci_low)} to {pct(r.ci_high)}</div>{base}'
-        f'<div style="margin:0.45rem 0 0.45rem"><span class="cl-badge {esc(r.confidence)}">{esc(CONFIDENCE_TEXT[r.confidence])}</span></div>'
+        f'<div class="{big}">{pct(r.p)}</div>'
+        f'<div class="cl-range">likely range {pct(r.ci_low)} to {pct(r.ci_high)}</div>'
+        + (f'<div class="cl-note" style="margin-top:0.2rem">{esc(context)}.</div>' if context else "")
+        + f'<div style="margin:0.45rem 0 0.45rem"><span class="cl-badge {esc(r.confidence)}">{esc(CONFIDENCE_TEXT[r.confidence])}</span></div>'
         + (f'<div class="cl-note" style="margin-bottom:0.1rem">What drives this estimate</div>{drivers}' if drivers else "")
         + "</div>"
     )
 
 
-def risk_panel(status: RunStatus, base_rates: dict[str, float] | None = None) -> None:
+def risk_panel(status: RunStatus, ref: Reference | None = None) -> None:
     res = status.result
     assert res is not None
-    base_rates = base_rates or {}
+    ref = ref or Reference()
     st.markdown(
         f'<div class="cl-panel-title">Risk {theme.fixture_tag(status.source)}</div>'
         '<div class="cl-panel-sub">Calibrated probabilities with a range: estimates to inform your judgement, not a verdict.</div>',
@@ -226,12 +280,12 @@ def risk_panel(status: RunStatus, base_rates: dict[str, float] | None = None) ->
         return
     order = {"accrual_fail": 0, "shortfall": 1, "amend": 2}
     risks = sorted(res.risks, key=lambda r: order.get(r.target.value, 9))
-    st.markdown(_risk_card(risks[0], hero=True, base_rate=base_rates.get(risks[0].target.value)), unsafe_allow_html=True)
+    st.markdown(_risk_card(risks[0], hero=True, ref=ref), unsafe_allow_html=True)
     rest = risks[1:]
     if rest:
         cols = st.columns(len(rest), gap="small")
         for col, r in zip(cols, rest, strict=True):
-            col.markdown(_risk_card(r, hero=False, base_rate=base_rates.get(r.target.value)), unsafe_allow_html=True)
+            col.markdown(_risk_card(r, hero=False, ref=ref), unsafe_allow_html=True)
     model_v = risks[0].model_version
     st.markdown(f'<div class="cl-note">Model version: {esc(model_v)}.</div>', unsafe_allow_html=True)
 
@@ -241,9 +295,17 @@ def risk_panel(status: RunStatus, base_rates: dict[str, float] | None = None) ->
 # --------------------------------------------------------------------------------------------------------
 
 
-def _flag_html(f: CriterionFlag, fixes: list[Fix]) -> str:
+NO_AMEND_MODEL = "not estimated: no amendment model yet"
+
+
+def _flag_html(f: CriterionFlag, fixes: list[Fix], ref: Reference) -> str:
     dollars = flag_dollars(f, fixes)
-    if dollars is not None:
+    if ref.no_model("amend"):
+        money_row = (
+            '<div class="money"><span class="cl-note">Dollar value of avoided amendments: not estimated, because there is no '
+            "amendment model yet (too few amended trials to learn from).</span></div>"
+        )
+    elif dollars is not None:
         value, fx = dollars
         money_row = (
             f'<div class="money"><span>Expected value of avoided amendments<br><span class="cl-note">'
@@ -255,14 +317,28 @@ def _flag_html(f: CriterionFlag, fixes: list[Fix]) -> str:
         f'<div class="cl-flag"><div class="rank">Flag {f.rank}</div><div class="where">{esc(f.where)}</div>'
         f'<div class="lbl">Why it matters</div><div class="txt">{esc(f.why)}</div>'
         f'<div class="lbl">What you could do</div><div class="txt">{esc(f.what_to_do)}</div>'
-        f'<div class="cl-note" style="margin-top:0.35rem">Changing it is estimated to lower accrual-failure risk by '
-        f"{esc(fmt.pts(abs(f.delta_p)))}.</div>{money_row}</div>"
+        + (
+            f'<div class="cl-note" style="margin-top:0.35rem">Changing it is estimated to lower accrual-failure risk by '
+            f"{esc(fmt.pts(abs(f.delta_p)))}.</div>"
+            if abs(f.delta_p) >= 0.0005
+            else ""
+        )
+        + f"{money_row}</div>"
     )
 
 
-def flags_row(status: RunStatus) -> None:
+def flags_row(status: RunStatus, ref: Reference | None = None) -> None:
     res = status.result
     assert res is not None
+    ref = ref or Reference()
+    if res.flags and all(abs(f.delta_p) < 0.0005 for f in res.flags):
+        sub = (
+            "Ranked by how many virtual patients each criterion excludes on its own; the risk model predicts no change "
+            "in accrual-failure risk from editing them. Where it is, why it matters, what you could do."
+        )
+    else:
+        sub = "The criteria whose change lowers the predicted risk most: where it is, why it matters, what you could do, and what it is worth."
+    st.markdown(f'<div class="cl-h2-sub">{esc(sub)}</div>', unsafe_allow_html=True)
     if not res.flags:
         st.markdown(
             theme.empty(
@@ -275,7 +351,7 @@ def flags_row(status: RunStatus) -> None:
     flags = sorted(res.flags, key=lambda x: x.rank)[:3]
     cols = st.columns(3, gap="medium")
     for col, flag in zip(cols, flags, strict=False):
-        col.markdown(_flag_html(flag, res.fixes), unsafe_allow_html=True)
+        col.markdown(_flag_html(flag, res.fixes, ref), unsafe_allow_html=True)
 
 
 # --------------------------------------------------------------------------------------------------------
@@ -292,8 +368,19 @@ def _rng(lo: float, hi: float, f) -> str:
     return f"range {f(lo)} to {f(hi)}"
 
 
-def _fix_card(fix: Fix, protocol: ParsedProtocol, decision: str | None) -> str:
+def _fix_card(fix: Fix, protocol: ParsedProtocol, decision: str | None, ref: Reference | None = None) -> str:
+    ref = ref or Reference()
     rg = fix.ranges
+    if ref.no_model("amend"):
+        amend_rows = _metric("Amendment risk", '<span class="cl-note">not estimated</span>', "no amendment model yet") + _metric(
+            "Expected value of avoided amendments", '<span class="cl-note">not estimated</span>', "needs an amendment model"
+        )
+    else:
+        amend_rows = _metric(
+            "Amendment risk",
+            signed_pts(fix.delta_p_amend),
+            _rng(rg.delta_p_amend.low, rg.delta_p_amend.high, signed_pts) if rg.delta_p_amend else "",
+        ) + _metric("Expected value of avoided amendments", money(fix.dollar_value), cls="money")
     edits = "".join(f'<div class="cl-driver">{esc(edit_in_words(e, protocol))}</div>' for e in fix.edits)
     prec = "".join(
         f'<div class="cl-precedent"><b>{esc(p.nct_id)}</b>: {esc(p.detail)}</div>' for p in fix.precedents[:2]
@@ -310,12 +397,7 @@ def _fix_card(fix: Fix, protocol: ParsedProtocol, decision: str | None) -> str:
         + _metric("Enrollment speed", signed_pct(fix.delta_enroll), _rng(rg.delta_enroll.low, rg.delta_enroll.high, signed_pct))
         + _metric("Dropout (share of enrolled)", signed_pts(fix.delta_dropout), _rng(rg.delta_dropout.low, rg.delta_dropout.high, signed_pts))
         + _metric("Diversity index", div_fmt(fix.delta_diversity), _rng(rg.delta_diversity.low, rg.delta_diversity.high, div_fmt))
-        + _metric(
-            "Amendment risk",
-            signed_pts(fix.delta_p_amend),
-            _rng(rg.delta_p_amend.low, rg.delta_p_amend.high, signed_pts) if rg.delta_p_amend else "",
-        )
-        + _metric("Expected value of avoided amendments", money(fix.dollar_value), cls="money")
+        + amend_rows
         + (f'<div class="cl-note" style="margin:0.45rem 0 0.1rem">Precedents: comparable trials that used the looser rule</div>{prec}' if prec else
            '<div class="cl-note" style="margin-top:0.45rem">No precedent trials found for these edits.</div>')
         + "</div>"
@@ -372,13 +454,24 @@ def _change(bv: float | None, av: float | None, key: str, kind: str) -> tuple[st
     return text, "better" if better else "worse"
 
 
-def before_after_rows(resp: AcceptResponse) -> list[dict]:
+def _spec(skip: set[str]) -> list[tuple[str, str, str]]:
+    return [row for row in _SPEC if row[1] not in skip]
+
+
+def _skip(ref: Reference | None) -> set[str]:
+    """Measures with no model behind them (their 'before' would be a placeholder): not shown."""
+    if ref is None:
+        return set()
+    return {f"{t}_p" for t in ("accrual_fail", "shortfall", "amend") if ref.no_model(t)}
+
+
+def before_after_rows(resp: AcceptResponse, ref: Reference | None = None) -> list[dict]:
     """Rows of the before and after table. The Basis column says whether the after number is a re-run
     or the optimizer's estimate."""
     basis = "re-run (surrogate, no new LLM calls)" if resp.basis == "quick_rerun" else "optimizer estimate"
     b, a = resp.before, resp.after
     rows = []
-    for label, key, kind in _SPEC:
+    for label, key, kind in _spec(_skip(ref)):
         bv, av = getattr(b, key), getattr(a, key)
         if bv is None and av is None:
             continue
@@ -387,10 +480,10 @@ def before_after_rows(resp: AcceptResponse) -> list[dict]:
     return rows
 
 
-def _before_after_html(resp: AcceptResponse) -> str:
+def _before_after_html(resp: AcceptResponse, ref: Reference | None = None) -> str:
     b, a = resp.before, resp.after
     body = ""
-    for label, key, kind in _SPEC:
+    for label, key, kind in _spec(_skip(ref)):
         bv, av = getattr(b, key), getattr(a, key)
         if bv is None and av is None:
             continue
@@ -406,9 +499,10 @@ def _before_after_html(resp: AcceptResponse) -> str:
     )
 
 
-def fixes_row(status: RunStatus, client: ApiClient) -> None:
+def fixes_row(status: RunStatus, client: ApiClient, ref: Reference | None = None) -> None:
     res: RunResult | None = status.result
     assert res is not None
+    ref = ref or Reference()
     if not res.fixes:
         st.markdown(
             theme.empty(
@@ -426,7 +520,7 @@ def fixes_row(status: RunStatus, client: ApiClient) -> None:
     for col, fix in zip(cols, fixes, strict=True):
         d = decisions.get(fix.fix_id)
         with col:
-            st.markdown(_fix_card(fix, res.protocol, d), unsafe_allow_html=True)
+            st.markdown(_fix_card(fix, res.protocol, d, ref), unsafe_allow_html=True)
             c1, c2, _ = st.columns([1, 1, 2])
             c1.button("Accept", key=f"acc_{fix.fix_id}", type="primary", on_click=_decide, args=(client, fix, "accept", status), disabled=d is not None, width="stretch")
             c2.button("Reject", key=f"rej_{fix.fix_id}", on_click=_decide, args=(client, fix, "reject", status), disabled=d is not None, width="stretch")
@@ -450,7 +544,7 @@ def fixes_row(status: RunStatus, client: ApiClient) -> None:
         )
         left, right = st.columns([1.6, 1], gap="large")
         with left:
-            st.markdown(_before_after_html(resp), unsafe_allow_html=True)
+            st.markdown(_before_after_html(resp, ref), unsafe_allow_html=True)
         with right:
             took = f" Took {secs:.1f} s." if secs is not None else ""
             st.markdown(f'<div class="cl-callout">{esc(basis)}{esc(took)}</div>', unsafe_allow_html=True)

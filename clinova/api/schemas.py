@@ -94,6 +94,11 @@ class FeedbackResponse(Body):
 class ValidationResponse(Body):
     metrics: ValidationMetrics
     source: Source
+    test_p: dict[str, list[float]] = Field(
+        default_factory=dict,
+        description="Presentation only: served model probabilities of the held-out test trials per target, sorted "
+        "(docs/predictions.csv, same model version), so the app can place a score as a percentile.",
+    )
 
 
 class ReplayResponse(Body):

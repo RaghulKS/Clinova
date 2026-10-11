@@ -71,17 +71,14 @@ def trial_bar(protocol: ParsedProtocol, meta: dict, source: object) -> None:
     )
 
 
-def base_rates() -> dict[str, float]:
-    """Positive rate per target among held-out test trials, only from real (non-fixture) metrics."""
-    if "base_rates" not in ss:
+def reference() -> panels.Reference:
+    """Held-out evaluation context for the risk cards (percentiles, validated or not, no model)."""
+    if "reference" not in ss:
         try:
-            v = client.validation()
-            ss["base_rates"] = (
-                {} if theme.is_fixture(v.source) else {t.target.value: t.n_pos / t.n_test for t in v.metrics.targets if t.n_test}
-            )
+            ss["reference"] = panels.build_reference(client.validation())
         except ApiError:
-            ss["base_rates"] = {}
-    return ss["base_rates"]
+            ss["reference"] = panels.Reference()
+    return ss["reference"]
 
 
 # --------------------------------------------------------------------------------------------------------
@@ -288,10 +285,10 @@ with tab_main:
         with col_f:
             panels.funnel_panel(status)
         with col_r:
-            panels.risk_panel(status, base_rates())
+            panels.risk_panel(status, reference())
 
-        h2(2, "Where to look first", "The criteria whose change lowers the predicted risk most: where, why, what you could do, and what it is worth.", anchor="cl-flags")
-        panels.flags_row(status)
+        h2(2, "Where to look first", anchor="cl-flags")
+        panels.flags_row(status, reference())
 
         nct = meta.get("nct_id")
         step = 3
@@ -312,7 +309,7 @@ with tab_main:
                 panels.reveal(bt, pointed)
 
         h2(step, "Suggested fixes", "Three trade-offs for you to weigh. Accepting one records your decision and re-checks the protocol in seconds.", anchor="cl-fixes")
-        panels.fixes_row(status, client)
+        panels.fixes_row(status, client, reference())
 
         with st.expander("More funnel detail: each criterion on its own, and dropout after enrolling"):
             panels.funnel_details(status)

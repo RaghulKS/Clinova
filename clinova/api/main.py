@@ -7,6 +7,7 @@ Clinova advises protocol authors; nothing here approves a protocol.
 
 from __future__ import annotations
 
+import csv
 import importlib
 import logging
 import re
@@ -317,12 +318,30 @@ def audit() -> AuditResponse:
 # --- validation, replay, pulse ----------------------------------------------------------------------------
 
 
+def _test_predictions(model_version: str) -> dict[str, list[float]]:
+    """Sorted test-split probabilities per target from docs/predictions.csv (written by the evaluation)."""
+    path = _doc_file("docs/predictions.csv")
+    if path is None:
+        return {}
+    out: dict[str, list[float]] = {}
+    try:
+        with path.open(newline="", encoding="utf-8") as fh:
+            for row in csv.DictReader(fh):
+                if row.get("split") == "test" and row.get("model_version") == model_version and row.get("p_model"):
+                    out.setdefault(row["target"], []).append(float(row["p_model"]))
+    except (OSError, ValueError, KeyError) as exc:
+        log.warning("docs/predictions.csv unreadable: %s", type(exc).__name__)
+        return {}
+    return {k: sorted(v) for k, v in out.items()}
+
+
 @app.get("/validation", response_model=ValidationResponse)
 def validation() -> ValidationResponse:
     path = _doc_file("docs/metrics.json")
     if path is not None:
         try:
-            return ValidationResponse(metrics=ValidationMetrics.model_validate_json(path.read_bytes()), source=Source.live)
+            m = ValidationMetrics.model_validate_json(path.read_bytes())
+            return ValidationResponse(metrics=m, source=Source.live, test_p=_test_predictions(m.model_version))
         except ValueError as exc:
             log.warning("docs/metrics.json does not match the contract: %s", exc)
     return ValidationResponse(metrics=fallbacks.validation(), source=Source.fixture)

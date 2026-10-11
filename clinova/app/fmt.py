@@ -68,3 +68,13 @@ def risk_level(p: float) -> tuple[str, str]:
     if p >= 0.20:
         return "Moderate", "moderate"
     return "Low", "low"
+
+
+def percentile_level(q: float) -> tuple[str, str]:
+    """Plain-words level from a percentile among held-out test trials (0-1): high from the 80th
+    percentile, above typical from the 60th, else typical or lower. Bands documented in the T32 handoff."""
+    if q >= 0.80:
+        return "High", "high"
+    if q >= 0.60:
+        return "Above typical", "moderate"
+    return "Typical or lower", "low"

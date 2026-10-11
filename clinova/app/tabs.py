@@ -29,6 +29,11 @@ def validation_sentences(m: ValidationMetrics) -> list[str]:
             f"For {name}, on {t.n_test} test trials ({t.n_pos} positive), Clinova's AUC is {t.auc.value:.2f} "
             f"(95% interval {t.auc.ci_low:.2f} to {t.auc.ci_high:.2f}) against {t.baseline_auc.value:.2f} "
             f"for the baseline, a difference of {delta:+.2f}."
+            + (
+                f" Not validated: its Brier score ({t.brier:.3f}) is no better than the baseline's ({t.baseline_brier:.3f})."
+                if t.brier >= t.baseline_brier
+                else ""
+            )
         )
     return out
 

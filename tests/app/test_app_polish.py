@@ -121,3 +121,37 @@ def test_error_detail_is_plain():
     r = httpx.Response(422, json={"detail": [{"loc": ["body", "nct_id"], "msg": "bad id", "type": "x"}]})
     assert _detail(r) == "The request was not accepted (nct_id: bad id)."
     assert "HTTP 502" in _detail(httpx.Response(502, text="<html>Traceback...</html>"))
+
+
+def test_reference_labels_come_from_metrics():
+    from clinova.api.schemas import ValidationResponse
+    from clinova.app.panels import Reference, build_reference
+
+    m = load_fixture("metrics.json", ValidationMetrics)
+    assert build_reference(ValidationResponse(metrics=m, source="fixture")).status == {}  # placeholders: no labels
+    t0 = m.targets[0]
+    good = t0.model_copy(update={"brier": t0.baseline_brier - 0.01, "auc": t0.auc.model_copy(update={"ci_low": 0.6})})
+    bad = m.targets[1].model_copy(update={"brier": m.targets[1].baseline_brier + 0.01})
+    live_m = m.model_copy(update={"targets": [good, bad]})
+    ref = build_reference(ValidationResponse(metrics=live_m, source="live", test_p={good.target.value: [0.1, 0.2, 0.3, 0.4]}))
+    assert ref.status[good.target.value] == "validated" and ref.status[bad.target.value] == "not_validated"
+    missing = {"accrual_fail", "shortfall", "amend"} - {good.target.value, bad.target.value}
+    assert all(ref.no_model(t) for t in missing)
+    assert ref.percentile(good.target.value, 0.25) == 0.5 and ref.percentile("nope", 0.2) is None
+    assert Reference().percentile("accrual_fail", 0.2) is None
+    assert fmt.percentile_level(0.85)[0] == "High" and fmt.percentile_level(0.5)[0] == "Typical or lower"
+
+
+def test_demo_cache_serves_only_the_exact_snapshot():
+    from clinova.api import demo_cache
+
+    c = demo_cache._load("NCT03232892")
+    if c is None:  # demo results not in this tree
+        return
+    hit = demo_cache.lookup(c.snapshot)
+    assert hit is not None and hit.risks and len(hit.fixes) == len(c.fixes)
+    rules = [r.model_copy(update={"locked": True}) if r.rule_id == "I1" else r for r in c.snapshot.rules]
+    locked = demo_cache.lookup(c.snapshot.model_copy(update={"rules": rules}))
+    assert locked is not None and all(all(e.target_id != "I1" for e in f.edits) for f in locked.fixes)
+    edited = [r.model_copy(update={"value": 99}) if r.rule_id == "I6" else r for r in c.snapshot.rules]
+    assert demo_cache.lookup(c.snapshot.model_copy(update={"rules": edited})) is None
