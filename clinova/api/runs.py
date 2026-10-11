@@ -224,8 +224,15 @@ class RunManager:
         risks = self._stage(run_id, "score", state, lambda: live.score(protocol, sims), fallbacks.risks)
         for r in risks:
             self._log_prediction(protocol.trial_id, r, fixture="score" in state["fixture"], context=context)
-        flags = self._stage(run_id, "flags", state, lambda: live.flag_criteria(protocol), fallbacks.flags)
-        fixes = self._stage(run_id, "optimize", state, lambda: live.optimize(protocol), fallbacks.fixes)
+        # Fixture flags and fixes name the fixture protocol's rules (I12 ...). On any other protocol they would point at
+        # the wrong criteria and accepting one would edit the wrong rule, so there the fallback is "none yet".
+        is_fixture_protocol = protocol.trial_id == fallbacks.FIXTURE_TRIAL_ID
+        flags = self._stage(
+            run_id, "flags", state, lambda: live.flag_criteria(protocol), fallbacks.flags if is_fixture_protocol else list
+        )
+        fixes = self._stage(
+            run_id, "optimize", state, lambda: live.optimize(protocol), fallbacks.fixes if is_fixture_protocol else list
+        )
         return RunResult(protocol=protocol, funnel=funnel, sim=sims, risks=risks, flags=flags, fixes=fixes)
 
     def _log_prediction(self, trial_id: str, risk, *, fixture: bool, context: str = "live") -> None:

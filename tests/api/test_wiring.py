@@ -250,6 +250,15 @@ def test_demo_mode_cache_miss_falls_back_to_fixture_for_that_stage(client, monke
         assert st["source"] == "fixture" and "agents" in st["message"]
 
 
+def test_fixture_fixes_are_never_attached_to_a_real_protocol(client, parsed_protocol):
+    """Fixture flags and fixes name the fixture protocol's rule ids, so on another protocol they are left empty."""
+    other = parsed_protocol.model_copy(update={"trial_id": "NCT03232892"})
+    run_id = finished_run(client, protocol=other.model_dump(mode="json"))
+    res = client.get(f"/runs/{run_id}").json()["result"]
+    assert res["fixes"] == [] and res["flags"] == []
+    assert client.post("/fixes/accept", json={"run_id": run_id, "fix_id": "x"}).status_code == 404
+
+
 # --- drafts ------------------------------------------------------------------------------------------
 
 

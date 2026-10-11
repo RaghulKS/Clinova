@@ -275,7 +275,11 @@ def fixes_panel(status: RunStatus, client: ApiClient) -> None:
         unsafe_allow_html=True,
     )
     if not res.fixes:
-        st.info("No fixes were suggested for this run.")
+        st.info(
+            "Fix suggestions are not available for this protocol yet: the optimizer is not connected."
+            if status.source.value == "fixture"
+            else "No fixes were suggested for this run."
+        )
         return
     decisions: dict[str, str] = st.session_state.get("decisions", {})
     for fix in res.fixes:
