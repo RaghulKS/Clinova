@@ -25,7 +25,8 @@ from clinova.contracts import Funnel, ParsedProtocol, Persona  # noqa: E402
 # Tests must not inherit a developer's paid API key or production database from .env.
 Settings.model_config["env_file"] = ()
 os.environ.pop("GEMINI_API_KEY", None)
-os.environ["DATABASE_URL"] = "postgresql://test:test@localhost:1/clinova_test"
+# CI's demo-smoke job opts in to the seeded compose DB for tests/demo only.
+os.environ["DATABASE_URL"] = os.environ.get("CLINOVA_TEST_DATABASE_URL", "postgresql://test:test@localhost:1/clinova_test")
 get_settings.cache_clear()
 
 FIXTURES = Path(__file__).parent / "fixtures"

@@ -40,6 +40,18 @@ jobs:
       - name: Build and start demo stack
         timeout-minutes: 6
         run: docker compose up --build --detach --wait --wait-timeout 120 api app
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Demo mode makes zero network calls against the seeded DB
+        timeout-minutes: 5
+        env:
+          UV_PYTHON: '3.11'
+          CLINOVA_TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/clinova
+        run: |
+          uv sync --frozen
+          uv run pytest tests/demo -k demo_flow -rs -p no:cacheprovider | tee demo-tests.txt
+          grep -q "2 passed" demo-tests.txt
       - name: Complete seeded demo run
         timeout-minutes: 2
         run: |
@@ -77,9 +89,6 @@ jobs:
           else:
               raise TimeoutError("Demo run did not finish within 90 seconds.")
           PY
-      - uses: astral-sh/setup-uv@v6
-        with:
-          enable-cache: true
       - name: Drive the demo trial through the app in a browser
         timeout-minutes: 4
         env:
