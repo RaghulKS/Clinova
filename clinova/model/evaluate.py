@@ -254,5 +254,5 @@ def evaluate(bundle: Mapping[str, Any], df: pd.DataFrame, *, out_dir: Path | Non
         plot_reliability(targets, out_dir / "figures" / "reliability.png")
     for t in bundle["models"]:
         plot_shap_importance(bundle, test, t, out_dir / "figures" / f"shap_importance_{t}.png")
-    (out_dir / "metrics.json").write_text(vm.model_dump_json(indent=1), encoding="utf-8")
+    (out_dir / "metrics.json").write_text(vm.model_dump_json(indent=1) + "\n", encoding="utf-8", newline="\n")
     return vm
