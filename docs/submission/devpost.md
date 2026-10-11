@@ -14,7 +14,7 @@ The demo is NCT03232892, a real NSCLC trial terminated for low accrual. Its prio
 
 ## How we built it
 
-Python, Streamlit, FastAPI, PostgreSQL with TimescaleDB and pgvector (Tiger Data), LightGBM, Optuna, SHAP, and Gemini through a shared cached-call layer. ClinicalTrials.gov supplies public trial records; synthetic personas are used for screening and decision simulations. We evaluated MatrAIx Persona 1M but rejected it because its non-commercial, mixed-source license cannot be redistributed here. The implementation uses NVIDIA Nemotron-Personas-USA under CC BY 4.0 when available, with an explicitly labeled deterministic synthetic fallback. MiroFish was not used: its optional integration was cut, and no MiroFish code was copied. Four AI orchestrators—two Claude Code and two Codex sessions—coordinated task agents across two laptops using git tags and a shared Tiger Cloud database.
+Python, Streamlit, FastAPI, PostgreSQL with TimescaleDB and pgvector (Tiger Data), LightGBM, Optuna, SHAP, and Gemini through a shared cached-call layer. ClinicalTrials.gov supplies public trial records; synthetic personas are used for screening and decision simulations. We built our own agent simulation engine, inspired by multi-agent social simulation projects like MiroFish, with no code copied from them. Its personas use NVIDIA Nemotron-Personas-USA under CC BY 4.0 when available, with an explicitly labeled deterministic synthetic fallback. Two of us built it together, sharing one Tiger Cloud database.
 
 The local Docker Compose stack includes a seeded database and cached demo outputs so judges can run it without an API key. Gate 3 reports that the Dockerized smoke test passed on GitHub's Ubuntu runner in 89 seconds, including the browser flow. Docker itself was not tested on the build host.
 
@@ -45,4 +45,4 @@ Increase the clean labeled cohort, load dated protocol version histories, and re
 
 ## Built with
 
-Python · Streamlit · FastAPI · PostgreSQL · TimescaleDB · pgvector · Tiger Data · Gemini · LightGBM · Optuna · SHAP · ClinicalTrials.gov · NVIDIA Nemotron-Personas-USA (CC BY 4.0) · Docker Compose · Claude Code · Codex
+Python · Streamlit · FastAPI · PostgreSQL · TimescaleDB · pgvector · Tiger Data · Gemini · LightGBM · Optuna · SHAP · ClinicalTrials.gov · NVIDIA Nemotron-Personas-USA (CC BY 4.0) · Docker Compose

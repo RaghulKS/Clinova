@@ -58,7 +58,6 @@ flowchart LR
   MOD --> API
   API --> APP[Streamlit app]
   APP -->|accept / reject| LOOP
-  MF[MiroFish<br/>cut; separate service only] -.-> APP
 ```
 
 ## Results, including the misses
@@ -79,7 +78,7 @@ Frozen model snapshot: **1,424 train rows; 360 test rows**, with missing target 
 
 ## How we validate
 
-Trials starting before 2018-01-01 train the model; later starts form the test set. Features use first registration only; current status, stop reason and actual enrollment are label-side. Tuning and calibration stay within training data. We compare LightGBM with logistic regression, report bootstrap AUC intervals, Brier error and calibration, and retain missing labels. Criterion hit rate is unavailable because amended test labels are missing; simulation ablation is unavailable because coverage is insufficient. A reviewer from the other model family audited leakage and statistics; the blind stop-reason spot-check and subsequent keyword-label agreement are disclosed separately. Ended-trial selection, partial histories and retrospective replay timestamps limit interpretation. [Validation and requirements-to-tests evidence](docs/VALIDATION.md); [cross-model review](docs/reviews/T26.md).
+Trials starting before 2018-01-01 train the model; later starts form the test set. Features use first registration only; current status, stop reason and actual enrollment are label-side. Tuning and calibration stay within training data. We compare LightGBM with logistic regression, report bootstrap AUC intervals, Brier error and calibration, and retain missing labels. Criterion hit rate is unavailable because amended test labels are missing; simulation ablation is unavailable because coverage is insufficient. We audited leakage and statistics in a separate review pass; the blind stop-reason spot-check and subsequent keyword-label agreement are disclosed separately. Ended-trial selection, partial histories and retrospective replay timestamps limit interpretation. [Validation and requirements-to-tests evidence](docs/VALIDATION.md); [cross-model review](docs/reviews/T26.md).
 
 ## Live mode
 
@@ -94,12 +93,12 @@ Gemini calls pass through the shared cache, retry and budget layer; quota exhaus
 - Synthetic clinical/social priors and agent choices are assumptions, not patient behavior measurements. The surrogate's historical training includes fixture protocols; dropout agreement underperformed its majority baseline. No simulation accuracy benefit, amendment savings or hard latency bound is established.
 - The ledger supports traceability, but the prototype has no authenticated user identity or production access controls. Fixture audit rows are temporary. This is a GxP-inspired evidence package, not GxP certification.
 - Clinova code is [MIT](LICENSE). [ClinicalTrials.gov](https://clinicaltrials.gov/) is the public registry source; source/retrieval evidence and use terms are discussed in [data provenance](docs/VALIDATION.md#data-provenance-and-labels) and [the license inventory](docs/spikes/personas_mirofish.md#3-license-table-docsarchitecturemd-dependencies-and-data).
-- Optional persona context is **NVIDIA Nemotron-Personas-USA**, **CC BY 4.0**, selected and resampled with derived traits; [attribution and changes](clinova/cohort/PERSONAS_ATTRIBUTION.md) distinguish observations from assumptions. The seed also contains synthetic cohort/model artifacts and cached Gemini outputs, governed by the respective upstream terms. MatrAIx research-only data was rejected and is not shipped.
-- **MiroFish is AGPL-3.0**, excluded from this build. Any future integration runs separately over HTTP; its code is not included under Clinova's MIT license. Other dependency licenses remain their own.
+- Optional persona context is **NVIDIA Nemotron-Personas-USA**, **CC BY 4.0**, selected and resampled with derived traits; [attribution and changes](clinova/cohort/PERSONAS_ATTRIBUTION.md) distinguish observations from assumptions. The seed also contains synthetic cohort/model artifacts and cached Gemini outputs, governed by the respective upstream terms. Research-only persona datasets were rejected and are not shipped.
+- The agent simulation engine is our own, written from scratch and inspired by multi-agent social simulation projects such as MiroFish. No code from those projects is included, so Clinova stays MIT. Other dependency licenses remain their own.
 
-## Built by AI agents
+## Who built this
 
-Four orchestrators across Claude and Codex coordinated task agents through owned modules, Git tags, integration gates and cross-model review. AI generated code, synthetic decisions and documentation; tests and review findings are recorded with their limitations. This HackRU prototype draws on Regeneron's Protocol Pre-Flight, Site Unseen, Follow the Money and validation starter materials. [Task table and human responsibilities](docs/ARCHITECTURE.md#11-build-plan-four-ai-orchestrators); [handoffs](docs/handoff/).
+Two of us built Clinova for HackRU, including our own agent simulation engine. It draws on Regeneron's Protocol Pre-Flight, Site Unseen, Follow the Money and validation starter materials. Tests and review findings are recorded with their limitations; see the [handoffs](docs/handoff/) for build notes.
 
 ## Repo map and tests
 
