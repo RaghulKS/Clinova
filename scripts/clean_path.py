@@ -29,7 +29,7 @@ NCT = "NCT03232892"
 APP, API = "http://localhost:8501", "http://localhost:8000"
 # UI strings the flow depends on (clinova/app/main.py, panels.py). Change here if the copy changes.
 UI = {"mode": "Load a registered trial", "load": "Load protocol", "run": "Run Clinova",
-      "results": "4. Results", "accept": "Accept", "after": "Before and after"}
+      "results": "Where enrollment stalls, and how likely trouble is", "accept": "Accept", "after": "Before and after"}
 
 
 def wait_http(url: str, timeout: float) -> float:
