@@ -20,7 +20,7 @@ docker compose up
 
 Open **[localhost:8501](http://localhost:8501)**. Under **Load a registered trial**, enter **NCT03232892**, click **Load protocol**, review the rules, then click **Run Clinova**. Inspect the funnel, suggested fixes and **What happened next**; try **Accept** to compare a fix. **Validation** and **Replay** show the evidence and its limits.
 
-No API key or `.env` is needed: Compose loads the bundled database seed and model artifacts in demo mode. Exact demo risk, flags and fixes are tagged **cache**. Synthetic fallback data, when needed for other inputs, is tagged **fixture data**; an edited protocol can miss the cache.
+Clinova is built on the Gemini API: Gemini parses eligibility criteria and the visit schedule, drives the persona agents and classifies trial outcomes. Demo mode replays the Gemini responses recorded during the build, so Compose loads the bundled database seed and model artifacts and the demo trial plays back exactly; add your `GEMINI_API_KEY` in `.env` to run Gemini live on new protocols. Exact demo risk, flags and fixes are tagged **cache**. Synthetic fallback data, when needed for other inputs, is tagged **fixture data**; an edited protocol can miss the cache.
 
 Startup evidence: [T31's clean-path run](docs/handoff/T31.md) measured dependency setup at **9.8 s** and API/app startup at **35.9 s** against an already seeded database; Docker was unavailable on that host. Subsequently, [Gate 3](docs/gate3_report.md) measured a cold Docker build, seed load and healthy services in **89 s** on an Ubuntu GitHub runner, then passed the browser demo. These are measurements on those machines, not a startup guarantee. Stop the stack with `docker compose down`; its database volume is retained.
 
@@ -108,8 +108,8 @@ Two of us built Clinova for HackRU, including our own agent simulation engine. I
 | `clinova/cohort`, `simulate` | Synthetic patients, screening, agents and surrogate |
 | `clinova/model`, `optimize`, `loop` | Risk, proposed edits, audit and replay |
 | `clinova/api`, `app` | FastAPI and Streamlit |
-| `db/schema.sql`, `db/seed` | Schema and offline demo artifacts |
-| `tests`, `.github/workflows/ci.yml` | Offline regression checks and container/browser smoke |
+| `db/schema.sql`, `db/seed` | Schema and demo artifacts (recorded Gemini outputs, seed data) |
+| `tests`, `.github/workflows/ci.yml` | Regression checks on recorded Gemini responses, plus container/browser smoke |
 | `docs/VALIDATION.md`, `docs/gate*_report.md` | Evidence, provenance and disclosed cuts |
 
 For development, install [uv](https://docs.astral.sh/uv/getting-started/installation/) (the lock selects Python 3.11). From the cloned repository:

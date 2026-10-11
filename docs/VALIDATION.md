@@ -11,7 +11,7 @@ Test identifiers below are pytest node IDs. A dash means the repository has no t
 | Requirement | Implemented / documented in | Test evidence |
 | --- | --- | --- |
 | `docker compose up` starts the app, API, and seeded local TimescaleDB | `docker-compose.yml`, `db/seed/`, `Makefile` (`up`) | — (no compose-and-seed startup test found) |
-| Demo mode works from cached outputs without API keys or network calls | `clinova/common/llm.py`; `clinova/api/live.py`; `clinova/api/main.py` | `tests/common/test_llm.py::test_demo_miss_raises_and_never_builds_client`; `tests/common/test_llm.py::test_cache_hit_skips_client_in_live_and_demo`; `tests/api/test_wiring.py::test_demo_mode_cache_miss_falls_back_to_fixture_for_that_stage` |
+| Demo mode replays recorded Gemini API outputs without new network calls | `clinova/common/llm.py`; `clinova/api/live.py`; `clinova/api/main.py` | `tests/common/test_llm.py::test_demo_miss_raises_and_never_builds_client`; `tests/common/test_llm.py::test_cache_hit_skips_client_in_live_and_demo`; `tests/api/test_wiring.py::test_demo_mode_cache_miss_falls_back_to_fixture_for_that_stage` |
 | Live mode uses Gemini and optionally Tiger Cloud | `clinova/common/config.py`; `clinova/common/llm.py`; `clinova/common/db.py` | `tests/common/test_config.py` (configuration parsing); no live-service test is run by pytest |
 | MIT license; no MiroFish code included | `LICENSE`; `clinova/simulate/mirofish_client.py`; `docs/spikes/personas_mirofish.md` | — (no license-boundary test found) |
 | Parser schema and validation | `clinova/parse/`; `clinova/contracts.py` | `tests/parse/test_parse.py` |

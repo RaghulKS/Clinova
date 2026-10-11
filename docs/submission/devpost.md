@@ -16,7 +16,7 @@ The demo is NCT03232892, a real NSCLC trial terminated for low accrual. Its prio
 
 Python, Streamlit, FastAPI, PostgreSQL with TimescaleDB and pgvector (Tiger Data), LightGBM, Optuna, SHAP, and Gemini through a shared cached-call layer. ClinicalTrials.gov supplies public trial records; synthetic personas are used for screening and decision simulations. We built our own agent simulation engine, inspired by multi-agent social simulation projects like MiroFish, with no code copied from them. Its personas use NVIDIA Nemotron-Personas-USA under CC BY 4.0 when available, with an explicitly labeled deterministic synthetic fallback. Two of us built it together, sharing one Tiger Cloud database.
 
-The local Docker Compose stack includes a seeded database and cached demo outputs so judges can run it without an API key. Gate 3 reports that the Dockerized smoke test passed on GitHub's Ubuntu runner in 89 seconds, including the browser flow. Docker itself was not tested on the build host.
+Clinova runs on the Gemini API throughout: Gemini parses criteria and visit schedules, drives the persona agents and classifies outcomes. The local Docker Compose stack includes a seeded database and the Gemini outputs recorded during the build, so judges can replay the demo exactly; adding a Gemini key runs it live on new protocols. Gate 3 reports that the Dockerized smoke test passed on GitHub's Ubuntu runner in 89 seconds, including the browser flow. Docker itself was not tested on the build host.
 
 ## Challenges
 

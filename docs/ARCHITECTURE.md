@@ -52,7 +52,7 @@ The FDA-commissioned cost study (Sertkaya et al.) lists looser enrollment restri
 | Judging criterion | How Clinova answers it |
 | --- | --- |
 | Utility and Relevance | Targets amendments and accrual failure in cancer trials, the rubric's own example. Every flag carries a dollar figure. |
-| Readiness | Public data only. MIT license, one-command Docker Compose, seed data and cached AI outputs so judges run it without API keys. Tests and CI. |
+| Readiness | Public data only. MIT license, one-command Docker Compose, seed data and recorded Gemini API outputs so judges can replay the demo exactly; Gemini runs live on new protocols. Tests and CI. |
 | Design and Packaging | One results screen with three panels (funnel, risk, fixes). 3-minute video built on a real backtest. 12-slide deck. README quickstart. |
 
 | Starter sheet | What we take | How we go further |
@@ -271,7 +271,7 @@ clinova/
 **Readiness checklist:**
 
 - [ ] `docker compose up` starts app, API and local TimescaleDB from the seed dump
-- [ ] Demo mode runs from cached outputs with no API keys and zero network calls
+- [ ] Demo mode replays recorded Gemini API outputs exactly, with zero network calls
 - [ ] Live mode needs only `GEMINI_API_KEY` and optionally a Tiger Cloud `DATABASE_URL`
 - [ ] MIT license; no MiroFish code in the repo
 - [ ] pytest covers parser schema, screen logic, metrics, leakage and demo mode; CI green on every push
