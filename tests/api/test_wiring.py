@@ -237,6 +237,19 @@ def test_backtest_reports_a_failed_run(client, monkeypatch, parsed_protocol):
     assert r.status_code == 500 and "boom" in r.json()["detail"]
 
 
+def test_demo_mode_cache_miss_falls_back_to_fixture_for_that_stage(client, monkeypatch):
+    from clinova.common.llm import BudgetExceeded, CacheMiss
+
+    for exc in (CacheMiss("demo"), BudgetExceeded("spent")):
+        def boom(*a, _e=exc, **k):
+            raise _e
+
+        monkeypatch.setattr(live, "simulate", boom)
+        run_id = finished_run(client)
+        st = client.get(f"/runs/{run_id}").json()
+        assert st["source"] == "fixture" and "agents" in st["message"]
+
+
 # --- drafts ------------------------------------------------------------------------------------------
 
 

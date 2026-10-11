@@ -80,7 +80,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-_FALLBACK_ERRORS = (NotImplementedError, live.LiveUnavailable)
+_FALLBACK_ERRORS = live.FALLBACK_ERRORS
 _NCT_RE = re.compile(r"^[A-Za-z0-9_-]{3,32}$")
 
 

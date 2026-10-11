@@ -13,6 +13,7 @@ import os
 import time
 from typing import Any
 
+from clinova.common.llm import BudgetExceeded, CacheMiss
 from clinova.contracts import Feedback, ParsedProtocol, Prediction, TrialRecord, VersionEvent
 
 log = logging.getLogger("clinova.api")
@@ -24,6 +25,9 @@ class LiveUnavailable(Exception):
     """The live path cannot run right now (no database, trial not loaded). Routes fall back."""
 
 
+FALLBACK_ERRORS: tuple[type[BaseException], ...] = (NotImplementedError, LiveUnavailable, CacheMiss, BudgetExceeded)
+# What routes and run stages treat as "this part is not available": a stub, no database, an LLM response that
+# demo mode has not cached, or a spent Gemini budget. They fall back to fixtures, always tagged as such.
 def db_available(max_age_s: float = 30.0) -> bool:
     """True when the database answers within 3 seconds. The answer is remembered for 30 seconds."""
     global _DB_CHECK

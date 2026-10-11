@@ -32,7 +32,7 @@ from clinova.contracts import (
 log = logging.getLogger("clinova.api")
 
 PIPELINE: list[RunStage] = ["parse", "cohort", "screen", "agents", "score", "flags", "optimize"]
-_FALLBACK_ERRORS = (NotImplementedError, live.LiveUnavailable)
+_FALLBACK_ERRORS = live.FALLBACK_ERRORS
 
 
 def stage_delay() -> float:
