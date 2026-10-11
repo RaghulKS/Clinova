@@ -1,0 +1,154 @@
+{
+ "trial_id": "NCT06333678",
+ "model_version": "v1.0",
+ "scores": [
+  {
+   "target": "accrual_fail",
+   "p": 0.11747995516253493,
+   "ci_low": 0.06561679790026247,
+   "ci_high": 0.18404907975460122,
+   "confidence": "low",
+   "top_drivers": [
+    {
+     "feature": "sponsor_industry",
+     "label": "Industry sponsor: 0",
+     "value": 0.0,
+     "contribution": 0.4780873294326078
+    },
+    {
+     "feature": "visit_hours",
+     "label": "On-site hours in the first 12 months: 138",
+     "value": 138.5,
+     "contribution": 0.19999495912499995
+    },
+    {
+     "feature": "log_planned_enrollment",
+     "label": "Planned enrollment 160 patients",
+     "value": 5.081404364984463,
+     "contribution": -0.1740421908253218
+    },
+    {
+     "feature": "text_len",
+     "label": "Length of the eligibility text (characters): 2,981",
+     "value": 2981.0,
+     "contribution": 0.16712722715874342
+    }
+   ],
+   "model_version": "v1.0"
+  },
+  {
+   "target": "shortfall",
+   "p": 0.5273836422124323,
+   "ci_low": 0.3644859813084112,
+   "ci_high": 0.6057347670250897,
+   "confidence": "low",
+   "top_drivers": [
+    {
+     "feature": "sponsor_industry",
+     "label": "Industry sponsor: 0",
+     "value": 0.0,
+     "contribution": 0.25002932566987357
+    },
+    {
+     "feature": "us_share",
+     "label": "Share of first-registration sites in the US: 100%",
+     "value": 1.0,
+     "contribution": 0.1787192555439078
+    },
+    {
+     "feature": "log_planned_enrollment",
+     "label": "Planned enrollment 160 patients",
+     "value": 5.081404364984463,
+     "contribution": -0.165574277427933
+    },
+    {
+     "feature": "n_sites",
+     "label": "Sites at first registration: 7",
+     "value": 7.0,
+     "contribution": 0.14055655622309407
+    }
+   ],
+   "model_version": "v1.0"
+  },
+  {
+   "target": "amend",
+   "p": 0.5,
+   "ci_low": 0.0,
+   "ci_high": 1.0,
+   "confidence": "low",
+   "top_drivers": [
+    {
+     "feature": "no_model",
+     "label": "No amend model yet (0 positive / 22 negative labeled training trials (< 5)): this 50% is a placeholder, not a prediction.",
+     "value": null,
+     "contribution": 0.0
+    }
+   ],
+   "model_version": "v1.0"
+  }
+ ],
+ "flags": [
+  {
+   "rule_id": "I2",
+   "field": "stage",
+   "rank": 1,
+   "where": "Inclusion I2: Locally advanced disease, defined as AJCC 8th Edition Stage III disease.",
+   "why": "On its own it excludes 90% of virtual NSCLC patients; dropping it would make 1518 of 2000 newly eligible. The model predicts no drop in accrual-failure risk from removing it; ranked by its exclusion share.",
+   "what_to_do": "Consider removing this criterion, or state in the protocol why it is needed.",
+   "delta_p": 0.0,
+   "suggested_edit": {
+    "kind": "drop_rule",
+    "target_id": "I2",
+    "new_value": null,
+    "new_operator": null
+   }
+  },
+  {
+   "rule_id": "I5",
+   "field": "ecog",
+   "rank": 2,
+   "where": "Inclusion I5: ECOG Performance status 0 - 2.",
+   "why": "On its own it excludes 8% of virtual NSCLC patients; dropping it would make 0 of 2000 newly eligible. The model predicts no drop in accrual-failure risk from relaxing it; ranked by its exclusion share.",
+   "what_to_do": "Consider ECOG <= 3 instead, a cutoff other NSCLC trials used, if safety allows.",
+   "delta_p": 0.0,
+   "suggested_edit": {
+    "kind": "relax_rule",
+    "target_id": "I5",
+    "new_value": 3,
+    "new_operator": null
+   }
+  },
+  {
+   "rule_id": "I8",
+   "field": "ecog",
+   "rank": 3,
+   "where": "Inclusion I8: ECOG Performance status 0 - 2.",
+   "why": "On its own it excludes 8% of virtual NSCLC patients; dropping it would make 0 of 2000 newly eligible. The model predicts no drop in accrual-failure risk from relaxing it; ranked by its exclusion share.",
+   "what_to_do": "Consider ECOG <= 3 instead, a cutoff other NSCLC trials used, if safety allows.",
+   "delta_p": 0.0,
+   "suggested_edit": {
+    "kind": "relax_rule",
+    "target_id": "I8",
+    "new_value": 3,
+    "new_operator": null
+   }
+  }
+ ],
+ "test_percentiles": {
+  "accrual_fail": {
+   "all_test": 0.752,
+   "among_positives": 0.618,
+   "observed_label": 1
+  },
+  "shortfall": {
+   "all_test": 0.646,
+   "among_positives": 0.573,
+   "observed_label": 1
+  }
+ },
+ "sponsor_removed_fields": [
+  "interstitial_lung_disease"
+ ],
+ "sponsor_removed_in_top3_flags": [],
+ "elapsed_s": 0.86
+}

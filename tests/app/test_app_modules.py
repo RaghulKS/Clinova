@@ -136,3 +136,20 @@ def test_client_errors_are_plain(api_client):
     dead = ApiClient("http://127.0.0.1:1")
     with pytest.raises(ApiError, match="Cannot reach"):
         dead.health()
+
+
+def test_accept_fix_through_the_client_and_before_after_rows(api_client, parsed_protocol):
+    from clinova.app.panels import before_after_rows
+
+    created = api_client.start_run(parsed_protocol)
+    final = api_client.wait_for_run(created.run_id, poll_s=0.01, timeout_s=60)
+    assert final.result is not None
+    fix = final.result.fixes[0]
+    resp = api_client.accept_fix(final.run_id, fix.fix_id)
+    assert resp.feedback.decision == "accept"
+    rows = before_after_rows(resp)
+    assert {"Measure", "Before", "After", "Basis"} <= set(rows[0])
+    assert any(r["Measure"] == "Amendment risk" for r in rows)
+    assert all(r["Basis"] == "optimizer estimate" for r in rows)  # fixture engine: never presented as a re-run
+    with pytest.raises(ApiError):
+        api_client.accept_fix("nope", fix.fix_id)

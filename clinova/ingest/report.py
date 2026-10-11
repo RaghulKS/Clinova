@@ -31,7 +31,8 @@ def write_reports(output: Path | None = None):
         + json.dumps(counts, indent=2) + "\n```\n\n"
         "Originals count confirmed version-0 snapshots only. Missing originals are excluded from first-registration "
         "features and shortfall labels. Unknown amendment evidence is null, never a negative label. "
-        "Partial dates remain in raw JSON; exact date columns are null. Condition-search hits can include basket trials. "
+        "Partial dates remain in raw JSON. A month-only start (YYYY-MM) is stored as the 1st of the month for the "
+        "2018-01-01 split; other partial dates leave the date column null. Condition-search hits can include basket trials. "
         "The two-pass background job loads originals before full adjacent histories; coverage can increase.\n",
         encoding="utf-8")
     eligible = [r for r in rows if r[3] is not None and r[4]]

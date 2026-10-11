@@ -88,6 +88,7 @@ Write only to your own tables. Read anything. Hypertable primary keys include th
 | `model.features.build_features(trials_df, protocols=None, sim_features=None) -> DataFrame` | T22 | First version only, no start year |
 | `model.train.train(df, cfg=None) -> dict`, `load_bundle(version=None) -> dict` | T22 | Bundle keys are in the docstring; T21 calls `train` in the replay |
 | `model.predict.score(protocol_or_trial, *, sim=None, model_version=None) -> list[RiskScore]`, `flag_criteria(protocol, *, k=3) -> list[CriterionFlag]` | T22 | Scores in target order: accrual_fail, shortfall, amend |
+| `model.predict.score_samples(protocol_or_trial, *, sim=None, model_version=None) -> list[tuple[float, float]]` | T22 (G2) | Calibrated (p_shortfall, p_amend) per fitted bootstrap model, stable order within one bundle; `[]` without bootstraps; 0.5 for every draw of an untrained target. Used by the optimizer for paired before/after ranges. |
 | `optimize.search.optimize(protocol, *, max_edits=3, n_trials=300, seed=42) -> list[Fix]` | T23 | Three picks, under 10 s. CLI: `python -m clinova.optimize [--trial NCT]` |
 | `loop.ledger.record_prediction(trial_id, risk, *, context="live", predicted_at=None) -> Prediction`, `record_feedback(feedback) -> Feedback` | T21 | |
 | `loop.checker.check_outcomes(*, limit=None, retrain_threshold=25) -> dict[str, int]` | T21 | CLI: `python -m clinova.loop check` |

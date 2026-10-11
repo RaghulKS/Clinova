@@ -1,0 +1,61 @@
+{
+ "model_version": "v1.0",
+ "generated_at": "2026-10-11T04:26:57.837505+00:00",
+ "n_boot": 1000,
+ "bootstrap_seed": 0,
+ "targets": {
+  "accrual_fail": {
+   "n_test": 314,
+   "n_pos": 34,
+   "auc": 0.8671218487394957,
+   "baseline_auc": 0.7348739495798319,
+   "auc_diff_vs_baseline": {
+    "value": 0.13224789915966384,
+    "ci_low": 0.04166470385982604,
+    "ci_high": 0.2242311315124872
+   },
+   "brier": 0.10831556380033841,
+   "baseline_brier": 0.08412168582055672,
+   "train_prevalence": 0.10819411296738266,
+   "brier_constant_train_prevalence": 0.09655564862289424
+  },
+  "shortfall": {
+   "n_test": 310,
+   "n_pos": 177,
+   "auc": 0.6726137377341659,
+   "baseline_auc": 0.6249946901151183,
+   "auc_diff_vs_baseline": {
+    "value": 0.04761904761904756,
+    "ci_low": -0.02002052663004244,
+    "ci_high": 0.11650120733040836
+   },
+   "brier": 0.22914722262272516,
+   "baseline_brier": 0.24491723256526743,
+   "train_prevalence": 0.459915611814346,
+   "brier_constant_train_prevalence": 0.2572961552090207
+  },
+  "amend": {
+   "note": "amend: no model (0 positive / 21 negative labeled training trials (< 5))."
+  }
+ },
+ "hit_rate": {
+  "n_amended_test": 0,
+  "n_evaluated": 0,
+  "hits": 0,
+  "excluded": {
+   "first_version_not_parsed": 0,
+   "amended_version_not_parsed": 0,
+   "no_widened_field": 0,
+   "no_flaggable_rules": 0
+  },
+  "conditional_on": "both versions parsed, a widened field, and flaggable first-version rules"
+ },
+ "coverage": {
+  "parsed_rules": 0.24444444444444444,
+  "embedding": 0.44126984126984126,
+  "first-registration_sites": 0.5492063492063493,
+  "simulation": 0.022222222222222223,
+  "n_test_trials": 315,
+  "n_test_labeled": 315
+ }
+}

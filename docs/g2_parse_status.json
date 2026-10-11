@@ -1,0 +1,79 @@
+{
+ "bundle_dir": "v1.0",
+ "model_version": "v1.0",
+ "target": "accrual_fail",
+ "splits": {
+  "train": {
+   "all": {
+    "n": 1382,
+    "pos": 136,
+    "auc": 0.936
+   },
+   "auc_of_has_parsed_rules_indicator": 0.713,
+   "parsed": {
+    "n": 99,
+    "pos": 62,
+    "prevalence": 0.626,
+    "mean_p": 0.144,
+    "auc": 0.919
+   },
+   "unparsed": {
+    "n": 1283,
+    "pos": 74,
+    "prevalence": 0.058,
+    "mean_p": 0.089,
+    "auc": 0.931
+   },
+   "embedded": {
+    "n": 74,
+    "pos": 46,
+    "prevalence": 0.622,
+    "mean_p": 0.14,
+    "auc": 0.944
+   },
+   "not_embedded": {
+    "n": 1308,
+    "pos": 90,
+    "prevalence": 0.069,
+    "mean_p": 0.09,
+    "auc": 0.937
+   }
+  },
+  "test": {
+   "all": {
+    "n": 343,
+    "pos": 34,
+    "auc": 0.708
+   },
+   "auc_of_has_parsed_rules_indicator": 0.784,
+   "parsed": {
+    "n": 77,
+    "pos": 25,
+    "prevalence": 0.325,
+    "mean_p": 0.088,
+    "auc": 0.783
+   },
+   "unparsed": {
+    "n": 266,
+    "pos": 9,
+    "prevalence": 0.034,
+    "mean_p": 0.087,
+    "auc": 0.69
+   },
+   "embedded": {
+    "n": 138,
+    "pos": 29,
+    "prevalence": 0.21,
+    "mean_p": 0.082,
+    "auc": 0.77
+   },
+   "not_embedded": {
+    "n": 205,
+    "pos": 5,
+    "prevalence": 0.024,
+    "mean_p": 0.09,
+    "auc": 0.704
+   }
+  }
+ }
+}

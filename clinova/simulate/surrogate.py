@@ -87,15 +87,19 @@ class Surrogate:
         if cohort.empty:
             return 0.0, 0.0
         x = _matrix(cohort, burden_features(protocol))
+        enroll, dropout = self._probabilities(x)
+        return float(enroll.mean()), float(np.sum(enroll * dropout) / enroll.sum()) if enroll.sum() else 0.0
+
+    def _probabilities(self, x: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """Per-decision probabilities, also used by grouped held-out validation."""
         x = (np.where(np.isfinite(x), x, self.state["fill"]) - self.state["mean"]) / self.state["scale"]
 
         def predict(model):
             if "constant" in model:
                 return np.full(len(x), model["constant"])
-            return 1 / (1 + np.exp(-np.clip(x @ np.asarray(model["coef"]) + model["intercept"], -40, 40)))
+            return 1 / (1 + np.exp(-np.clip(np.sum(x * np.asarray(model["coef"]), axis=1) + model["intercept"], -40, 40)))
 
-        enroll, dropout = predict(self.state["enroll"]), predict(self.state["dropout"])
-        return float(enroll.mean()), float(np.dot(enroll, dropout) / enroll.sum()) if enroll.sum() else 0.0
+        return predict(self.state["enroll"]), predict(self.state["dropout"])
 
     def save(self, path: Path) -> None:
         path = Path(path)

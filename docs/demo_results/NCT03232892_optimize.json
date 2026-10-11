@@ -1,0 +1,773 @@
+{
+  "trial_id": "NCT03232892",
+  "protocol": {
+    "trial_id": "NCT03232892",
+    "version_no": 0,
+    "title": "Trametinib in Patients With Advanced Neurofibromatosis Type 1 (NF1)-Mutant Non-small Cell Lung Cancer",
+    "summary": "Phase II trial to evaluate trametinib in patients with locally advanced non-squamous, non-small cell lung cancer (NSCLC) whose tumors harbor a non-synonymous NF-1 mutation, with progressive disease on at least one prior line of chemotherapy including a platinum doublet.",
+    "phase": "phase2",
+    "setting": "second_line_plus",
+    "randomized": null,
+    "arms": [
+      "Trametinib 2.0mg PO daily"
+    ],
+    "rules": [
+      {
+        "rule_id": "I1",
+        "kind": "inclusion",
+        "field": "histology",
+        "operator": "not_in",
+        "value": [
+          "squamous"
+        ],
+        "unit": null,
+        "raw_text": "non-squamous, NSCLC",
+        "parse_status": "ok",
+        "locked": false,
+        "note": null
+      },
+      {
+        "rule_id": "I2",
+        "kind": "inclusion",
+        "field": "other",
+        "operator": "eq",
+        "value": null,
+        "unit": null,
+        "raw_text": "Received at least one prior line of chemotherapy",
+        "parse_status": "unparseable",
+        "locked": false,
+        "note": "sanity check: value_json is not valid JSON"
+      },
+      {
+        "rule_id": "I3",
+        "kind": "inclusion",
+        "field": "prior_platinum",
+        "operator": "present",
+        "value": null,
+        "unit": null,
+        "raw_text": "one of which must have been platinum (carboplatin or cisplatin) doublet chemotherapy",
+        "parse_status": "ok",
+        "locked": false,
+        "note": null
+      },
+      {
+        "rule_id": "I4",
+        "kind": "inclusion",
+        "field": "measurable_disease",
+        "operator": "present",
+        "value": null,
+        "unit": null,
+        "raw_text": "Measurable disease defined by RECIST 1.1 criteria.",
+        "parse_status": "ok",
+        "locked": false,
+        "note": null
+      },
+      {
+        "rule_id": "I5",
+        "kind": "inclusion",
+        "field": "life_expectancy_months",
+        "operator": "ge",
+        "value": 3,
+        "unit": "months",
+        "raw_text": "Life expectancy of at least 3 months.",
+        "parse_status": "ok",
+        "locked": false,
+        "note": null
+      },
+      {
+        "rule_id": "I6",
+        "kind": "inclusion",
+        "field": "ecog",
+        "operator": "le",
+        "value": 1,
+        "unit": "score",
+        "raw_text": "Eastern Cooperative Oncology Group (ECOG) performance status of 0 to 1.",
+        "parse_status": "ok",
+        "locked": false,
+        "note": null
+      },
+      {
+        "rule_id": "I7",
+        "kind": "inclusion",
+        "field": "age",
+        "operator": "ge",
+        "value": 18,
+        "unit": "years",
+        "raw_text": "Age \u2265 18 years.",
+        "parse_status": "ok",
+        "locked": false,
+        "note": null
+      },
+      {
+        "rule_id": "I8",
+        "kind": "inclusion",
+        "field": "anc",
+        "operator": "ge",
+        "value": 1.2,
+        "unit": "x10^9/L",
+        "raw_text": "Absolute neutrophil count: \u2265 1.2 x 10^9/L",
+        "parse_status": "ok",
+        "locked": false,
+        "note": null
+      },
+      {
+        "rule_id": "I9",
+        "kind": "inclusion",
+        "field": "hemoglobin",
+        "operator": "ge",
+        "value": 9,
+        "unit": "g/dL",
+        "raw_text": "Hemoglobin: \u2265 9 g/dL",
+        "parse_status": "ok",
+        "locked": false,
+        "note": null
+      },
+      {
+        "rule_id": "I10",
+        "kind": "inclusion",
+        "field": "platelets",
+        "operator": "ge",
+        "value": 100,
+        "unit": "x10^9/L",
+        "raw_text": "Platelets: \u2265 100 x 10^9/L",
+        "parse_status": "ok",
+        "locked": false,
+        "note": null
+      },
+      {
+        "rule_id": "I11",
+        "kind": "inclusion",
+        "field": "bilirubin_x_uln",
+        "operator": "le",
+        "value": 1.5,
+        "unit": "xULN",
+        "raw_text": "Total bilirubin: \u2264 1.5 x ULN",
+        "parse_status": "ok",
+        "locked": false,
+        "note": null
+      },
+      {
+        "rule_id": "I12",
+        "kind": "inclusion",
+        "field": "ast_x_uln",
+        "operator": "le",
+        "value": 2.5,
+        "unit": "xULN",
+        "raw_text": "AST and ALT: \u2264 2.5 x ULN",
+        "parse_status": "ok",
+        "locked": false,
+        "note": null
+      },
+      {
+        "rule_id": "I13",
+        "kind": "inclusion",
+        "field": "alt_x_uln",
+        "operator": "le",
+        "value": 2.5,
+        "unit": "xULN",
+        "raw_text": "AST and ALT: \u2264 2.5 x ULN",
+        "parse_status": "ok",
+        "locked": false,
+        "note": null
+      },
+      {
+        "rule_id": "I14",
+        "kind": "inclusion",
+        "field": "crcl_ml_min",
+        "operator": "ge",
+        "value": 50,
+        "unit": "mL/min",
+        "raw_text": "Calculated creatinine clearance (calculated by the Cockcroft-Gault formula): \u2265 50 mL/min",
+        "parse_status": "ok",
+        "locked": false,
+        "note": null
+      },
+      {
+        "rule_id": "I15",
+        "kind": "inclusion",
+        "field": "consent_capacity",
+        "operator": "present",
+        "value": null,
+        "unit": null,
+        "raw_text": "Ability to understand a written informed consent document, and the willingness to sign it.",
+        "parse_status": "ok",
+        "locked": true,
+        "note": null
+      },
+      {
+        "rule_id": "E1",
+        "kind": "exclusion",
+        "field": "brain_mets",
+        "operator": "in",
+        "value": [
+          "untreated"
+        ],
+        "unit": null,
+        "raw_text": "Symptomatic or untreated leptomeningeal or brain metastases or spinal cord compression. Treated brain metastases are allowed as long as they are stable for at least 28 days post-treatment.",
+        "parse_status": "ok",
+        "locked": false,
+        "note": null
+      },
+      {
+        "rule_id": "E2",
+        "kind": "exclusion",
+        "field": "leptomeningeal",
+        "operator": "present",
+        "value": null,
+        "unit": null,
+        "raw_text": "Symptomatic or untreated leptomeningeal or brain metastases",
+        "parse_status": "ok",
+        "locked": false,
+        "note": null
+      },
+      {
+        "rule_id": "E3",
+        "kind": "exclusion",
+        "field": "pregnancy",
+        "operator": "present",
+        "value": null,
+        "unit": null,
+        "raw_text": "Pregnant women are excluded",
+        "parse_status": "ok",
+        "locked": true,
+        "note": null
+      },
+      {
+        "rule_id": "E4",
+        "kind": "exclusion",
+        "field": "interstitial_lung_disease",
+        "operator": "present",
+        "value": null,
+        "unit": null,
+        "raw_text": "History of interstitial lung disease or pneumonitis.",
+        "parse_status": "ok",
+        "locked": false,
+        "note": null
+      },
+      {
+        "rule_id": "E5",
+        "kind": "exclusion",
+        "field": "active_infection",
+        "operator": "present",
+        "value": null,
+        "unit": null,
+        "raw_text": "Known Human Immunodeficiency Virus (HIV), Hepatitis B Virus (HBV), or Hepatitis C Virus (HCV) infection",
+        "parse_status": "ok",
+        "locked": false,
+        "note": null
+      },
+      {
+        "rule_id": "E6",
+        "kind": "exclusion",
+        "field": "cardiac_condition",
+        "operator": "present",
+        "value": null,
+        "unit": null,
+        "raw_text": "History or evidence of current \u2265 Class II congestive heart failure as defined by New York Heart Association (NYHA).",
+        "parse_status": "ok",
+        "locked": false,
+        "note": null
+      },
+      {
+        "rule_id": "E7",
+        "kind": "exclusion",
+        "field": "other",
+        "operator": "eq",
+        "value": null,
+        "unit": null,
+        "raw_text": "Known mutation in KRAS at position G12, G13, or Q61.",
+        "parse_status": "unparseable",
+        "locked": false,
+        "note": "Specific gene mutation (KRAS) not in standard fields."
+      },
+      {
+        "rule_id": "E8",
+        "kind": "exclusion",
+        "field": "other",
+        "operator": "eq",
+        "value": null,
+        "unit": null,
+        "raw_text": "History of another malignancy.",
+        "parse_status": "unparseable",
+        "locked": false,
+        "note": "Complex prior malignancy washout rules."
+      },
+      {
+        "rule_id": "E9",
+        "kind": "exclusion",
+        "field": "other",
+        "operator": "eq",
+        "value": null,
+        "unit": null,
+        "raw_text": "Any serious and/or unstable pre-existing medical disorder",
+        "parse_status": "unparseable",
+        "locked": false,
+        "note": "Vague medical instability criteria."
+      },
+      {
+        "rule_id": "E10",
+        "kind": "exclusion",
+        "field": "other",
+        "operator": "eq",
+        "value": null,
+        "unit": null,
+        "raw_text": "Prior treatment with MEK inhibitor.",
+        "parse_status": "unparseable",
+        "locked": false,
+        "note": "Drug-class specific prior therapy exclusion."
+      }
+    ],
+    "visits": [
+      {
+        "visit_no": 1,
+        "name": "Screening",
+        "day": -14,
+        "procedures": [
+          "physical_exam",
+          "vitals",
+          "blood_draw",
+          "ecg",
+          "ct_scan",
+          "mri_brain",
+          "questionnaire"
+        ],
+        "est_hours": 5.0,
+        "requires_travel": true,
+        "invasive": false,
+        "remote_ok": false,
+        "estimated": true
+      },
+      {
+        "visit_no": 2,
+        "name": "Cycle 1 Day 1",
+        "day": 1,
+        "procedures": [
+          "physical_exam",
+          "vitals",
+          "blood_draw",
+          "oral_drug_dispense",
+          "adverse_event_review",
+          "pk_sampling",
+          "questionnaire"
+        ],
+        "est_hours": 5.5,
+        "requires_travel": true,
+        "invasive": false,
+        "remote_ok": false,
+        "estimated": true
+      },
+      {
+        "visit_no": 3,
+        "name": "Cycle 2 Day 1",
+        "day": 29,
+        "procedures": [
+          "physical_exam",
+          "vitals",
+          "blood_draw",
+          "oral_drug_dispense",
+          "adverse_event_review"
+        ],
+        "est_hours": 2.5,
+        "requires_travel": true,
+        "invasive": false,
+        "remote_ok": false,
+        "estimated": true
+      },
+      {
+        "visit_no": 4,
+        "name": "Cycle 3 Day 1 + week 8 imaging",
+        "day": 57,
+        "procedures": [
+          "physical_exam",
+          "vitals",
+          "blood_draw",
+          "oral_drug_dispense",
+          "adverse_event_review",
+          "ct_scan"
+        ],
+        "est_hours": 4.0,
+        "requires_travel": true,
+        "invasive": false,
+        "remote_ok": false,
+        "estimated": true
+      },
+      {
+        "visit_no": 5,
+        "name": "Cycle 4 Day 1 + week 12 imaging",
+        "day": 85,
+        "procedures": [
+          "physical_exam",
+          "vitals",
+          "blood_draw",
+          "oral_drug_dispense",
+          "adverse_event_review",
+          "ct_scan"
+        ],
+        "est_hours": 4.0,
+        "requires_travel": true,
+        "invasive": false,
+        "remote_ok": false,
+        "estimated": true
+      },
+      {
+        "visit_no": 6,
+        "name": "Cycle 5 Day 1",
+        "day": 113,
+        "procedures": [
+          "physical_exam",
+          "vitals",
+          "blood_draw",
+          "oral_drug_dispense",
+          "adverse_event_review"
+        ],
+        "est_hours": 2.5,
+        "requires_travel": true,
+        "invasive": false,
+        "remote_ok": false,
+        "estimated": true
+      },
+      {
+        "visit_no": 7,
+        "name": "Cycle 6 Day 1 + week 20 imaging",
+        "day": 141,
+        "procedures": [
+          "physical_exam",
+          "vitals",
+          "blood_draw",
+          "oral_drug_dispense",
+          "adverse_event_review",
+          "ct_scan"
+        ],
+        "est_hours": 4.0,
+        "requires_travel": true,
+        "invasive": false,
+        "remote_ok": false,
+        "estimated": true
+      },
+      {
+        "visit_no": 8,
+        "name": "Cycle 7 Day 1 + week 24 imaging",
+        "day": 169,
+        "procedures": [
+          "physical_exam",
+          "vitals",
+          "blood_draw",
+          "oral_drug_dispense",
+          "adverse_event_review",
+          "ct_scan"
+        ],
+        "est_hours": 4.0,
+        "requires_travel": true,
+        "invasive": false,
+        "remote_ok": false,
+        "estimated": true
+      },
+      {
+        "visit_no": 9,
+        "name": "Cycle 8 Day 1",
+        "day": 197,
+        "procedures": [
+          "physical_exam",
+          "vitals",
+          "blood_draw",
+          "oral_drug_dispense",
+          "adverse_event_review"
+        ],
+        "est_hours": 2.5,
+        "requires_travel": true,
+        "invasive": false,
+        "remote_ok": false,
+        "estimated": true
+      },
+      {
+        "visit_no": 10,
+        "name": "Cycle 9 Day 1 + week 32 imaging",
+        "day": 225,
+        "procedures": [
+          "physical_exam",
+          "vitals",
+          "blood_draw",
+          "oral_drug_dispense",
+          "adverse_event_review",
+          "ct_scan"
+        ],
+        "est_hours": 4.0,
+        "requires_travel": true,
+        "invasive": false,
+        "remote_ok": false,
+        "estimated": true
+      },
+      {
+        "visit_no": 11,
+        "name": "Cycle 10 Day 1 + week 36 imaging",
+        "day": 253,
+        "procedures": [
+          "physical_exam",
+          "vitals",
+          "blood_draw",
+          "oral_drug_dispense",
+          "adverse_event_review",
+          "ct_scan"
+        ],
+        "est_hours": 4.0,
+        "requires_travel": true,
+        "invasive": false,
+        "remote_ok": false,
+        "estimated": true
+      },
+      {
+        "visit_no": 12,
+        "name": "Cycle 11 Day 1",
+        "day": 281,
+        "procedures": [
+          "physical_exam",
+          "vitals",
+          "blood_draw",
+          "oral_drug_dispense",
+          "adverse_event_review"
+        ],
+        "est_hours": 2.5,
+        "requires_travel": true,
+        "invasive": false,
+        "remote_ok": false,
+        "estimated": true
+      },
+      {
+        "visit_no": 13,
+        "name": "Cycle 12 Day 1 + week 44 imaging",
+        "day": 309,
+        "procedures": [
+          "physical_exam",
+          "vitals",
+          "blood_draw",
+          "oral_drug_dispense",
+          "adverse_event_review",
+          "ct_scan"
+        ],
+        "est_hours": 4.0,
+        "requires_travel": true,
+        "invasive": false,
+        "remote_ok": false,
+        "estimated": true
+      },
+      {
+        "visit_no": 14,
+        "name": "Cycle 13 Day 1 + week 48 imaging",
+        "day": 337,
+        "procedures": [
+          "physical_exam",
+          "vitals",
+          "blood_draw",
+          "oral_drug_dispense",
+          "adverse_event_review",
+          "ct_scan"
+        ],
+        "est_hours": 4.0,
+        "requires_travel": true,
+        "invasive": false,
+        "remote_ok": false,
+        "estimated": true
+      },
+      {
+        "visit_no": 15,
+        "name": "Cycle 14 Day 1",
+        "day": 365,
+        "procedures": [
+          "physical_exam",
+          "vitals",
+          "blood_draw",
+          "oral_drug_dispense",
+          "adverse_event_review"
+        ],
+        "est_hours": 2.5,
+        "requires_travel": true,
+        "invasive": false,
+        "remote_ok": false,
+        "estimated": true
+      }
+    ],
+    "unparseable": [
+      "I2",
+      "E7",
+      "E8",
+      "E9",
+      "E10"
+    ]
+  },
+  "protocol_snapshot_sha256": "0e87d7c40af9e936686e1c32fd4888a395b6c75811b9027e004f4553b6893e8e",
+  "fixes": [
+    {
+      "fix_id": "opt-838ca5ec7bf5704b3e1d91d8",
+      "trial_id": "NCT03232892",
+      "label": "fastest",
+      "summary": "Consider 3 edit(s) for fastest; amendment dollars are expected value. No verified completed threshold precedent in the stored evidence.",
+      "edits": [
+        {
+          "kind": "relax_rule",
+          "target_id": "I1",
+          "new_value": [
+            "adenocarcinoma",
+            "large_cell",
+            "nsclc_nos",
+            "other",
+            "squamous"
+          ],
+          "new_operator": "in"
+        },
+        {
+          "kind": "relax_rule",
+          "target_id": "I6",
+          "new_value": 0,
+          "new_operator": "ge"
+        },
+        {
+          "kind": "relax_rule",
+          "target_id": "I14",
+          "new_value": 20,
+          "new_operator": null
+        }
+      ],
+      "delta_enroll": 1.00821005116347,
+      "delta_dropout": 0.04359535562204375,
+      "delta_diversity": 0.03948431177446099,
+      "delta_p_amend": 0.0,
+      "ranges": {
+        "delta_enroll": {
+          "low": 0.9788974511559051,
+          "high": 1.3654665525064424
+        },
+        "delta_dropout": {
+          "low": 0.04359535562204375,
+          "high": 0.06764684532361571
+        },
+        "delta_diversity": {
+          "low": 0.028073157142972816,
+          "high": 0.05108350758469351
+        },
+        "delta_p_amend": {
+          "low": 0.0,
+          "high": 0.0
+        }
+      },
+      "dollar_value": 0.0,
+      "precedents": []
+    },
+    {
+      "fix_id": "opt-059b423369a918c8db90c793",
+      "trial_id": "NCT03232892",
+      "label": "lowest_dropout",
+      "summary": "Consider 3 edit(s) for lowest dropout; amendment dollars are expected value. No verified completed threshold precedent in the stored evidence.",
+      "edits": [
+        {
+          "kind": "drop_rule",
+          "target_id": "I11",
+          "new_value": null,
+          "new_operator": null
+        },
+        {
+          "kind": "drop_rule",
+          "target_id": "I1",
+          "new_value": null,
+          "new_operator": null
+        },
+        {
+          "kind": "drop_rule",
+          "target_id": "E6",
+          "new_value": null,
+          "new_operator": null
+        }
+      ],
+      "delta_enroll": 0.5286911682178284,
+      "delta_dropout": -0.01982893477767056,
+      "delta_diversity": 0.019196903264450338,
+      "delta_p_amend": 0.0,
+      "ranges": {
+        "delta_enroll": {
+          "low": 0.5112445801586084,
+          "high": 0.6647518550266631
+        },
+        "delta_dropout": {
+          "low": -0.01982893477767056,
+          "high": 0.009142935427011155
+        },
+        "delta_diversity": {
+          "low": -0.0003840459859796197,
+          "high": 0.02586303547630001
+        },
+        "delta_p_amend": {
+          "low": 0.0,
+          "high": 0.0
+        }
+      },
+      "dollar_value": 0.0,
+      "precedents": []
+    },
+    {
+      "fix_id": "opt-139efca886def67c7b478b5e",
+      "trial_id": "NCT03232892",
+      "label": "balanced",
+      "summary": "Consider 3 edit(s) for balanced; amendment dollars are expected value. No verified completed threshold precedent in the stored evidence.",
+      "edits": [
+        {
+          "kind": "relax_rule",
+          "target_id": "I6",
+          "new_value": 2.0,
+          "new_operator": null
+        },
+        {
+          "kind": "drop_rule",
+          "target_id": "I1",
+          "new_value": null,
+          "new_operator": null
+        },
+        {
+          "kind": "drop_rule",
+          "target_id": "I14",
+          "new_value": null,
+          "new_operator": null
+        }
+      ],
+      "delta_enroll": 0.952824737135811,
+      "delta_dropout": 0.03571895152076532,
+      "delta_diversity": 0.03651881741390506,
+      "delta_p_amend": 0.0,
+      "ranges": {
+        "delta_enroll": {
+          "low": 0.8962758702101652,
+          "high": 1.2812179092550473
+        },
+        "delta_dropout": {
+          "low": 0.03571895152076532,
+          "high": 0.050319266169256145
+        },
+        "delta_diversity": {
+          "low": 0.023635625805816296,
+          "high": 0.04883147776911946
+        },
+        "delta_p_amend": {
+          "low": 0.0,
+          "high": 0.0
+        }
+      },
+      "dollar_value": 0.0,
+      "precedents": []
+    }
+  ],
+  "elapsed_s": 143.90420839982107,
+  "run_elapsed_s": 144.29504080023617,
+  "n_trials": 300,
+  "cohort_size": 1000,
+  "evaluated_n": 264,
+  "pareto_n": 7,
+  "scorer_source": "fitted Surrogate; T22 risk model; bootstrap models",
+  "cohort_seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "bootstrap_models_n": 30,
+  "persisted_n": 3,
+  "notes": []
+}
