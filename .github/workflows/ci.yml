@@ -31,7 +31,7 @@ jobs:
 
   demo-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 9
+    timeout-minutes: 12
     env:
       CLINOVA_MODE: demo
       GEMINI_API_KEY: ''
@@ -77,6 +77,17 @@ jobs:
           else:
               raise TimeoutError("Demo run did not finish within 90 seconds.")
           PY
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Drive the demo trial through the app in a browser
+        timeout-minutes: 4
+        env:
+          UV_PYTHON: '3.11'
+        run: |
+          uv sync --frozen
+          uv run playwright install --with-deps chromium
+          uv run python -c "import json, sys; sys.path.insert(0, 'scripts'); import clean_path; print(json.dumps(clean_path.browser_flow()))"
       - name: Diagnose a failed demo run
         if: failure()
         timeout-minutes: 2
