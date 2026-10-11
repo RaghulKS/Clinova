@@ -112,6 +112,9 @@ def demo_env(tmp_path_factory):
     for k, v in {"DATABASE_URL": dsn, "CLINOVA_MODE": "demo", "MODEL_VERSION": "v1.0", "DATA_DIR": str(data),
                  "MODELS_DIR": str(SEED / "files/bundle")}.items():
         mp.setenv(k, v)
+    from clinova.model import train
+
+    mp.setattr(train, "MODELS_DIR", SEED / "files/bundle")  # bound at import, so the env var is too late
     mp.delenv("GEMINI_API_KEY", raising=False)
     mp.delenv("CLINOVA_API_NO_DB", raising=False)
     config.get_settings.cache_clear()
