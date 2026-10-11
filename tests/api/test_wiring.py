@@ -180,15 +180,19 @@ def fake_trial() -> TrialRecord:
 
 def test_live_backtest_uses_first_version_only_and_logs_backtest_context(client, monkeypatch, parsed_protocol):
     trial = fake_trial()
-    seen: dict = {}
+    seen: dict = {"first": [], "texts": []}
 
-    def fake_parse(text, schedule, *, trial_id, version_no=0, phase=None):
-        seen.setdefault("texts", []).append(text)
+    def fake_first(t):
+        seen["first"].append(t.eligibility_text_first)  # protocol_from_trial reads only the first version
+        return parsed_protocol.model_copy(update={"trial_id": t.nct_id})
+
+    def fake_parse_text(text, schedule, *, trial_id, phase):
+        seen["texts"].append(text)
         return parsed_protocol.model_copy(update={"trial_id": trial_id})
 
-    monkeypatch.setenv("CLINOVA_API_NO_DB", "")  # db flag only matters through the patched helpers below
     monkeypatch.setattr(live, "fetch_trial", lambda nct: trial)
-    monkeypatch.setattr("clinova.parse.parser.parse_protocol", fake_parse)
+    monkeypatch.setattr(live, "protocol_from_trial", fake_first)
+    monkeypatch.setattr(live, "parse_text", fake_parse_text)
     monkeypatch.setattr(live, "read_version_events", lambda nct: load_fixture("version_events.json", list[VersionEvent]))
     monkeypatch.setattr(live, "diff_rules", lambda a, b: [RuleChange(field="crcl_ml_min", change="relaxed", old_rule_id="I12", new_rule_id="I12", old="ge 60", new="ge 45")])
     monkeypatch.setattr(live, "score", lambda p, sim=None, **k: load_fixture("risk_scores.json", list[RiskScore]))
@@ -202,13 +206,13 @@ def test_live_backtest_uses_first_version_only_and_logs_backtest_context(client,
     assert bt.run is not None and bt.run.protocol.trial_id == trial.nct_id
     assert len(bt.events) >= 3 and [c.field.value for c in bt.changes] == ["crcl_ml_min"]
     # leakage rule: the first parse (the run) saw the first-version text; the current text is parsed only for the diff
-    assert seen["texts"][0] == trial.eligibility_text_first
+    assert seen["first"] == [trial.eligibility_text_first]
+    assert seen["texts"] == [trial.eligibility_text_current.strip()]  # parsed only for the reveal diff, never for the run
     assert recorded and all(ctx == "backtest" for tid, ctx in recorded)
     assert {tid for tid, _ in recorded} == {trial.nct_id}
     # second call is served from cache: no further parses
-    n_parses = len(seen["texts"])
     assert client.get(f"/trials/{trial.nct_id}/backtest").status_code == 200
-    assert len(seen["texts"]) == n_parses
+    assert len(seen["first"]) == 1 and len(seen["texts"]) == 1
 
 
 def test_backtest_unknown_trial_in_database_is_404_unless_fixture(client, monkeypatch):
@@ -231,19 +235,6 @@ def test_backtest_reports_a_failed_run(client, monkeypatch, parsed_protocol):
     )
     r = client.get("/trials/NCT99999901/backtest")
     assert r.status_code == 500 and "boom" in r.json()["detail"]
-
-
-def test_protocol_from_trial_parses_first_text_only(monkeypatch, parsed_protocol):
-    trial = fake_trial().model_copy(update={"eligibility_text_current": "CURRENT TEXT SHOULD NOT BE USED"})
-    texts = []
-
-    def fake_parse(text, schedule, *, trial_id, version_no=0, phase=None):
-        texts.append(text)
-        return parsed_protocol
-
-    monkeypatch.setattr("clinova.parse.parser.parse_protocol", fake_parse)
-    live.protocol_from_trial(trial)
-    assert texts == [trial.eligibility_text_first]
 
 
 # --- drafts ------------------------------------------------------------------------------------------
@@ -273,7 +264,7 @@ def test_save_draft_writes_the_drafts_table(monkeypatch, parsed_protocol):
 
 def test_pasted_text_run_saves_a_draft(client, monkeypatch, parsed_protocol):
     saved: list[str] = []
-    monkeypatch.setattr("clinova.parse.parser.parse_protocol", lambda *a, trial_id, **k: parsed_protocol.model_copy(update={"trial_id": trial_id}))
+    monkeypatch.setattr(live, "parse_text", lambda text, sched, *, trial_id, phase: parsed_protocol.model_copy(update={"trial_id": trial_id}))
     monkeypatch.setattr(live, "save_draft", lambda draft_id, text, sched, parsed: saved.append(draft_id) or True)
     run_id = finished_run(client, eligibility_text="ECOG 0-1")
     assert len(saved) == 1 and saved[0].startswith("draft-")

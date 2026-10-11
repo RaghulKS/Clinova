@@ -167,7 +167,10 @@ def record_feedback(feedback: Feedback) -> Feedback:
 def _surrogate():
     from clinova.simulate.surrogate import Surrogate
 
-    return Surrogate.load()
+    try:
+        return Surrogate.load()
+    except FileNotFoundError as exc:  # T24 has not fitted and saved one yet
+        raise LiveUnavailable("no fitted surrogate on disk") from exc
 
 
 def surrogate_score(protocol, eligible_df) -> tuple[float, float]:

@@ -98,8 +98,8 @@ def quick_rerun(before: RunResult, edits: list[Edit]) -> tuple[RunResult, Parsed
     try:
         if elig_first is not None and len(elig_first):
             div = live.diversity(elig_first)
-    except NotImplementedError:
-        pass
+    except Exception as exc:  # see before_diversity
+        log.info("diversity after unavailable: %s", type(exc).__name__)
     after = RunResult(
         protocol=protocol_after,
         funnel=sims_after[0].funnel,
@@ -133,7 +133,8 @@ def before_diversity(before: RunResult) -> float | None:
         cohort = live.make_cohort(sim.n_personas, sim.seed, before.protocol.setting.value)
         mask, _ = live.screen(before.protocol.rules, cohort, before.protocol.trial_id)
         return live.diversity(cohort[mask]) if mask.any() else None
-    except (NotImplementedError, live.LiveUnavailable, ImportError):
+    except Exception as exc:  # diversity is a nice-to-have; it must never block accepting a fix
+        log.info("diversity before unavailable: %s", type(exc).__name__)
         return None
 
 
