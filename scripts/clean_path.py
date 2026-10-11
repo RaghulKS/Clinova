@@ -16,6 +16,7 @@ import argparse
 import json
 import os
 import shutil
+import socket
 import subprocess
 import sys
 import tempfile
@@ -84,6 +85,10 @@ def main() -> None:
     ap.add_argument("--docker", action="store_true")
     ap.add_argument("--keep", action="store_true")
     a = ap.parse_args()
+    for port in (8000, 8501):
+        with socket.socket() as sk:
+            if sk.connect_ex(("127.0.0.1", port)) == 0:
+                sys.exit(f"port {port} is already in use: stop the old stack first")
     tmp = Path(tempfile.mkdtemp(prefix="clinova-clean-"))
     clone = tmp / "clinova"
     subprocess.run(["git", "clone", "--quiet", "--no-hardlinks", str(REPO), str(clone)], check=True)
@@ -121,8 +126,11 @@ def main() -> None:
         report["flow"] = browser_flow()
         report["result"] = "pass"
     finally:
-        for p in procs:
-            p.terminate()
+        for p in procs:  # `uv run` leaves its child alive on Windows, so kill the whole tree there
+            if os.name == "nt":
+                subprocess.run(["taskkill", "/F", "/T", "/PID", str(p.pid)], capture_output=True)
+            else:
+                p.terminate()
         if a.docker:
             subprocess.run(["docker", "compose", "down", "-v"], cwd=clone, env=env)
         if not a.keep:
