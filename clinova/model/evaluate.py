@@ -1,11 +1,13 @@
 """Test-split validation (owner: T22): AUC with bootstrap CIs, Brier, reliability, flag hit rate,
-simulation ablation, SHAP importance. Writes ``docs/metrics.json`` and ``docs/figures/*.png``.
+simulation ablation, SHAP importance. Writes ``docs/metrics.json``, ``docs/figures/*.png`` and the audit
+files ``docs/predictions.csv``, ``docs/model_manifest.json`` and ``docs/metrics_detail.json``.
 
 Never tunes anything: the bundle is trained on the train split before this runs.
 """
 
 from __future__ import annotations
 
+import json
 import math
 from collections.abc import Mapping
 from datetime import UTC, datetime
@@ -27,9 +29,10 @@ from clinova.contracts import (
     ValidationMetrics,
 )
 from clinova.model.features import FEATURE_NAMES, LABELS, SIM_COLS
-from clinova.model.train import baseline_proba, predict_p, train
+from clinova.model.train import _json_safe, baseline_proba, predict_p, table_sha256, train
 
 N_BOOT = 1000
+PRED_COLS = ["nct_id", "target", "split", "start_date", "label", "p_model", "p_baseline", "model_version"]
 INK, INK2, GRID, SURFACE = "#0b0b0b", "#52514e", "#e4e3df", "#fcfcfb"
 BLUE, ORANGE = "#2a78d6", "#eb6834"  # categorical slots 1 and 2 of the dataviz reference palette
 
@@ -68,19 +71,24 @@ def reliability(y: np.ndarray, p: np.ndarray, bins: int = 10) -> list[Reliabilit
     return out
 
 
-def target_metrics(bundle: Mapping[str, Any], test: pd.DataFrame, target: str) -> tuple[TargetMetrics | None, str | None]:
+def target_metrics(bundle: Mapping[str, Any], test: pd.DataFrame, target: str
+                   ) -> tuple[TargetMetrics | None, str | None, pd.DataFrame | None]:
+    """(metrics, note, per-trial predictions in ``PRED_COLS``) on the labeled test rows of ``target``."""
     label = LABELS[target]
     d = test[test[label].notna()]
     y = d[label].astype(int).to_numpy()
     if target not in bundle["models"]:
-        return None, f"{target}: no model ({bundle['skipped'].get(target, 'not trained')})."
-    if len(np.unique(y)) < 2:
-        return None, f"{target}: test split has {len(y)} labeled trials of one class only; AUC undefined."
+        return None, f"{target}: no model ({bundle['skipped'].get(target, 'not trained')}).", None
     p, pb = predict_p(bundle, target, d), baseline_proba(bundle, target, d)
+    pred = pd.DataFrame({"nct_id": d.index, "target": target, "split": d["split"].to_numpy(),
+                         "start_date": pd.to_datetime(d["start_date"]).dt.strftime("%Y-%m-%d").to_numpy(),
+                         "label": y, "p_model": p, "p_baseline": pb, "model_version": bundle["version"]})
+    if len(np.unique(y)) < 2:
+        return None, f"{target}: test split has {len(y)} labeled trials of one class only; AUC undefined.", pred
     return TargetMetrics(
         target=Target(target), n_test=len(y), n_pos=int(y.sum()), auc=auc_ci(y, p), baseline_auc=auc_ci(y, pb),
         brier=float(brier_score_loss(y, p)), baseline_brier=float(brier_score_loss(y, pb)), reliability=reliability(y, p),
-    ), None
+    ), None, pred
 
 
 def ablation(df: pd.DataFrame, ref: Mapping[str, Any], min_test: int = 10) -> tuple[Ablation | None, str]:
@@ -105,26 +113,36 @@ def ablation(df: pd.DataFrame, ref: Mapping[str, Any], min_test: int = 10) -> tu
         f"Simulation ablation on {len(y)} simulated test trials ({n_sim_train} simulated labeled training trials).")
 
 
-def hit_rate(bundle: Mapping[str, Any], df: pd.DataFrame, k: int = 3) -> tuple[HitRate | None, str]:
+def hit_rate(bundle: Mapping[str, Any], df: pd.DataFrame, k: int = 3) -> tuple[HitRate | None, str, dict]:
     """Among test trials with label_amend whose amended rules are parsed (criteria_rules version 1):
     share where a relaxed or removed field is among our top-k flags, vs k random rules (exact
-    expectation) and the k rules with the largest marginal exclusion on the virtual cohort."""
+    expectation) and the k rules with the largest marginal exclusion on the virtual cohort.
+
+    The share is conditional on evaluable parsed amendment evidence. The third value discloses the
+    denominator: all amended test trials, evaluated trials, hits and exclusions by reason. Both
+    baselines are computed on exactly the evaluated trials."""
     from clinova.model.features import load_protocols, screen_cohort, screenable
     from clinova.model.predict import flag_criteria
     from clinova.parse.diff import diff_rules
     from clinova.simulate.screen import screen
 
     ids = df.index[(df["split"] == "test") & (df["label_amend"] == True)].tolist()  # noqa: E712
+    excluded = dict.fromkeys(("first_version_not_parsed", "amended_version_not_parsed", "no_widened_field",
+                              "no_flaggable_rules"), 0)
+    denom: dict[str, Any] = {"n_amended_test": len(ids), "n_evaluated": 0, "hits": 0, "excluded": excluded,
+                             "conditional_on": "both versions parsed, a widened field, and flaggable first-version rules"}
     if not ids:
-        return None, "Hit rate not computed: no test trials with label_amend yet (version histories not loaded)."
+        return None, "Hit rate not computed: no test trials with label_amend yet (version histories not loaded).", denom
     first, amended = load_protocols(ids, 0), load_protocols(ids, 1)
     hits, rand, marg, n = 0, 0.0, 0, 0
     for nid in ids:
         if nid not in first or nid not in amended:
+            excluded["first_version_not_parsed" if nid not in first else "amended_version_not_parsed"] += 1
             continue
         widened = {c.field for c in diff_rules(first[nid].rules, amended[nid].rules) if c.change in ("relaxed", "removed")}
         rules = [r for r in screenable(first[nid].rules) if r.parse_status == "ok" and not r.locked]
         if not widened or not rules:
+            excluded["no_widened_field" if not widened else "no_flaggable_rules"] += 1
             continue
         n += 1
         flags = flag_criteria(first[nid], k=k, bundle=bundle)
@@ -134,10 +152,14 @@ def hit_rate(bundle: Mapping[str, Any], df: pd.DataFrame, k: int = 3) -> tuple[H
         _, funnel = screen(rules, screen_cohort())
         top = {x.field for x in funnel.marginal[:k]}
         marg += bool(top & widened)
+    denom.update(n_evaluated=n, hits=hits)
+    why = ", ".join(f"{v} {reason.replace('_', ' ')}" for reason, v in excluded.items())
     if not n:
-        return None, f"Hit rate not computed: {len(ids)} amended test trials, none with both versions parsed and a widened field."
+        return None, f"Hit rate not computed: {len(ids)} amended test trials, none evaluable (excluded: {why}).", denom
     return HitRate(n_trials=n, hit_rate=hits / n, random_baseline=rand / n, marginal_baseline=marg / n), (
-        f"Hit rate over {n} amended test trials with a parseable widened field.")
+        f"Hit rate is conditional on evaluable parsed amendment evidence: {n} of {len(ids)} amended test trials "
+        f"evaluated ({hits} hits; {hits / len(ids):.0%} of all {len(ids)}); excluded: {why}. Both baselines use the "
+        f"same {n} trials."), denom
 
 
 # ---------------------------------------------------------------------------------------------
@@ -221,38 +243,75 @@ def plot_shap_importance(bundle: Mapping[str, Any], X: pd.DataFrame, target: str
 def evaluate(bundle: Mapping[str, Any], df: pd.DataFrame, *, out_dir: Path | None = None, with_hit_rate: bool = True,
              with_ablation: bool = True) -> ValidationMetrics:
     """Metrics for ``bundle`` on the test rows of ``df`` (features built with the bundle's ref).
-    Writes ``<out_dir>/metrics.json`` and ``<out_dir>/figures/*.png`` (default: the repo's docs/)."""
+    Writes ``<out_dir>/metrics.json`` and ``<out_dir>/figures/*.png`` (default: the repo's docs/), plus the
+    audit files ``predictions.csv`` (one row per labeled test trial and modelled target, ``PRED_COLS``),
+    ``model_manifest.json`` (data hashes and the ids behind every fitted piece) and ``metrics_detail.json``
+    (paired AUC differences, constant-prevalence Brier, hit-rate denominators, coverage). All seeded."""
     out_dir = Path(out_dir or REPO_ROOT / "docs")
     (out_dir / "figures").mkdir(parents=True, exist_ok=True)
+    now = datetime.now(UTC)
     test, train_rows = df[df["split"] == "test"], df[df["split"] == "train"]
     labeled = lambda d: int(d[list(LABELS.values())].notna().any(axis=1).sum())  # noqa: E731
-    targets, notes = [], []
+    targets, notes, preds, per_target = [], [], [], {}
     for t in LABELS:
-        m, note = target_metrics(bundle, test, t)
+        m, note, pred = target_metrics(bundle, test, t)
+        if pred is not None:
+            preds.append(pred)
         if m:
             targets.append(m)
             tune = bundle["tuning"][t]
             notes.append(f"{t}: trained on {bundle['n_train'][t]['n']} labeled train trials ({bundle['n_train'][t]['pos']} positive); "
                          f"time-ordered tuning fit {tune['n_fit']} / validated {tune['n_val']} (val AUC "
                          f"{tune['val_auc'] if tune['val_auc'] is None else round(tune['val_auc'], 3)}), out-of-fold AUC {tune['oof_auc']:.3f}.")
+            y, p, pb = (pred[c].to_numpy() for c in ("label", "p_model", "p_baseline"))
+            q = bundle["n_train"][t]["pos"] / bundle["n_train"][t]["n"]
+            per_target[t] = {"n_test": m.n_test, "n_pos": m.n_pos, "auc": m.auc.value, "baseline_auc": m.baseline_auc.value,
+                             "auc_diff_vs_baseline": paired_diff_ci(y, p, pb).model_dump(), "brier": m.brier,
+                             "baseline_brier": m.baseline_brier, "train_prevalence": q,
+                             "brier_constant_train_prevalence": float(np.mean((y - q) ** 2))}
         if note:
             notes.append(note)
-    hr, note = hit_rate(bundle, df) if with_hit_rate else (None, "Hit rate skipped.")
+            per_target.setdefault(t, {"note": note})
+    hr, note, hr_denom = hit_rate(bundle, df) if with_hit_rate else (None, "Hit rate skipped.", {"skipped": True})
     notes.append(note)
     ab, note = ablation(df, bundle["ref"]) if with_ablation else (None, "Ablation skipped.")
     notes.append(note)
-    cov = {"parsed rules": "n_rules", "embedding": "emb_pc1", "first-registration sites": "n_sites"}
-    notes.append("Feature coverage on test: " + ", ".join(
-        f"{k} {test[c].notna().mean():.0%}" for k, c in cov.items() if c in test) + "; missing features are NaN, not imputed.")
+    cov = {"parsed_rules": "n_rules", "embedding": "emb_pc1", "first-registration_sites": "n_sites"}
+    coverage = {k: float(test[c].notna().mean()) for k, c in cov.items() if c in test}
+    notes.append("Feature coverage on test: " + ", ".join(f"{k.replace('_', ' ')} {v:.0%}" for k, v in coverage.items())
+                 + "; missing features are NaN, not imputed.")
+    coverage |= {"simulation": float(test.reindex(columns=SIM_COLS).notna().any(axis=1).mean()),
+                 "n_test_trials": len(test), "n_test_labeled": labeled(test)}
     notes.append("Simulation features " + ("were used." if bundle["use_sim"] else
                  "were not used (fewer than 300 simulated trials); screen features on a fixed virtual cohort were."))
     notes.append("Data were still loading when this ran: numbers will move as more trials are labeled. Re-run "
                  "`python -m clinova.model train && python -m clinova.model evaluate`.")
-    vm = ValidationMetrics(model_version=bundle["version"], generated_at=datetime.now(UTC), n_train=labeled(train_rows),
+    vm = ValidationMetrics(model_version=bundle["version"], generated_at=now, n_train=labeled(train_rows),
                            n_test=labeled(test), targets=targets, hit_rate=hr, ablation=ab, notes=notes)
     if targets:
         plot_reliability(targets, out_dir / "figures" / "reliability.png")
     for t in bundle["models"]:
         plot_shap_importance(bundle, test, t, out_dir / "figures" / f"shap_importance_{t}.png")
     (out_dir / "metrics.json").write_text(vm.model_dump_json(indent=1) + "\n", encoding="utf-8", newline="\n")
+
+    pred_df = pd.concat(preds, ignore_index=True) if preds else pd.DataFrame(columns=PRED_COLS)
+    pred_df[PRED_COLS].to_csv(out_dir / "predictions.csv", index=False, lineterminator="\n")
+    feats, ref = bundle["feature_names"], bundle["ref"] or {}
+    by_split = {s: df[df["split"] == s] for s in ("train", "test")}
+    manifest = {
+        "model_version": bundle["version"], "created_at": bundle["created_at"], "generated_at": now,
+        "seed": bundle.get("seed"),
+        "train_table_sha256": table_sha256(train_rows, feats), "test_table_sha256": table_sha256(test, feats),
+        "bundle_train_table_sha256": bundle.get("data_sha256"),  # hashed at training time; differs if the data moved
+        "pca_fit_ids": list(ref.get("train_emb_ids") or []),
+        "ladder_source_ids": ref.get("ladder_ids"),  # None: bundle predates train-only ladders
+        "label_counts": {t: {s: {"n": int(d[lab].notna().sum()), "pos": int((d[lab] == True).sum())}  # noqa: E712
+                             for s, d in by_split.items()} for t, lab in LABELS.items()},
+        "targets": {t: {"train_ids": bundle["oof"][t]["ids"], "oof_calibration_ids": bundle["oof"][t]["ids"],
+                        "test_ids": pred_df.loc[pred_df["target"] == t, "nct_id"].tolist()} for t in bundle["models"]},
+    }
+    detail = {"model_version": bundle["version"], "generated_at": now, "n_boot": N_BOOT, "bootstrap_seed": 0,
+              "targets": per_target, "hit_rate": hr_denom, "coverage": coverage}
+    for name, obj in (("model_manifest.json", manifest), ("metrics_detail.json", detail)):
+        (out_dir / name).write_text(json.dumps(_json_safe(obj), indent=1) + "\n", encoding="utf-8", newline="\n")
     return vm

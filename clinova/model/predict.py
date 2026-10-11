@@ -27,7 +27,7 @@ from clinova.contracts import (
     Target,
 )
 from clinova.model import features as F
-from clinova.model.train import TARGETS, draws, load_bundle, predict_p
+from clinova.model.train import TARGETS, calibrated, draws, load_bundle, predict_p
 
 _NCT = re.compile(r"^NCT\d{8}$")
 
@@ -65,6 +65,18 @@ def _frame(bundle: Mapping[str, Any], trials: pd.DataFrame, variants: Mapping[st
     vsim = pd.DataFrame([sim.iloc[0]] * len(variants), index=list(variants)) if len(sim) else None
     raw = F.build_features(rows, {k: v for k, v in variants.items() if v is not None}, vsim)
     return raw, F.apply_ref(raw, vemb, bundle["ref"]).reindex(columns=bundle["feature_names"])
+
+
+def _prepare(bundle: Mapping[str, Any], protocol_or_trial: ParsedProtocol | str, sim: Sequence[SimRunSummary] | None):
+    """(protocol, trials, embeddings, trial id, per-seed sim rows, raw, model features) for one protocol;
+    the model row uses the mean of the given simulation seeds (or the stored runs of an NCT id)."""
+    protocol, trials, emb, sim_df = _context(protocol_or_trial)
+    tid = trials.iloc[0]["nct_id"]
+    seeds = [F.sim_row(s) for s in sim] if sim else []
+    if seeds:
+        sim_df = pd.DataFrame([pd.DataFrame(seeds).mean()], index=[tid])
+    raw, X = _frame(bundle, trials, {tid: protocol}, emb, sim_df)
+    return protocol, trials, emb, tid, seeds, raw, X
 
 
 # ---------------------------------------------------------------------------------------------
@@ -141,12 +153,7 @@ def score(
     placeholder: p 0.5, range 0-1, confidence low, one driver saying there is no model. Raises
     NotImplementedError when no bundle has been trained, so the API falls back to its fixtures."""
     bundle = bundle or _bundle(model_version)
-    protocol, trials, emb, sim_df = _context(protocol_or_trial)
-    tid = trials.iloc[0]["nct_id"]
-    seeds = [F.sim_row(s) for s in sim] if sim else []
-    if seeds:
-        sim_df = pd.DataFrame([pd.DataFrame(seeds).mean()], index=[tid])
-    raw, X = _frame(bundle, trials, {tid: protocol}, emb, sim_df)
+    protocol, trials, emb, tid, seeds, raw, X = _prepare(bundle, protocol_or_trial, sim)
     Xs = X
     if seeds and bundle["use_sim"]:  # one row per simulation seed for the range
         Xs = pd.concat([_frame(bundle, trials, {tid: protocol}, emb, pd.DataFrame([s], index=[tid]))[1] for s in seeds])
@@ -172,6 +179,32 @@ def score(
         out.append(RiskScore(target=Target(target), p=p, ci_low=float(min(lo, p)), ci_high=float(max(hi, p)),
                              confidence=conf, top_drivers=drivers, model_version=bundle["version"]))
     return out
+
+
+def score_samples(
+    protocol_or_trial: ParsedProtocol | str,
+    *,
+    sim: Sequence[SimRunSummary] | None = None,
+    model_version: str | None = None,
+    bundle: Mapping[str, Any] | None = None,
+) -> list[tuple[float, float]]:
+    """Calibrated (p_shortfall, p_amend) for each fitted bootstrap model, for T23's paired ranges.
+
+    For one immutable bundle, index i is the same bootstrap model for every protocol (original or
+    edited) and every simulation input, so order and count are stable. Features are rebuilt from the
+    given protocol's rules/visits and the mean of ``sim`` exactly as ``score`` does (main model excluded).
+    Returns [] when the bundle has no fitted bootstrap models. A target without a model (now: amend)
+    gets the placeholder 0.5 for every draw, as in ``score``: its paired differences are then 0 and say
+    nothing. Raises NotImplementedError when no bundle is on disk."""
+    bundle = bundle or _bundle(model_version)
+    pair = (Target.shortfall.value, Target.amend.value)
+    n = max((len(bundle["bootstraps"].get(t, [])) for t in pair if t in bundle["models"]), default=0)
+    if not n:
+        return []
+    X = _prepare(bundle, protocol_or_trial, sim)[-1]
+    cols = [[float(calibrated(bundle, t, X, m)[0]) for m in bundle["bootstraps"][t]] if t in bundle["models"]
+            else [0.5] * n for t in pair]
+    return list(zip(*cols, strict=True))
 
 
 def _bundle(model_version: str | None) -> Mapping[str, Any]:

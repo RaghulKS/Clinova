@@ -36,10 +36,13 @@ def _evaluate(version: str | None) -> None:
 
 
 def _counts() -> tuple[int, int]:
+    """(simulated train trials, labeled train trials). Simulated trials are counted in the same population
+    ``train.feature_list`` uses to switch simulation features on: first-version runs of train-split trials."""
     from clinova.common.db import get_conn
 
     with get_conn() as c:
-        n_sim = c.execute("SELECT count(DISTINCT trial_id) FROM sim_runs WHERE version_no = 0 AND trial_id LIKE 'NCT%'").fetchone()[0]
+        n_sim = c.execute("SELECT count(DISTINCT s.trial_id) FROM sim_runs s JOIN trials t ON t.nct_id = s.trial_id "
+                          "WHERE s.version_no = 0 AND t.split = 'train'").fetchone()[0]
         n_lab = c.execute("SELECT count(*) FROM trials WHERE split = 'train' AND label_accrual_fail IS NOT NULL").fetchone()[0]
     return int(n_sim), int(n_lab)
 
@@ -71,13 +74,16 @@ def main(argv: list[str] | None = None) -> int:
             last_lab, sim_done = b["n_train"]["accrual_fail"]["n"], b["use_sim"]
         except FileNotFoundError:
             last_lab, sim_done = 0, False
+        sim_tried = -1  # simulated-train count at the last retrain while simulation features were still off
         while True:
             n_sim, n_lab = _counts()
-            print(f"{time.strftime('%Y-%m-%dT%H:%M:%S')} simulated={n_sim} labeled_train={n_lab}", flush=True)
-            if (n_sim >= a.min_sim and not sim_done) or n_lab >= last_lab * (1 + a.label_growth) + 1:
-                _train(None, 30, "auto")
-                _evaluate(None)
-                last_lab, sim_done = n_lab, n_sim >= a.min_sim
+            print(f"{time.strftime('%Y-%m-%dT%H:%M:%S')} simulated_train={n_sim} labeled_train={n_lab}", flush=True)
+            # Keep checking until a bundle actually uses simulation features; retry only when the count grew.
+            sim_due = n_sim >= a.min_sim and not sim_done and n_sim > sim_tried
+            if sim_due or n_lab >= last_lab * (1 + a.label_growth) + 1:
+                bundle = _train(None, 30, "auto")
+                _evaluate(bundle.get("version"))  # the bundle just trained, not the pinned served one
+                last_lab, sim_done, sim_tried = n_lab, bool(bundle["use_sim"]), n_sim
             time.sleep(a.interval)
     return 0
 

@@ -104,8 +104,15 @@ def test_retrain_threshold_accumulates_and_marks_only_success(monkeypatch, tmp_p
     monkeypatch.setattr(checker, "get_conn", connection)
     monkeypatch.setattr(checker, "CTGovClient", client)
     monkeypatch.setattr(checker, "training_frame", lambda: pd.DataFrame())
-    monkeypatch.setattr(checker._model, "train", lambda *a, **kw:
-                        (trained.append(1) or {"models": {"accrual_fail": 1}, "version": "test"}))
+    monkeypatch.setattr(checker, "load_features", lambda frame: "features")
+
+    def fit(rows, features, cfg, prefix):
+        # Real T22 defaults, never saved into the shared models/ directory.
+        assert features == "features" and cfg == {"save": False} and prefix == "T22-checker-"
+        trained.append(1)
+        return {"models": {"accrual_fail": 1}, "version": "T22-checker-test"}
+
+    monkeypatch.setattr(checker, "fit", fit)
     assert checker.check_outcomes(retrain_threshold=2)["retrained"] == 0
     arrived.add("NCT00000002")
     assert checker.check_outcomes(retrain_threshold=2)["retrained"] == 1

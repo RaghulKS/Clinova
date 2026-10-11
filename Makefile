@@ -17,6 +17,7 @@ check: lint test
 # Apply db/schema.sql (idempotent) to DATABASE_URL from .env (Tiger Cloud or the local stack).
 db-apply:
 	uv run python -m clinova.common.db apply
+	uv run python -m clinova.simulate features
 
 # Local stack: TimescaleDB with pgvector (T31 adds the api and app services and the seed).
 up:

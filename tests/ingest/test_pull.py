@@ -48,12 +48,24 @@ def test_original_features_are_kept_separate_and_zero_is_valid():
     assert trial.eligibility_text_first == "Original criteria"
 
 
-@pytest.mark.parametrize("start", [None, "2017", "2017-12", "2017-02-30"])
+@pytest.mark.parametrize("start", [None, "2017", "2017-13", "2017-02-30"])
 def test_unknown_or_partial_start_is_pending_and_raw_precision_survives(start):
     trial = map_trial(study(start=start))
     assert trial.start_date is None and trial.first_posted is None and trial.split == Split.pending
     assert trial.current["statusModule"]["startDateStruct"]["date"] == start
     assert "split_note" in trial.current["_clinova_provenance"]
+
+
+@pytest.mark.parametrize("status,start,day,split", [
+    ("COMPLETED", "2017-12", date(2017, 12, 1), Split.train),
+    ("TERMINATED", "2018-01", date(2018, 1, 1), Split.test),
+    ("RECRUITING", "2016-06", date(2016, 6, 1), Split.pending),
+])
+def test_month_only_start_maps_to_first_of_month(status, start, day, split):
+    trial = map_trial(study(status=status, start=start))
+    assert trial.start_date == day and trial.split == split
+    assert trial.current["statusModule"]["startDateStruct"]["date"] == start
+    assert "split_note" not in trial.current["_clinova_provenance"]
 
 
 @pytest.mark.parametrize("status,start,split", [

@@ -330,13 +330,13 @@ def knn_distance(vec: np.ndarray, ref: Mapping[str, Any], exclude: str | None = 
 
 def fit_ref(raw_train: pd.DataFrame, embeddings: Mapping[str, np.ndarray] | None = None,
             protocols: Mapping[str, ParsedProtocol] | None = None) -> dict[str, Any]:
-    """Medians, embedding PCA and kNN distances from the training rows only; relax ladders from
-    every first-version protocol given (thresholds are protocol text, not outcomes)."""
+    """Medians, embedding PCA, kNN distances and relax ladders from the training rows only: protocols
+    whose id is not in ``raw_train`` are ignored, so held-out protocols never shape the edit policy."""
     from sklearn.decomposition import PCA
 
     medians = {c: float(raw_train[c].median()) for c in THRESHOLDS if c in raw_train and raw_train[c].notna().any()}
     ref: dict[str, Any] = {"medians": medians, "pca": None, "train_emb": None, "train_emb_ids": [],
-                           "knn_p50": None, "knn_p90": None, "ladders": {}}
+                           "knn_p50": None, "knn_p90": None, "ladders": {}, "ladder_ids": []}
     ids = [i for i in raw_train.index if embeddings and i in embeddings]
     if len(ids) >= 3:
         mat = _unit(np.stack([embeddings[i] for i in ids]))
@@ -344,10 +344,11 @@ def fit_ref(raw_train: pd.DataFrame, embeddings: Mapping[str, np.ndarray] | None
         ref["train_emb"], ref["train_emb_ids"] = mat, ids
         dists = [knn_distance(mat[j], ref, exclude=i) for j, i in enumerate(ids)]
         ref["knn_p50"], ref["knn_p90"] = float(np.percentile(dists, 50)), float(np.percentile(dists, 90))
-    # Relax ladders: numeric thresholds other NSCLC trials actually used in their first version (any
-    # trial in ``protocols``: protocol text, no outcomes), plus integer steps for ECOG and prior lines.
+    # Relax ladders: numeric thresholds other training NSCLC trials actually used in their first
+    # version, plus integer steps for ECOG and prior lines.
     vals: dict[str, set] = {}
-    for p in (protocols or {}).values():
+    ref["ladder_ids"] = sorted(i for i in (protocols or {}) if i in raw_train.index)
+    for p in (protocols[i] for i in ref["ladder_ids"]):
         for r in p.rules:
             if r.parse_status == "ok" and FIELD_SPECS[r.field].kind == "numeric":
                 for v in r.value if isinstance(r.value, list) else [r.value]:

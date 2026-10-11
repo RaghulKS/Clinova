@@ -4,35 +4,37 @@ Generated from Tiger Cloud by clinova.ingest.report.
 
 ```json
 {
-  "total": 171,
+  "total": 1494,
   "status": {
-    "TERMINATED": 171
+    "COMPLETED": 1017,
+    "TERMINATED": 419,
+    "WITHDRAWN": 58
   },
   "split": {
-    "train": 27,
-    "pending": 96,
-    "test": 48
+    "train": 1186,
+    "pending": 14,
+    "test": 294
   },
-  "originals": 171,
+  "originals": 1494,
   "version_events": 0,
   "labels": {
     "accrual_fail": {
-      "known": 69,
-      "positive": 25,
-      "prevalence": 0.36231884057971014
+      "known": 1428,
+      "positive": 170,
+      "prevalence": 0.11904761904761904
     },
     "shortfall": {
-      "known": 71,
-      "positive": 58,
-      "prevalence": 0.8169014084507042
+      "known": 934,
+      "positive": 477,
+      "prevalence": 0.5107066381156317
     },
     "amend": {
-      "known": 0,
+      "known": 21,
       "positive": 0,
-      "prevalence": null
+      "prevalence": 0.0
     }
   }
 }
 ```
 
-Originals count confirmed version-0 snapshots only. Missing originals are excluded from first-registration features and shortfall labels. Unknown amendment evidence is null, never a negative label. Partial dates remain in raw JSON; exact date columns are null. Condition-search hits can include basket trials. The two-pass background job loads originals before full adjacent histories; coverage can increase.
+Originals count confirmed version-0 snapshots only. Missing originals are excluded from first-registration features and shortfall labels. Unknown amendment evidence is null, never a negative label. Partial dates remain in raw JSON. A month-only start (YYYY-MM) is stored as the 1st of the month for the 2018-01-01 split; other partial dates leave the date column null. Condition-search hits can include basket trials. The two-pass background job loads originals before full adjacent histories; coverage can increase.

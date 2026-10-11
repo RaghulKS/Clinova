@@ -6,6 +6,7 @@ the others are listed in ``bundle["skipped"]`` and simply not scored.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Mapping, Sequence
 from datetime import UTC, date, datetime
@@ -24,12 +25,12 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
-from clinova.common.config import MAIN_ROOT
+from clinova.common.config import get_settings
 from clinova.model.features import LABELS, SIM_COLS, TUNE_DATE
 
 TARGETS = tuple(LABELS)
 META_COLS = ("split", "start_date", *LABELS.values())
-MODELS_DIR = MAIN_ROOT / "models"  # shared by every worktree; gitignored
+MODELS_DIR = get_settings().MODELS_DIR  # default <main clone>/models, shared by every worktree; gitignored
 MIN_SIM_TRIALS = 300
 
 BASELINE_FEATURES = [  # ten interpretable features for the logistic baseline
@@ -43,6 +44,7 @@ GRID = [dict(num_leaves=nl, min_child_samples=mc, n_estimators=ne)
 DEFAULTS: dict[str, Any] = {
     "bootstraps": 30, "save": False, "version": None, "seed": 42, "min_class": 5, "cv_folds": 5,
     "tune_date": TUNE_DATE, "features": None, "use_sim": None, "ref": None, "models_dir": None, "grid": GRID,
+    "allow_non_train": False,
 }
 
 
@@ -106,8 +108,14 @@ def train(df: pd.DataFrame, cfg: Mapping[str, Any] | None = None) -> dict[str, A
     saves it under ``models/<version>/`` when ``cfg["save"]`` is true. T21's replay calls this
     with smaller ``cfg`` (e.g. no bootstraps). Pass ``cfg["ref"]`` (``features.fit_ref``) so the
     bundle can score new protocols. Targets with fewer than ``min_class`` labeled trials of either
-    class are skipped and listed in ``bundle["skipped"]``."""
+    class are skipped and listed in ``bundle["skipped"]``.
+
+    Raises ValueError when ``df`` has a ``split`` column with any value other than ``train``, unless
+    ``cfg["allow_non_train"]`` is true (T21's replay passes frames it already filtered by date)."""
     cfg = {**DEFAULTS, **(cfg or {})}
+    if "split" in df and not cfg["allow_non_train"] and (bad := int((df["split"] != "train").sum())):
+        raise ValueError(f"train() got {bad} rows whose split is not 'train'; pass training rows only "
+                         "(or cfg['allow_non_train']=True for an already-filtered historical frame)")
     feats = feature_list(df, cfg)
     feats = [c for c in feats if df[c].notna().any()]  # all-NaN columns carry nothing
     version = cfg["version"] or "v0." + datetime.now(UTC).strftime("%Y%m%d%H%M")
@@ -116,6 +124,7 @@ def train(df: pd.DataFrame, cfg: Mapping[str, Any] | None = None) -> dict[str, A
         "baseline_features": [c for c in BASELINE_FEATURES if c in feats], "ref": cfg["ref"],
         "use_sim": any(c in feats for c in SIM_COLS), "models": {}, "calibrators": {}, "baseline": {},
         "bootstraps": {}, "params": {}, "tuning": {}, "n_train": {}, "skipped": {}, "oof": {},
+        "seed": cfg["seed"], "data_sha256": table_sha256(df, feats),
     }
     for target, label in LABELS.items():
         d = df[df[label].notna()]
@@ -145,6 +154,12 @@ def train(df: pd.DataFrame, cfg: Mapping[str, Any] | None = None) -> dict[str, A
 # ---------------------------------------------------------------------------------------------
 # Scoring helpers shared by evaluate and predict
 # ---------------------------------------------------------------------------------------------
+
+
+def table_sha256(df: pd.DataFrame, feats: Sequence[str]) -> str:
+    """sha256 of the feature + label table (rows sorted by id, CSV text): identifies the exact data."""
+    cols = [*feats, *(c for c in META_COLS if c in df)]
+    return hashlib.sha256(df.reindex(columns=cols).sort_index().to_csv(lineterminator="\n").encode()).hexdigest()
 
 
 def raw_proba(model, X: pd.DataFrame) -> np.ndarray:
@@ -208,6 +223,9 @@ _CACHE: dict[tuple[str, float], dict] = {}
 
 def bundle_path(version: str | None = None, models_dir: Path | None = None) -> Path:
     root = Path(models_dir or MODELS_DIR)
+    pinned = get_settings().MODEL_VERSION  # served by default; a stray newer bundle must not replace it
+    if not version and pinned and (root / pinned / "bundle.joblib").exists():
+        version = pinned
     if version:
         p = root / version / "bundle.joblib"
     else:
@@ -221,7 +239,7 @@ def bundle_path(version: str | None = None, models_dir: Path | None = None) -> P
 
 
 def load_bundle(version: str | None = None) -> dict[str, Any]:
-    """Load a saved bundle (``None`` = latest, or ``v1.0`` after Gate 2)."""
+    """Load a saved bundle (``None`` = settings ``MODEL_VERSION`` when on disk, else the newest)."""
     p = bundle_path(version)
     key = (str(p), p.stat().st_mtime)
     if key not in _CACHE:

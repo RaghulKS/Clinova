@@ -18,8 +18,7 @@ from clinova.ingest.ctgov import CTGovClient
 from clinova.ingest.history import HistoryResult, fetch_history
 from clinova.ingest.labels import label_trial
 from clinova.ingest.pull import map_trial
-from clinova.loop import _model
-from clinova.loop.data import available_training, training_frame
+from clinova.loop.data import available_training, fit, load_features, training_frame
 
 
 def score_predictions(conn, nct_id, target, value, observed_at) -> int:
@@ -105,7 +104,8 @@ def check_outcomes(*, limit: int | None = None, retrain_threshold: int = 25) -> 
     counts["awaiting_retrain"] = len(arrived - trained)
     if counts["awaiting_retrain"] >= retrain_threshold:
         frame = available_training(training_frame(), date.today())
-        bundle = _model.train(frame, {"save": False})
+        # T22 defaults (tuned, bootstrapped), kept under DATA_DIR/loop: never overwrites models/ bundles.
+        bundle = fit(frame, load_features(frame), {"save": False}, "T22-checker-")
         if bundle["models"]:
             model_path = directory / "checker-model.joblib"
             model_temporary = model_path.with_suffix(".tmp")

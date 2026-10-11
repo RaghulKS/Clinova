@@ -2,13 +2,18 @@
 
 import json
 import math
+import os
+from types import SimpleNamespace
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.metrics import brier_score_loss, roc_auc_score
 
 from clinova.cohort.generate import cohort_frame
-from clinova.contracts import CriteriaRule, Edit, RiskScore, TrialRecord
+from clinova.contracts import CriteriaRule, Edit, ParsedProtocol, RiskScore, TrialRecord, ValidationMetrics
+from clinova.model import __main__ as C
 from clinova.model import evaluate as E
 from clinova.model import features as F
 from clinova.model import predict as P
@@ -136,12 +141,21 @@ def test_train_save_load_score_and_flags(parsed_protocol, cohort, tmp_path, monk
     trials = pd.DataFrame({"nct_id": ["FIXTURE-2L-001"], "first_version": [FIRST]})
     monkeypatch.setattr(P, "_context", lambda x: (parsed_protocol, trials, {}, pd.DataFrame(columns=F.SIM_COLS)))
     scores = P.score(parsed_protocol, bundle=loaded)
+    samples = P.score_samples(parsed_protocol, bundle=loaded)  # T23's paired bootstrap draws
+    assert len(samples) == 4 and samples == P.score_samples(parsed_protocol, bundle=loaded)
+    assert all(a == 0.5 for _, a in samples) and all(0 <= s <= 1 for s, _ in samples)  # amend: placeholder
+    assert P.score_samples(parsed_protocol, bundle={**loaded, "bootstraps": {}}) == []
     assert [s.target.value for s in scores] == ["accrual_fail", "shortfall", "amend"]
     assert (scores[2].p, scores[2].ci_low, scores[2].ci_high, scores[2].top_drivers[0].feature) == (0.5, 0, 1, "no_model")
     for s in scores[:2]:
         assert isinstance(s, RiskScore) and s.ci_low <= s.p <= s.ci_high and s.confidence == "low"
         assert s.model_version == "vtest" and len(s.top_drivers) <= 4
     flags = P.flag_criteria(parsed_protocol, bundle=loaded)
+    from clinova.optimize.scoring import ModelScorer  # T23 detects score_samples and gets the same draws
+
+    scorer = ModelScorer(surrogate=SimpleNamespace(score=lambda p, e: (0.5, 0.1)))
+    assert scorer.bootstrap_fn is P.score_samples and scorer.source.endswith("; bootstrap models")
+    assert scorer.score(parsed_protocol, cohort.head(50), 0.25).bootstrap_risks == tuple(samples)
     monkeypatch.setattr(T, "MODELS_DIR", tmp_path / "empty")
     with pytest.raises(NotImplementedError):  # no bundle: the API falls back to fixtures
         P.score(parsed_protocol)
@@ -169,18 +183,119 @@ def test_hit_rate_counts_widened_field_in_top_flags(parsed_protocol, cohort, mon
 
     amended = parsed_protocol.model_copy(update={"version_no": 1, "rules": [
         r.model_copy(update={"value": 2}) if r.rule_id == "I7" else r for r in parsed_protocol.rules]})  # ECOG 0-1 -> 0-2
-    monkeypatch.setattr(F, "load_protocols", lambda ids, v=0: {ids[0]: parsed_protocol if v == 0 else amended})
+
+    def load(ids, v=0):  # 01 widened ECOG; 02 unchanged; 03 amended version not parsed
+        found = {"NCT99999901": amended if v else parsed_protocol, "NCT99999902": parsed_protocol}
+        return {i: found[i] for i in ids if i in found} | ({} if v else {"NCT99999903": parsed_protocol})
+
+    monkeypatch.setattr(F, "load_protocols", load)
     monkeypatch.setattr(F, "screen_cohort", lambda: cohort)
 
     def flags(rid, field):
         return lambda p, k, bundle: [CriterionFlag(rule_id=rid, field=field, rank=1, where="w", why="y", what_to_do="t",
                                                    delta_p=0.1)]
 
-    df = pd.DataFrame({"split": ["test"], "label_amend": [True]}, index=["NCT99999901"])
+    ids = ["NCT99999901", "NCT99999902", "NCT99999903", "NCT99999904"]
+    df = pd.DataFrame({"split": ["test"] * 3 + ["train"], "label_amend": [True] * 4}, index=ids)
     monkeypatch.setattr(P, "flag_criteria", flags("I7", "ecog"))
-    hr, _ = E.hit_rate({}, df)
+    hr, note, denom = E.hit_rate({}, df)
     assert (hr.n_trials, hr.hit_rate) == (1, 1.0)
+    assert denom == {"n_amended_test": 3, "n_evaluated": 1, "hits": 1, "conditional_on": denom["conditional_on"],
+                     "excluded": {"first_version_not_parsed": 0, "amended_version_not_parsed": 1,
+                                  "no_widened_field": 1, "no_flaggable_rules": 0}}
+    assert "1 of 3 amended test trials" in note and "1 no widened field" in note
     assert 0 < hr.random_baseline < 1 and hr.marginal_baseline in (0.0, 1.0)
     monkeypatch.setattr(P, "flag_criteria", flags("I12", "crcl_ml_min"))
     assert E.hit_rate({}, df)[0].hit_rate == 0.0
+
+
+SMALL = {"grid": [{"num_leaves": 4, "min_child_samples": 5, "n_estimators": 50}]}
+
+
+def test_bundle_path_serves_pinned_version_else_newest(tmp_path, monkeypatch):
+    from clinova.common.config import get_settings
+
+    assert T.MODELS_DIR == get_settings().MODELS_DIR
+    for i, v in enumerate(["v1.0", "v0.stray-newer"]):  # a stray watcher saved a newer bundle after v1.0
+        (tmp_path / v).mkdir()
+        (tmp_path / v / "bundle.joblib").write_bytes(b"")
+        os.utime(tmp_path / v / "bundle.joblib", (1e9 + i, 1e9 + i))
+    monkeypatch.setattr(T, "MODELS_DIR", tmp_path)
+    monkeypatch.setattr(T, "get_settings", lambda: SimpleNamespace(MODEL_VERSION="v1.0"))
+    assert T.bundle_path().parent.name == "v1.0"
+    assert T.bundle_path("v0.stray-newer").parent.name == "v0.stray-newer"
+    monkeypatch.setattr(T, "get_settings", lambda: SimpleNamespace(MODEL_VERSION="v9.9"))  # not on disk
+    assert T.bundle_path().parent.name == "v0.stray-newer"
+
+
+def test_relax_ladders_come_from_training_protocols_only():
+    r = CriteriaRule(rule_id="I1", kind="inclusion", field="crcl_ml_min", operator="ge", value=60, raw_text="CrCl>=60")
+    ps = {"train": ParsedProtocol(trial_id="train", rules=[r]),
+          "test": ParsedProtocol(trial_id="test", rules=[r.model_copy(update={"value": 45})])}
+    ref = F.fit_ref(pd.DataFrame({"crcl_ml_min_min": [60]}, index=["train"]), protocols=ps)
+    assert ref["ladders"]["crcl_ml_min"] == [60.0] and ref["ladder_ids"] == ["train"]
+    assert P.relax_edit(r, ref) is None  # the held-out 45 cutoff is not an available relaxation
+
+
+def test_train_rejects_non_train_rows_unless_opted_out():
+    n = 20
+    df = pd.DataFrame({"phase_num": np.tile([0.0, 1.0], n // 2), "split": ["train"] * 10 + ["test"] * 10,
+                       "start_date": pd.to_datetime(["2010-01-01"] * 10 + ["2020-01-01"] * 10),
+                       "label_accrual_fail": np.tile([False, True], n // 2), "label_shortfall": [None] * n,
+                       "label_amend": [None] * n}, index=[f"id{i}" for i in range(n)])
+    cfg = {"bootstraps": 0, "min_class": 2, "cv_folds": 2, **SMALL}
+    with pytest.raises(ValueError, match="10 rows whose split is not 'train'"):
+        T.train(df, cfg)
+    assert T.train(df, {**cfg, "allow_non_train": True})["n_train"]["accrual_fail"]["n"] == n  # replay path
+    assert T.train(df[df["split"] == "train"], cfg)["n_train"]["accrual_fail"]["n"] == 10
+
+
+def test_watch_retrains_until_a_bundle_uses_sim():
+    """Simulated-train counts reach the threshold before training actually switches sim features on."""
+    used, trained = iter([False, True]), []
+
+    def fake_train(version, bootstraps, use_sim):
+        trained.append(f"v{len(trained)}")
+        return {"version": trained[-1], "use_sim": next(used)}
+
+    counts = [(300, 146), (300, 146), (450, 146), (450, 146)]  # no retry while the count is unchanged
+    with patch.object(T, "load_bundle", return_value={"n_train": {"accrual_fail": {"n": 146}}, "use_sim": False}), \
+            patch.object(C, "_counts", side_effect=counts), patch.object(C, "_train", side_effect=fake_train), \
+            patch.object(C, "_evaluate") as evaluate, patch.object(C.time, "sleep"), pytest.raises(StopIteration):
+        C.main(["watch", "--interval", "1", "--min-sim", "300"])
+    assert trained == ["v0", "v1"] and [c.args[0] for c in evaluate.call_args_list] == ["v0", "v1"]
+
+
+def test_evaluate_writes_reproducible_audit_artifacts(parsed_protocol, cohort, tmp_path):
+    df, _ = _synthetic(parsed_protocol, cohort, n=150)
+    df["split"] = np.where(pd.to_datetime(df["start_date"]) >= pd.Timestamp("2018-01-01"), "test", "train")
+    bundle = T.train(df[df["split"] == "train"], {"bootstraps": 2, "version": "vtest", **SMALL})
+    vm = E.evaluate(bundle, df, out_dir=tmp_path, with_hit_rate=False, with_ablation=False)
+    assert ValidationMetrics.model_validate_json((tmp_path / "metrics.json").read_text()) == vm
+
+    pred = pd.read_csv(tmp_path / "predictions.csv")
+    assert list(pred.columns) == ["nct_id", "target", "split", "start_date", "label", "p_model", "p_baseline",
+                                  "model_version"]
+    assert set(pred["split"]) == {"test"} and set(pred["model_version"]) == {"vtest"}
+    man = json.loads((tmp_path / "model_manifest.json").read_text())
+    detail = json.loads((tmp_path / "metrics_detail.json").read_text())
+    assert man["train_table_sha256"] == man["bundle_train_table_sha256"] != man["test_table_sha256"]
+    assert len(man["test_table_sha256"]) == 64 and detail["hit_rate"] == {"skipped": True}
+    train_ids = df.index[df["split"] == "train"]
+    assert vm.targets
+    for m in vm.targets:  # every published number is recomputable from the per-row table
+        t = m.target.value
+        d = pred[pred["target"] == t]
+        assert len(d) == m.n_test == man["label_counts"][t]["test"]["n"] and d["label"].sum() == m.n_pos
+        assert roc_auc_score(d["label"], d["p_model"]) == pytest.approx(m.auc.value)
+        assert roc_auc_score(d["label"], d["p_baseline"]) == pytest.approx(m.baseline_auc.value)
+        assert brier_score_loss(d["label"], d["p_model"]) == pytest.approx(m.brier)
+        assert man["targets"][t]["test_ids"] == d["nct_id"].tolist()
+        assert man["targets"][t]["train_ids"] == man["targets"][t]["oof_calibration_ids"] == list(train_ids)
+        diff = detail["targets"][t]["auc_diff_vs_baseline"]
+        assert diff["value"] == pytest.approx(m.auc.value - m.baseline_auc.value) and diff["ci_low"] <= diff["ci_high"]
+        q = detail["targets"][t]["train_prevalence"]
+        assert q == pytest.approx(df.loc[train_ids, F.LABELS[t]].astype(int).mean())
+        assert detail["targets"][t]["brier_constant_train_prevalence"] == pytest.approx(((d["label"] - q) ** 2).mean())
+    assert "note" in detail["targets"]["amend"] and detail["coverage"]["n_test_trials"] == int((df["split"] == "test").sum())
 

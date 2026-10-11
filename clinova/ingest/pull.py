@@ -90,7 +90,10 @@ def map_trial(current: dict, first: dict | None = None, *, first_version_date: s
         raise ValueError(f"Unsupported phases: {sorted(phases)}")
     status_module = current_p.get("statusModule", {})
     status = OverallStatus(status_module["overallStatus"])
-    start = _exact_date(status_module.get("startDateStruct", {}).get("date"))
+    raw_start = status_module.get("startDateStruct", {}).get("date")
+    start = _exact_date(raw_start)
+    if start is None and isinstance(raw_start, str) and re.fullmatch(r"\d{4}-\d{2}", raw_start):
+        start = _exact_date(f"{raw_start}-01")  # month precision is enough for the 2018-01-01 split
     split = Split.pending
     if status in ENDED_STATUSES and start is not None:
         split = Split.train if start < date(2018, 1, 1) else Split.test
@@ -98,7 +101,7 @@ def map_trial(current: dict, first: dict | None = None, *, first_version_date: s
     if not first_p:
         provenance["discovery_metadata_fields"] = ["title", "phase"]
     if status in ENDED_STATUSES and start is None:
-        provenance["split_note"] = "Ended trial lacks exact start date; excluded from train/test."
+        provenance["split_note"] = "Ended trial lacks a year-month start date; excluded from train/test."
     current_p["_clinova_provenance"] = provenance
     enrollment = design.get("enrollmentInfo", {})
     actual = current_p.get("designModule", {}).get("enrollmentInfo", {})

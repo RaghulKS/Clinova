@@ -141,6 +141,7 @@ def flag_criteria(protocol):
 
 
 def optimize(protocol, max_edits=3):
+    _need_db()  # edit space and precedents query the database (T23 contract change)
     from clinova.optimize.search import optimize as _optimize
 
     return _optimize(protocol, max_edits=max_edits)
