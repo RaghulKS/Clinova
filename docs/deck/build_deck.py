@@ -719,7 +719,8 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
             box(s, 7.45 - 0.05, 1.75 - 0.05, w + 0.1, h + 0.1, fill="FFFFFF", radius=0.03)
             s.shapes.add_picture(str(img), Inches(7.45), Inches(1.75), Inches(w), Inches(h))
     specs.append(SlideSpec(
-        kicker="", title="Clinova", dark=True,
+        kicker="", title="Clinova test-flies an NSCLC protocol on virtual patients and grades itself on real trials",
+        dark=True,
         lines=["Test-fly your NSCLC trial on thousands of virtual patients before enrolling a real one",
                "Every prediction is graded against how real ClinicalTrials.gov trials turned out", repo],
         visual="Dark teal title slide; funnel and risk panels of the results screen (docs/screens/03-results.png, cropped) at right.",
