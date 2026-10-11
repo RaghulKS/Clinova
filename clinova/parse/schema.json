@@ -1,0 +1,151 @@
+{
+ "$defs": {
+  "ClinicalField": {
+   "description": "Controlled vocabulary of what an eligibility rule can test. Each value is also a column\nname in the cohort dataframe (see ``COHORT_COLUMNS``) and a field of ``ClinicalTraits``\n(except ``age`` and ``sex``, which live on ``Persona``, and ``other``). Units and value types\nare in ``FIELD_SPECS``.",
+   "enum": [
+    "age",
+    "sex",
+    "ecog",
+    "stage",
+    "histology",
+    "egfr_status",
+    "alk_status",
+    "ros1_status",
+    "pdl1_tps",
+    "brain_mets",
+    "leptomeningeal",
+    "prior_lines",
+    "prior_platinum",
+    "prior_immunotherapy",
+    "crcl_ml_min",
+    "anc",
+    "platelets",
+    "hemoglobin",
+    "ast_x_uln",
+    "alt_x_uln",
+    "bilirubin_x_uln",
+    "life_expectancy_months",
+    "measurable_disease",
+    "autoimmune_disease",
+    "interstitial_lung_disease",
+    "active_infection",
+    "cardiac_condition",
+    "pregnancy",
+    "consent_capacity",
+    "other"
+   ],
+   "title": "ClinicalField",
+   "type": "string"
+  },
+  "Operator": {
+   "description": "Comparison applied as ``patient[field] <operator> value``.\n\nlt/le/gt/ge: numeric fields, and ordinal fields using the order in FIELD_SPECS (e.g. stage).\neq/ne: any field. in/not_in: value is a list. present/absent: boolean fields, value None\n(``present`` = the condition is true for the patient). ``eq true``/``eq false`` on a boolean\nfield is accepted and means the same as present/absent, but parsers should emit present/absent.",
+   "enum": [
+    "lt",
+    "le",
+    "gt",
+    "ge",
+    "eq",
+    "ne",
+    "in",
+    "not_in",
+    "present",
+    "absent"
+   ],
+   "title": "Operator",
+   "type": "string"
+  },
+  "Setting": {
+   "description": "Line-of-therapy setting the protocol enrolls.",
+   "enum": [
+    "first_line",
+    "second_line_plus",
+    "any"
+   ],
+   "title": "Setting",
+   "type": "string"
+  },
+  "_RuleOut": {
+   "additionalProperties": false,
+   "properties": {
+    "kind": {
+     "enum": [
+      "inclusion",
+      "exclusion"
+     ],
+     "title": "Kind",
+     "type": "string"
+    },
+    "field": {
+     "$ref": "#/$defs/ClinicalField"
+    },
+    "operator": {
+     "$ref": "#/$defs/Operator"
+    },
+    "value_json": {
+     "description": "JSON-encoded value: 18, 1.5, \"IIIB\", [\"IVA\",\"IVB\"], true, or null for present/absent.",
+     "title": "Value Json",
+     "type": "string"
+    },
+    "unit": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Unit"
+    },
+    "raw_text": {
+     "description": "Exact source fragment this rule came from.",
+     "title": "Raw Text",
+     "type": "string"
+    },
+    "unparseable_reason": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Set only when field is 'other': why it cannot be coded.",
+     "title": "Unparseable Reason"
+    }
+   },
+   "required": [
+    "kind",
+    "field",
+    "operator",
+    "value_json",
+    "raw_text"
+   ],
+   "title": "_RuleOut",
+   "type": "object"
+  }
+ },
+ "additionalProperties": false,
+ "description": "What the model returns; converted to ParsedProtocol by parse_protocol.",
+ "properties": {
+  "setting": {
+   "$ref": "#/$defs/Setting"
+  },
+  "rules": {
+   "items": {
+    "$ref": "#/$defs/_RuleOut"
+   },
+   "title": "Rules",
+   "type": "array"
+  }
+ },
+ "required": [
+  "setting",
+  "rules"
+ ],
+ "title": "ParseOut",
+ "type": "object"
+}
