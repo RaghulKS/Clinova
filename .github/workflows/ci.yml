@@ -77,6 +77,18 @@ jobs:
           else:
               raise TimeoutError("Demo run did not finish within 90 seconds.")
           PY
+      - name: Diagnose a failed demo run
+        if: failure()
+        timeout-minutes: 2
+        run: |
+          docker compose exec -T api python - <<'PY' || true
+          import logging
+          logging.basicConfig(level=logging.INFO)
+          from clinova.api.runs import RUNS
+          from clinova.api.schemas import RunRequest
+          st = RUNS.get(RUNS.submit(RunRequest(nct_id="NCT03232892"), background=False))
+          print(st.stage, st.source, st.message)
+          PY
       - name: Demo stack logs and cleanup
         if: always()
         timeout-minutes: 1
