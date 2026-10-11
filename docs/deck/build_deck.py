@@ -353,7 +353,8 @@ TARGET_NAMES = {"accrual_fail": "Accrual failure", "shortfall": "Enrollment shor
 def chart_auc(F: Facts, path: Path, fixture: bool = False) -> bool:
     """LightGBM vs logistic baseline test AUC with bootstrap 95% CI whiskers, one row per target."""
     m = F.metrics
-    if m is None and fixture:
+    fixture = fixture and m is None
+    if fixture:
         m = json.loads((ROOT / "tests/fixtures/metrics.json").read_text())
     if not m:
         return False
@@ -395,7 +396,8 @@ def chart_auc(F: Facts, path: Path, fixture: bool = False) -> bool:
 def chart_hit(F: Facts, path: Path, fixture: bool = False) -> bool:
     """Hit rate of Clinova's top-3 flags vs three random rules and the three largest marginal exclusions."""
     m = F.metrics
-    if m is None and fixture:
+    fixture = fixture and m is None
+    if fixture:
         m = json.loads((ROOT / "tests/fixtures/metrics.json").read_text())
     h = (m or {}).get("hit_rate")
     if not h:
@@ -427,7 +429,8 @@ def chart_hit(F: Facts, path: Path, fixture: bool = False) -> bool:
 def chart_replay(F: Facts, path: Path, fixture: bool = False) -> bool:
     """Cumulative (pooled) Brier score by month, retrained vs frozen. Lower is better."""
     r = F.replay
-    if r is None and fixture:
+    fixture = fixture and r is None
+    if fixture:
         r = json.loads((ROOT / "tests/fixtures/replay.json").read_text())
     if not r or not r.get("months"):
         return False
@@ -446,8 +449,14 @@ def chart_replay(F: Facts, path: Path, fixture: bool = False) -> bool:
     fig, ax = plt.subplots(figsize=(9.2, 4.6))
     ax.plot(xs, cf, color="#" + GREY, lw=3.5, label="Frozen at " + str(r.get("freeze_date", "")))
     ax.plot(xs, cr, color="#" + TEAL, lw=4.5, label="Retrained monthly")
-    ax.text(xs[-1] + 0.6, cr[-1], f"{cr[-1]:.3f}", va="center", fontsize=19, color="#" + TEAL, fontweight="bold")
-    ax.text(xs[-1] + 0.6, cf[-1], f"{cf[-1]:.3f}", va="center", fontsize=19, color="#" + GREY)
+    span = (max(cr + cf) - min(cr + cf)) or 1.0
+    yr, yf = cr[-1], cf[-1]
+    if abs(yr - yf) < 0.07 * span:  # keep the two end labels apart
+        mid = (yr + yf) / 2
+        off = 0.04 * span
+        yr, yf = (mid - off, mid + off) if cr[-1] <= cf[-1] else (mid + off, mid - off)
+    ax.text(xs[-1] + 0.6, yr, f"{cr[-1]:.3f}", va="center", fontsize=19, color="#" + TEAL, fontweight="bold")
+    ax.text(xs[-1] + 0.6, yf, f"{cf[-1]:.3f}", va="center", fontsize=19, color="#" + GREY)
     months = [m["month"] for m in r["months"]]
     ticks = [i for i, mo in enumerate(months) if mo.endswith("-01")]
     ax.set_xticks(ticks)
@@ -900,7 +909,7 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
         else:
             missing_panel(s, MX, BODY_Y, 7.7, 4.33, "[TBD: docs/screens results screenshot]")
         x = MX + 7.7 + 0.5
-        body_lines(s, x, BODY_Y + 0.1, SW - x - MX, [
+        body_lines(s, x, BODY_Y + 0.1, SW - x - MX, h=4.0, lines=[
             "Funnel: who is excluded by which rule, who enrolls, who completes",
             "Risk: calibrated probability with a range and top drivers in plain words",
             "Fixes: three trade-offs; accept one and it re-runs in seconds",
@@ -1102,7 +1111,10 @@ def build_specs(F: Facts, fixture_charts: bool) -> list[SlideSpec]:
         criterion="Readiness", sources=["docs/metrics.json"], draw=d9))
 
     # 10 Learning loop --------------------------------------------------------------------
-    if R["ok"] and R["better"]:
+    if R["ok"] and R["better"] and float(R["retrained"]) > 0.95 * float(R["frozen"]):
+        loop_title = (f"Retraining as outcomes arrive gave a slightly lower Brier score: {R['retrained']} vs "
+                      f"{R['frozen']} frozen")
+    elif R["ok"] and R["better"]:
         loop_title = f"Retraining as outcomes arrive lowered the Brier score from {R['frozen']} to {R['retrained']}"
     elif R["ok"]:
         loop_title = f"Retraining as outcomes arrive did not beat the frozen model (Brier {R['retrained']} vs {R['frozen']})"
